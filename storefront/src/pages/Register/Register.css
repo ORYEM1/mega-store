@@ -1,0 +1,244 @@
+/* ========================================
+   REGISTER PAGE
+   BOLD STREETWEAR THEME
+======================================== */
+
+.register-page {
+  min-height: 100vh;
+}
+
+/* Registration container */
+
+.register-container {
+  width: 100%;
+  max-width: 520px;
+  margin: auto;
+  padding: 20px 0;
+  box-sizing: border-box;
+}
+
+/* Logo */
+
+.register-container .auth-logo {
+  display: none;
+}
+
+/* Heading */
+
+.register-container .auth-heading {
+  margin-bottom: 28px;
+}
+
+.register-container .auth-heading h1 {
+  font-size: 52px;
+  line-height: 1;
+}
+
+/* Form */
+
+.register-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 15px;
+}
+
+/* Fields */
+
+.register-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.register-field label {
+  color: #ddd;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+/* Input wrappers */
+
+.register-input-wrapper {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 13px;
+  background: #171717;
+  border: 1px solid #333;
+  border-radius: 3px;
+  color: #888;
+  transition: border-color 0.2s ease;
+}
+
+.register-input-wrapper:focus-within {
+  border-color: #c6ff00;
+}
+
+/* Inputs */
+
+.register-input-wrapper input,
+.register-input-wrapper textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+}
+
+.register-input-wrapper input::placeholder,
+.register-input-wrapper textarea::placeholder {
+  color: #666;
+}
+
+/* Textarea */
+
+.register-textarea-wrapper {
+  align-items: flex-start;
+  padding-top: 12px;
+}
+
+.register-input-wrapper textarea {
+  min-height: 75px;
+  resize: vertical;
+}
+
+/* Full-width fields */
+
+.register-full-width,
+.register-submit-button {
+  grid-column: span 2;
+}
+
+/* General error */
+
+.register-general-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 13px;
+  background: rgba(255, 60, 60, 0.08);
+  border: 1px solid rgba(255, 60, 60, 0.25);
+  border-radius: 3px;
+  color: #ff7777;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.register-general-error p {
+  margin: 0 0 5px;
+}
+
+.register-general-error p:last-child {
+  margin-bottom: 0;
+}
+
+/* Field errors */
+
+.register-field-error {
+  margin: 0;
+  color: #ff7777;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* Submit button */
+
+.register-submit-button {
+  min-height: 54px;
+  width: 100%;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #c6ff00;
+  border: none;
+  border-radius: 3px;
+  color: #0b0b0b;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.register-submit-button:hover:not(:disabled) {
+  background: #d6ff4d;
+  transform: translateY(-2px);
+}
+
+.register-submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Footer */
+
+.register-footer {
+  margin-top: 25px;
+  text-align: center;
+}
+
+.register-footer p {
+  color: #999;
+  font-size: 12px;
+}
+
+.register-footer a {
+  color: #c6ff00;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.register-footer a:hover {
+  text-decoration: underline;
+}
+
+.register-back-link {
+  display: inline-block;
+  margin-top: 15px;
+  color: #777 !important;
+  font-size: 11px;
+  font-weight: 400 !important;
+}
+
+/* Responsive */
+
+@media (max-width: 850px) {
+  .register-container {
+    max-width: 520px;
+    padding: 0;
+  }
+
+  .register-container .auth-logo {
+    display: inline-block;
+    margin-bottom: 35px;
+  }
+}
+
+@media (max-width: 600px) {
+  .register-form {
+    grid-template-columns: 1fr;
+    gap: 17px;
+  }
+
+  .register-full-width,
+  .register-submit-button {
+    grid-column: span 1;
+  }
+
+  .register-container .auth-heading h1 {
+    font-size: 44px;
+  }
+}

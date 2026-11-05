@@ -1,0 +1,63 @@
+/* =========================================
+   ADRIAN STORE - CUSTOM SIDEBAR
+   ========================================= */
+
+/* Sidebar background */
+.fi-sidebar {
+    background-color: #1f2937 !important;
+    border-right: 1px solid #374151;
+}
+
+/* Sidebar header and branding area */
+.fi-sidebar-header {
+    background-color: #111827 !important;
+    border-bottom: 1px solid #374151;
+}
+
+/* Navigation group headings */
+.fi-sidebar-group-label {
+    color: #f59e0b !important;
+    font-weight: 700;
+}
+
+/* Navigation menu text */
+.fi-sidebar-item-label {
+    color: #e5e7eb !important;
+}
+
+/* Navigation icons */
+.fi-sidebar-item-icon {
+    color: #d1d5db !important;
+}
+
+/* Hover effect */
+.fi-sidebar-item a:hover {
+    background-color: #374151 !important;
+}
+
+/* Active menu item */
+.fi-sidebar-item-active > a {
+    background-color: #f59e0b !important;
+    border-radius: 8px;
+}
+
+/* Active menu text */
+.fi-sidebar-item-active .fi-sidebar-item-label {
+    color: #111827 !important;
+    font-weight: 700;
+}
+
+/* Active menu icon */
+.fi-sidebar-item-active .fi-sidebar-item-icon {
+    color: #111827 !important;
+}
+
+/* Sidebar scrollbar */
+.fi-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.fi-sidebar::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+    border-radius: 10px;
+}
