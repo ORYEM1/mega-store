@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\ChatConversations\Tables;
 
+use App\Filament\Pages\ChatInbox;
+use App\Models\ChatConversation;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
@@ -15,6 +18,7 @@ class ChatConversationsTable
     {
         return $table
             ->columns([
+
                 TextColumn::make('guest_name')
                     ->label('Customer')
                     ->searchable()
@@ -38,7 +42,7 @@ class ChatConversationsTable
                         'danger' => 'closed',
                     ]),
 
-                TextColumn::make('assignedTo.name')
+                TextColumn::make('assignedAdmin.name')
                     ->label('Assigned To')
                     ->placeholder('Unassigned'),
 
@@ -53,6 +57,7 @@ class ChatConversationsTable
                     ->dateTime('d M Y, H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 SelectFilter::make('status')
@@ -63,7 +68,18 @@ class ChatConversationsTable
                     ]),
             ])
             ->recordActions([
-                \Filament\Actions\EditAction::make(),
+
+                Action::make('openConversation')
+                    ->label('Open Chat')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->color('primary')
+                    ->url(
+                        fn (ChatConversation $record): string =>
+                            ChatInbox::getUrl([
+                                'conversation' => $record->id,
+                            ])
+                    ),
+
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

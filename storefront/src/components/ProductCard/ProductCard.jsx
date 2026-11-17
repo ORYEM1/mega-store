@@ -16,10 +16,18 @@ function ProductCard({ product }) {
   const stockQuantity = Number(product.stock_quantity) || 0;
   const inStock = stockQuantity > 0;
 
+  const price = Number(product.price) || 0;
+  const comparePrice = Number(product.compare_at_price) || 0;
+
   const hasDiscount =
     product.compare_at_price !== null &&
     product.compare_at_price !== undefined &&
-    Number(product.compare_at_price) > Number(product.price);
+    comparePrice > price &&
+    comparePrice > 0;
+
+  const discountPercentage = hasDiscount
+    ? Math.round(((comparePrice - price) / comparePrice) * 100)
+    : 0;
 
   function openProductDetails() {
     navigate(`/products/${product.id}`);
@@ -63,7 +71,7 @@ function ProductCard({ product }) {
 
           {hasDiscount && inStock && (
             <span className="product-sale-badge">
-              SALE
+              -{discountPercentage}%
             </span>
           )}
         </div>
@@ -89,6 +97,7 @@ function ProductCard({ product }) {
             type="button"
             className="product-name-link"
             onClick={openProductDetails}
+            title={product.name}
           >
             {product.name}
           </button>

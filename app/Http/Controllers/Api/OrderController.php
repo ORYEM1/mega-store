@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\Orders;
 use App\Models\Payment;
 use App\Models\Product;
@@ -12,9 +13,79 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
+use Throwable;
 
 class OrderController extends Controller
 {
+    /**
+     * Get authenticated customer's order history.
+     */
+    public function index(Request $request)
+    {
+        $customer = $request->user('sanctum');
+
+        if (! $customer instanceof Customer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated customer.',
+            ], 401);
+        }
+
+        $orders = Orders::query()
+            ->with([
+                'items.product',
+                'payment',
+            ])
+            ->where('customer_id', $customer->id)
+            ->latest()
+            ->paginate(10);
+
+        return response()->json([
+            'success' => true,
+            'orders' => $orders,
+        ]);
+    }
+
+    /**
+     * Get details of one order belonging to the authenticated customer.
+     */
+    public function show(Request $request, string $order)
+    {
+        $customer = $request->user('sanctum');
+
+        if (! $customer instanceof Customer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated customer.',
+            ], 401);
+        }
+
+        $orderDetails = Orders::query()
+            ->with([
+                'items.product',
+                'payment',
+            ])
+            ->where('orders_id', $order)
+            ->where('customer_id', $customer->id)
+            ->first();
+
+        if (! $orderDetails) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'order' => $orderDetails,
+        ]);
+    }
+
+    /**
+     * Create a customer order.
+     */
     public function store(
         Request $request,
         AdminNotificationService $notifications,
@@ -27,8 +98,13 @@ class OrderController extends Controller
             'items.*.product_id' => [
                 'required',
                 'integer',
-                'distinct',
                 'exists:products,id',
+            ],
+
+            'items.*.size' => [
+                'nullable',
+                'string',
+                'max:50',
             ],
 
             'items.*.quantity' => [
@@ -64,10 +140,34 @@ class OrderController extends Controller
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        // 2. Get the authenticated customer.
+        // 2. Prevent duplicate product + size combinations.
+        $seenItems = [];
+
+        foreach ($validated['items'] as $index => $item) {
+            $productId = (string) $item['product_id'];
+            $size = trim((string) ($item['size'] ?? ''));
+
+            $combination = $productId . '::' . $size;
+
+            if (isset($seenItems[$combination])) {
+                throw ValidationException::withMessages([
+                    "items.{$index}.size" => [
+                        'This product and size combination appears more than once in your cart.',
+                    ],
+                ]);
+            }
+
+            $seenItems[$combination] = true;
+
+            $validated['items'][$index]['size'] = $size !== ''
+                ? $size
+                : null;
+        }
+
+        // 3. Get authenticated customer.
         $customer = $request->user('sanctum');
 
-        if (! $customer instanceof \App\Models\Customer) {
+        if (! $customer instanceof Customer) {
             return response()->json([
                 'message' => 'Unauthenticated customer. Please log in again.',
             ], 401);
@@ -75,37 +175,41 @@ class OrderController extends Controller
 
         $isMobileMoney = $validated['payment_method'] === 'mobile_money';
 
-        // 3. Airtel integration is not available yet.
+        // 4. Reject unsupported Airtel integration.
         if (
             $isMobileMoney &&
-            $validated['mobile_money_provider'] === 'airtel_money'
+            $validated['mobile_money_provider'] !== 'mtn_momo'
         ) {
             return response()->json([
                 'message' => 'Airtel Money payment integration is not available yet.',
             ], 422);
         }
 
-        // 4. Protect against sending UGX prices as EUR payments.
-        if (
-            $isMobileMoney &&
-            config('services.mtn_momo.currency') !== 'UGX'
-        ) {
+        // 5. Protect UGX orders from incorrect sandbox currency.
+        $momoCurrency = strtoupper(
+            (string) config('services.mtn_momo.currency')
+        );
+
+        if ($isMobileMoney && $momoCurrency !== 'UGX') {
             return response()->json([
                 'message' => 'MTN payment is currently configured for sandbox testing. '
-                    . 'Your store uses UGX, so payment initiation is disabled '
-                    . 'until the payment currency is correctly configured.',
+                    . 'Your store uses UGX, so customer payment initiation is disabled '
+                    . 'until the correct Uganda payment configuration is available.',
             ], 422);
         }
 
-        // 5. Create the order.
-        // Mobile money orders are NOT deducted from stock here.
-        // Cash and other existing payment methods retain the previous behaviour.
+        /*
+         * 6. Create order and order items.
+         *
+         * Stock is deducted immediately for non-mobile-money orders.
+         * Mobile-money stock is deducted only after confirmed payment.
+         */
         $order = DB::transaction(function () use (
             $validated,
             $customer,
             $isMobileMoney
         ) {
-            $subtotal = 0;
+            $subtotalCents = 0;
             $orderItems = [];
 
             foreach ($validated['items'] as $item) {
@@ -115,43 +219,109 @@ class OrderController extends Controller
                     ->firstOrFail();
 
                 $quantity = (int) $item['quantity'];
+                $selectedSize = $item['size'] ?? null;
 
-                if ((int) $product->stock_quantity < $quantity) {
+                $hasSizes = $product->sizes()->exists();
+
+                $sizeRecord = null;
+                $availableStock = 0;
+
+                if ($hasSizes) {
+                    if (! $selectedSize) {
+                        throw ValidationException::withMessages([
+                            'items' => [
+                                "Please select a size for {$product->name}.",
+                            ],
+                        ]);
+                    }
+
+                    $sizeRecord = $product->sizes()
+                        ->where('size', $selectedSize)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (! $sizeRecord) {
+                        throw ValidationException::withMessages([
+                            'items' => [
+                                "The selected size {$selectedSize} is not available for {$product->name}.",
+                            ],
+                        ]);
+                    }
+
+                    $availableStock = (int) $sizeRecord->stock_quantity;
+                } else {
+                    if ($selectedSize !== null) {
+                        throw ValidationException::withMessages([
+                            'items' => [
+                                "{$product->name} does not have size variations.",
+                            ],
+                        ]);
+                    }
+
+                    $availableStock = (int) $product->stock_quantity;
+                }
+
+                if ($availableStock < $quantity) {
+                    $stockDescription = $selectedSize
+                        ? "Size {$selectedSize}"
+                        : 'product';
+
                     throw ValidationException::withMessages([
                         'items' => [
-                            "Not enough stock for {$product->name}. "
-                            . "Available: {$product->stock_quantity}; "
+                            "Not enough stock for {$product->name} ({$stockDescription}). "
+                            . "Available: {$availableStock}; "
                             . "requested: {$quantity}.",
                         ],
                     ]);
                 }
 
-                $unitPrice = (float) $product->price;
-
-                $itemSubtotal = round(
-                    $unitPrice * $quantity,
-                    2
+                $unitPriceCents = (int) round(
+                    (float) $product->price * 100
                 );
 
-                $subtotal += $itemSubtotal;
+                $itemSubtotalCents = $unitPriceCents * $quantity;
 
-                // Only deduct stock immediately for non-mobile-money orders.
+                $subtotalCents += $itemSubtotalCents;
+
                 if (! $isMobileMoney) {
-                    $product->stock_quantity =
-                        (int) $product->stock_quantity - $quantity;
+                    if ($hasSizes) {
+                        $sizeRecord->stock_quantity =
+                            (int) $sizeRecord->stock_quantity - $quantity;
 
-                    $product->save();
+                        $sizeRecord->save();
+                    } else {
+                        $product->stock_quantity =
+                            (int) $product->stock_quantity - $quantity;
+
+                        $product->save();
+                    }
                 }
 
                 $orderItems[] = [
                     'product_id' => $product->id,
+                    'size' => $selectedSize,
                     'quantity' => $quantity,
-                    'unit_price' => $unitPrice,
-                    'subtotal' => $itemSubtotal,
+                    'unit_price' => number_format(
+                        $unitPriceCents / 100,
+                        2,
+                        '.',
+                        ''
+                    ),
+                    'subtotal' => number_format(
+                        $itemSubtotalCents / 100,
+                        2,
+                        '.',
+                        ''
+                    ),
                 ];
             }
 
-            $subtotal = round($subtotal, 2);
+            $subtotal = number_format(
+                $subtotalCents / 100,
+                2,
+                '.',
+                ''
+            );
 
             $order = Orders::create([
                 'customer_id' => $customer->id,
@@ -170,13 +340,13 @@ class OrderController extends Controller
             return $order;
         });
 
-        // 6. Initiate MTN MoMo payment if selected.
+        // 7. Initiate MTN payment.
         $payment = null;
+        $paymentInitiationFailed = false;
 
         if ($isMobileMoney) {
             $externalId = 'PAY-' . Str::uuid();
 
-            // Create a pending payment record before contacting MTN.
             $payment = Payment::create([
                 'order_id' => $order->orders_id,
                 'provider' => 'mtn_momo',
@@ -184,7 +354,7 @@ class OrderController extends Controller
                 'reference_id' => null,
                 'phone_number' => $validated['mobile_money_phone'],
                 'amount' => $order->total,
-                'currency' => config('services.mtn_momo.currency'),
+                'currency' => $momoCurrency,
                 'status' => 'pending',
             ]);
 
@@ -196,6 +366,15 @@ class OrderController extends Controller
                     'Payment for order ' . $order->order_number
                 );
 
+                if (
+                    empty($mtnResponse['reference_id']) ||
+                    ! isset($mtnResponse['accepted'])
+                ) {
+                    throw new RuntimeException(
+                        'MTN returned an incomplete payment initiation response.'
+                    );
+                }
+
                 $payment->update([
                     'reference_id' => $mtnResponse['reference_id'],
                     'provider_response' => $mtnResponse,
@@ -205,17 +384,16 @@ class OrderController extends Controller
                 ]);
 
                 if (! $mtnResponse['accepted']) {
+                    $paymentInitiationFailed = true;
+
                     $order->update([
                         'payment_status' => 'failed',
                     ]);
-
-                    return response()->json([
-                        'message' => 'MTN did not accept the payment request.',
-                        'order_number' => $order->order_number,
-                    ], 502);
                 }
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 report($exception);
+
+                $paymentInitiationFailed = true;
 
                 $payment->update([
                     'status' => 'failed',
@@ -227,31 +405,71 @@ class OrderController extends Controller
                 $order->update([
                     'payment_status' => 'failed',
                 ]);
-
-                return response()->json([
-                    'message' => 'Unable to initiate MTN payment. Please try again.',
-                    'order_number' => $order->order_number,
-                ], 502);
             }
         }
 
-        // 7. Notify the admin.
+        // 8. Notify administrators.
         try {
-            $notifications->send(
-                'New Order Received',
-                'Order #' . $order->order_number
-                    . ' has been placed by '
-                    . $customer->first_name . ' ' . $customer->last_name
-                    . '. Total: UGX '
-                    . number_format((float) $order->total),
-                'success'
+            $customerName = trim(
+                $customer->first_name . ' ' . $customer->last_name
             );
-        } catch (\Throwable $exception) {
+
+            if ($paymentInitiationFailed) {
+                $notifications->send(
+                    'Order Received - Payment Failed',
+                    'Order #' . $order->order_number
+                        . ' was submitted by ' . $customerName
+                        . ', but MTN payment initiation failed. '
+                        . 'Amount: UGX '
+                        . number_format((float) $order->total, 2),
+                    'danger'
+                );
+            } elseif ($isMobileMoney) {
+                $notifications->send(
+                    'Order Received - Payment Pending',
+                    'Order #' . $order->order_number
+                        . ' was submitted by ' . $customerName
+                        . '. Waiting for MTN payment confirmation. '
+                        . 'Amount: UGX '
+                        . number_format((float) $order->total, 2),
+                    'warning'
+                );
+            } else {
+                $notifications->send(
+                    'New Order Received',
+                    'Order #' . $order->order_number
+                        . ' has been placed by ' . $customerName
+                        . '. Payment method: '
+                        . $order->payment_method
+                        . '. Total: UGX '
+                        . number_format((float) $order->total, 2),
+                    'success'
+                );
+            }
+        } catch (Throwable $exception) {
             report($exception);
         }
 
-        // 8. Return order information.
-        $order->load('items.product', 'customer');
+        // 9. Load order details.
+        $order->load('items.product');
+
+        // 10. Return order response.
+        if ($paymentInitiationFailed) {
+            return response()->json([
+                'message' => 'Your order was received, but MTN payment initiation failed. '
+                    . 'Please contact support before attempting another payment.',
+                'order' => [
+                    'id' => $order->orders_id,
+                    'order_number' => $order->order_number,
+                    'total' => $order->total,
+                    'payment_status' => $order->payment_status,
+                ],
+                'payment' => [
+                    'provider' => 'mtn_momo',
+                    'status' => 'failed',
+                ],
+            ], 502);
+        }
 
         return response()->json([
             'message' => $isMobileMoney
@@ -272,6 +490,7 @@ class OrderController extends Controller
                     return [
                         'product_id' => $item->product_id,
                         'product_name' => $item->product?->name,
+                        'size' => $item->size,
                         'quantity' => $item->quantity,
                         'unit_price' => $item->unit_price,
                         'subtotal' => $item->subtotal,

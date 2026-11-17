@@ -4,8 +4,9 @@ namespace App\Filament\Pages;
 
 use App\Events\ChatMessageSent;
 use App\Models\ChatConversation;
-use Illuminate\Support\Facades\Auth;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Url;
 
 class ChatInbox extends Page
 {
@@ -20,16 +21,33 @@ class ChatInbox extends Page
 
     protected static ?int $navigationSort = 5;
 
+    // Keep the selected conversation in the browser URL.
+    #[Url(as: 'conversation', history: true)]
     public ?int $selectedConversationId = null;
 
     public string $reply = '';
 
+    /**
+     * Handle a conversation ID supplied through the URL.
+     */
+    public function mount(): void
+    {
+        if ($this->selectedConversationId) {
+            $this->markMessagesAsRead($this->selectedConversationId);
+        }
+    }
+
+    /**
+     * Retrieve all customer conversations.
+     */
     public function getConversations()
     {
         return ChatConversation::query()
-            ->with(['messages' => function ($query) {
-                $query->latest()->limit(1);
-            }])
+            ->with([
+                'messages' => function ($query) {
+                    $query->latest()->limit(1);
+                },
+            ])
             ->withCount([
                 'messages as unread_messages_count' => function ($query) {
                     $query->whereNull('read_at')
@@ -40,6 +58,9 @@ class ChatInbox extends Page
             ->get();
     }
 
+    /**
+     * Retrieve messages belonging to the selected conversation.
+     */
     public function getSelectedConversation()
     {
         if (!$this->selectedConversationId) {
@@ -49,18 +70,32 @@ class ChatInbox extends Page
         return ChatConversation::with([
             'messages' => function ($query) {
                 $query->oldest();
-            }
+            },
         ])->find($this->selectedConversationId);
     }
 
+    /**
+     * Select a conversation from the inbox.
+     */
     public function selectConversation(int $id): void
     {
-        $this->selectedConversationId = $id;
+        $conversation = ChatConversation::findOrFail($id);
+
+        $this->selectedConversationId = $conversation->id;
 
         $this->reply = '';
 
-        // Mark customer messages as read.
-        ChatConversation::findOrFail($id)
+        $this->resetValidation();
+
+        $this->markMessagesAsRead($conversation->id);
+    }
+
+    /**
+     * Mark unread customer messages as read.
+     */
+    private function markMessagesAsRead(int $conversationId): void
+    {
+        ChatConversation::findOrFail($conversationId)
             ->messages()
             ->where('sender_type', 'customer')
             ->whereNull('read_at')
@@ -69,12 +104,18 @@ class ChatInbox extends Page
             ]);
     }
 
+    /**
+     * Refresh the inbox through Livewire polling.
+     */
     public function refreshInbox(): void
     {
-        // Refresh the selected conversation when polling.
-        // Do not reset the selected conversation or reply text.
+        // Livewire re-renders the page after this action.
+        // The selected conversation and reply text remain unchanged.
     }
 
+    /**
+     * Send an admin reply to the selected conversation.
+     */
     public function sendReply(): void
     {
         $this->validate([
@@ -103,6 +144,7 @@ class ChatInbox extends Page
             'last_message_at' => now(),
         ]);
 
+        // Notify the customer through their conversation channel.
         broadcast(new ChatMessageSent($message));
 
         $this->reply = '';

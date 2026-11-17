@@ -22,10 +22,7 @@ import {
 } from "react-icons/fa";
 
 import Navbar from "../../components/Navbar/Navbar";
-import {
-  createOrder,
-  checkPaymentStatus,
-} from "../../services/api";
+import { createOrder } from "../../services/api";
 import { useCartStore } from "../../store/cartStore";
 import { useAuthStore } from "../../store/authStore";
 
@@ -149,7 +146,6 @@ function Checkout() {
   // Submission state.
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [paymentMessage, setPaymentMessage] = useState("");
 
   // Calculate subtotal.
   const subtotal = cart.reduce(
@@ -351,64 +347,11 @@ function Checkout() {
     selectLocation(lat, lng);
   }
 
-  // Wait for MTN to confirm the payment.
-  async function waitForPayment(referenceId) {
-    const maxAttempts = 40;
-    const interval = 3000;
-
-    setPaymentMessage(
-      "Payment request sent. Please check your phone and approve the MTN MoMo prompt."
-    );
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        const result = await checkPaymentStatus(referenceId);
-
-        if (result.payment_status === "paid") {
-          return result;
-        }
-
-        if (result.payment_status === "failed") {
-          throw new Error(
-            result.message || "Your payment was unsuccessful."
-          );
-        }
-
-        setPaymentMessage(
-          `Waiting for payment confirmation... (${attempt}/${maxAttempts})`
-        );
-      } catch (err) {
-        if (err.response) {
-          // Do not treat server/network errors as payment failures.
-          throw new Error(
-            err.response.data?.message ||
-            "Unable to verify payment. Please try again."
-          );
-        }
-
-        throw err;
-      }
-
-      if (attempt < maxAttempts) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, interval)
-        );
-      }
-    }
-
-    return {
-      payment_status: "pending",
-      message:
-        "Payment confirmation is taking longer than expected. Check your payment status again.",
-    };
-  }
-
-// Submit order.
+  // Submit order.
   async function handleSubmit(event) {
     event.preventDefault();
 
     setError("");
-    setPaymentMessage("");
 
     if (!token) {
       navigate("/login", {
@@ -445,6 +388,7 @@ function Checkout() {
     let normalizedPhone = null;
 
     if (form.payment_method === "mobile_money") {
+      // Ensure a payment provider is selected.
       if (
         !["mtn_momo", "airtel_money"].includes(
           form.mobile_money_provider
@@ -454,14 +398,15 @@ function Checkout() {
         return;
       }
 
-      // Airtel integration is not yet implemented.
+      // Airtel Money integration is not available yet.
       if (form.mobile_money_provider === "airtel_money") {
         setError(
-          "Airtel Money is not available yet. Please select MTN MoMo."
+          "Airtel Money is coming soon. Please select MTN MoMo."
         );
         return;
       }
 
+      // Normalize and validate the phone number.
       normalizedPhone = normalizeUgandanPhone(
         form.mobile_money_phone
       );
@@ -474,126 +419,105 @@ function Checkout() {
       }
     }
 
-  // Prepare cart items.
-  const items = cart.map((item) => ({
-    product_id: item.id,
-    quantity: Number(item.quantity),
-  }));
+   // Prepare cart items, including selected sizes.
+    const items = cart.map((item) => ({
+      product_id: item.id,
+      size: item.selected_size || null,
+      quantity: Number(item.quantity),
+    }));
 
-  // Prepare order data.
-  const orderData = {
-    items,
+    // Prepare order data.
+    const orderData = {
+      items,
 
-    shipping_address: form.shipping_address.trim(),
+      shipping_address: form.shipping_address.trim(),
 
-    payment_method: form.payment_method,
+      payment_method: form.payment_method,
 
-    mobile_money_provider:
-      form.payment_method === "mobile_money"
-        ? form.mobile_money_provider
-        : null,
+      mobile_money_provider:
+        form.payment_method === "mobile_money"
+          ? form.mobile_money_provider
+          : null,
 
-    mobile_money_phone: normalizedPhone,
+      mobile_money_phone: normalizedPhone,
 
-    notes: form.notes.trim() || null,
+      notes: form.notes.trim() || null,
 
-    latitude: location?.lat ?? null,
-    longitude: location?.lng ?? null,
-  };
+      latitude: location?.lat ?? null,
+      longitude: location?.lng ?? null,
+    };
 
-  try {
-    setSubmitting(true);
+    try {
+      setSubmitting(true);
 
-    const response = await createOrder(orderData);
+      const response = await createOrder(orderData);
 
-    // MOBILE MONEY PAYMENT
-    if (form.payment_method === "mobile_money") {
-      const referenceId = response.payment?.reference_id;
+      // MOBILE MONEY PAYMENT.
+      if (form.payment_method === "mobile_money") {
+        const referenceId = response.payment?.reference_id;
 
-      // Save the pending order.
-      sessionStorage.setItem(
-        "pending_payment_order",
-        JSON.stringify(response)
-      );
-
-      if (!referenceId) {
-        setError(
-          "Your order was created, but no payment reference was returned. Please contact support."
-        );
-        return;
-      }
-
-      // Wait for MTN payment confirmation.
-      const paymentResult = await waitForPayment(referenceId);
-
-      if (paymentResult.payment_status === "paid") {
-        // Clear cart only after confirmed payment.
-        clearCart();
-
-        const successfulOrder = {
-          ...response,
-          payment_status: "paid",
-        };
-
+        // Save the pending order in both browser storages.
         sessionStorage.setItem(
-          "last_order",
-          JSON.stringify(successfulOrder)
+          "pending_payment_order",
+          JSON.stringify(response)
         );
 
-        sessionStorage.removeItem("pending_payment_order");
+        localStorage.setItem(
+          "pending_payment_order",
+          JSON.stringify(response)
+        );
 
-        navigate("/order-success", {
+        if (!referenceId) {
+          setError(
+            "Your order was created, but no payment reference was returned. Please contact support."
+          );
+          return;
+        }
+
+        // The PaymentPending page will monitor payment status.
+        navigate("/payment-pending", {
           replace: true,
         });
 
         return;
       }
 
-      // Payment is still pending.
-      setPaymentMessage(
-        paymentResult.message ||
-          "Your payment is still pending. Please check again shortly."
+      // CASH AND OTHER EXISTING PAYMENT METHODS.
+      clearCart();
+
+      sessionStorage.setItem(
+        "last_order",
+        JSON.stringify(response)
       );
 
-      return;
+      navigate("/order-success", {
+        replace: true,
+      });
+    } catch (err) {
+      console.error("Order submission failed:", err);
+
+      const responseData = err.response?.data;
+
+      if (responseData?.errors) {
+        const validationMessages = Object.values(
+          responseData.errors
+        ).flat();
+
+        setError(
+          validationMessages.join(" ") ||
+            "Please check your order details."
+        );
+      } else {
+        setError(
+          responseData?.message ||
+            err.message ||
+            "We could not place your order. Please check your connection and try again."
+        );
+      }
+    } finally {
+      setSubmitting(false);
     }
-
-    // CASH AND OTHER EXISTING PAYMENT METHODS.
-    clearCart();
-
-    sessionStorage.setItem(
-      "last_order",
-      JSON.stringify(response)
-    );
-
-    navigate("/order-success", {
-      replace: true,
-    });
-  } catch (err) {
-    console.error("Order submission failed:", err);
-
-    const responseData = err.response?.data;
-
-    if (responseData?.errors) {
-      const validationMessages = Object.values(
-        responseData.errors
-      ).flat();
-
-      setError(
-        validationMessages.join(" ") ||
-          "Please check your order details."
-      );
-    } else {
-      setError(
-        responseData?.message ||
-          err.message ||
-          "We could not place your order. Please check your connection and try again."
-      );
-    }
-  } finally {
-    setSubmitting(false);
   }
-}
 
   // Redirecting state.
   if (!token) {
@@ -985,16 +909,6 @@ function Checkout() {
                   <span>{error}</span>
                 </div>
               )}
-
-              {paymentMessage && (
-                <div
-                  className="checkout-mobile-money-notice"
-                  role="status"
-                >
-                  <FaMobileAlt />
-                  <span>{paymentMessage}</span>
-                </div>
-              )}
             </section>
 
             {/* Order summary */}
@@ -1004,29 +918,37 @@ function Checkout() {
               <h2>YOUR ORDER.</h2>
 
               <div className="checkout-summary-items">
-                {cart.map((item) => (
-                  <div
-                    className="checkout-summary-item"
-                    key={item.id}
-                  >
-                    <div className="checkout-summary-product">
-                      <span className="checkout-summary-quantity">
-                        {item.quantity}
-                      </span>
-
-                      <span className="checkout-summary-name">
-                        {item.name}
-                      </span>
-                    </div>
-
-                    <strong>
-                      {formatPrice(
-                        Number(item.price || 0) *
-                          Number(item.quantity || 0)
-                      )}
-                    </strong>
-                  </div>
-                ))}
+                   {cart.map((item) => (
+                     <div
+                       key={
+                         item.cart_key ||
+                         `${item.id}::${item.selected_size || ""}`
+                       }
+                     >
+                       <div className="checkout-summary-product">
+                         <span className="checkout-summary-quantity">
+                           {item.quantity}
+                         </span>
+                     
+                         <span className="checkout-summary-name">
+                           {item.name}
+                     
+                           {item.selected_size && (
+                             <small className="checkout-summary-size">
+                               SIZE: {item.selected_size}
+                             </small>
+                           )}
+                         </span>
+                       </div>
+                         
+                       <strong>
+                         {formatPrice(
+                           Number(item.price || 0) *
+                             Number(item.quantity || 0)
+                         )}
+                       </strong>
+                     </div>
+                   ))}
               </div>
 
               <div className="checkout-summary-row">

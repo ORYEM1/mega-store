@@ -18,6 +18,8 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Support\Assets\Css;
+use Filament\Support\Facades\FilamentAsset;
 
 
 class AdminPanelProvider extends PanelProvider
@@ -37,6 +39,13 @@ class AdminPanelProvider extends PanelProvider
             // Dashboard theme
             ->colors([
                 'primary' => Color::Teal,
+            ])
+
+            ->assets([
+                Css::make(
+                    'order-details',
+                    resource_path('css/filament/orders/view-orders.css')
+                ),
             ])
 
 

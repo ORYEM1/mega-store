@@ -1,3 +1,4 @@
+
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
 
@@ -5,7 +6,6 @@ const api = axios.create({
   baseURL:
     import.meta.env.VITE_API_URL ||
     "http://192.168.10.246:8000/api",
-    
 
   headers: {
     Accept: "application/json",
@@ -26,7 +26,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle sessions that Laravel reports as expired.
+// Handle expired authentication sessions.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -35,7 +35,7 @@ api.interceptors.response.use(
     const requestUrl = error.config?.url || "";
 
     const isLoginOrRegistration =
-      /(login|register)(?:\?|$)/.test(requestUrl);
+      /(?:login|register)(?:\?.*)?$/.test(requestUrl);
 
     const isAuthenticated = useAuthStore.getState().isAuthenticated;
 
@@ -44,7 +44,6 @@ api.interceptors.response.use(
       !isLoginOrRegistration &&
       isAuthenticated
     ) {
-      // Clear the frontend authentication state.
       useAuthStore.getState().logout();
 
       if (responseData?.code === "SESSION_EXPIRED") {
@@ -54,7 +53,6 @@ api.interceptors.response.use(
         );
       }
 
-      // Redirect only when not already on the login page.
       if (window.location.pathname !== "/login") {
         window.location.assign("/login");
       }
@@ -70,7 +68,7 @@ export const getProducts = async (page = 1) => {
   return response.data;
 };
 
-// Fetch a single product by ID.
+// Fetch a single product.
 export const getProduct = async (id) => {
   const response = await api.get(`/products/${id}`);
   return response.data;
@@ -79,6 +77,9 @@ export const getProduct = async (id) => {
 // Fetch categories.
 export const getCategories = async () => {
   const response = await api.get("/categories");
+
+  console.log("CATEGORY API RAW RESPONSE:", response.data);
+
   return response.data;
 };
 
@@ -94,7 +95,7 @@ export const loginCustomer = async (credentials) => {
   return response.data;
 };
 
-// Get the currently authenticated customer.
+// Get authenticated customer.
 export const getAuthenticatedCustomer = async () => {
   const response = await api.get("/customer");
   return response.data;
@@ -106,19 +107,17 @@ export const logoutCustomer = async () => {
     const response = await api.post("/logout");
     return response.data;
   } finally {
-    // Always clear local authentication, even if the API is unavailable.
     useAuthStore.getState().logout();
   }
 };
 
-// Submit an order to Laravel.
+// Submit an order.
 export const createOrder = async (orderData) => {
   const response = await api.post("/orders", orderData);
   return response.data;
 };
 
-
-// Check the status of a mobile money payment.
+// Check mobile money payment status.
 export const checkPaymentStatus = async (referenceId) => {
   const response = await api.get(
     `/payments/${encodeURIComponent(referenceId)}/status`
@@ -126,32 +125,33 @@ export const checkPaymentStatus = async (referenceId) => {
 
   return response.data;
 };
+
 // Fetch homepage banners.
 export const getBanners = async () => {
   const response = await api.get("/banners");
   return response.data;
 };
 
-// Create a new conversation
+// Create chat conversation.
 export const createChatConversation = async (data) => {
-    const response = await api.post("/chat/conversations", data);
-    return response.data;
+  const response = await api.post("/chat/conversations", data);
+  return response.data;
 };
 
-// Retrieve conversation history
+// Retrieve conversation history.
 export const getChatConversation = async (token) => {
-    const response = await api.get(`/chat/conversations/${token}`);
-    return response.data;
+  const response = await api.get(`/chat/conversations/${token}`);
+  return response.data;
 };
 
-// Send a chat message
+// Send chat message.
 export const sendChatMessage = async (token, body) => {
-    const response = await api.post(
-        `/chat/conversations/${token}/messages`,
-        { body }
-    );
+  const response = await api.post(
+    `/chat/conversations/${token}/messages`,
+    { body }
+  );
 
-    return response.data;
+  return response.data;
 };
 
 export default api;

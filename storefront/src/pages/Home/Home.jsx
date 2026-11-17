@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 import { FaArrowRight, FaBolt } from "react-icons/fa";
 
@@ -12,24 +13,32 @@ import ProductCard from "../../components/ProductCard/ProductCard";
 
 import "./Home.css";
 
+/* =====================================
+   API RESPONSE HELPER
+===================================== */
+
 function getResponseData(response) {
-  // Case 1: API returns an array directly.
+  // Direct array.
   if (Array.isArray(response)) {
     return response;
   }
 
-  // Case 2: Axios response containing an array.
+  // Laravel response: { success: true, data: [...] }
   if (Array.isArray(response?.data)) {
     return response.data;
   }
 
-  // Case 3: Laravel paginated response.
+  // Laravel paginated response: { data: { data: [...] } }
   if (Array.isArray(response?.data?.data)) {
     return response.data.data;
   }
 
   return [];
 }
+
+/* =====================================
+   HOME COMPONENT
+===================================== */
 
 function Home() {
   const [products, setProducts] = useState([]);
@@ -41,8 +50,13 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Fetch products, categories and banners from Laravel.
+  /* =====================================
+     FETCH STORE DATA
+  ===================================== */
+
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchStoreData() {
       try {
         setLoading(true);
@@ -54,34 +68,60 @@ function Home() {
             getCategories(),
           ]);
 
-        setProducts(getResponseData(productsResponse));
-        setCategories(getResponseData(categoriesResponse));
+        const productsData = getResponseData(productsResponse);
+        const categoriesData = getResponseData(categoriesResponse);
+
+        console.log("PRODUCTS FROM API:", productsData);
+        console.log("CATEGORIES FROM API:", categoriesData);
+
+        if (!isMounted) return;
+
+        setProducts(productsData);
+        setCategories(categoriesData);
+
       } catch (err) {
         console.error("Failed to load store data:", err);
 
-        setError(
-          "We could not load the products. Please check your connection and try again."
-        );
+        if (isMounted) {
+          setError(
+            "We could not load the products. Please check your connection and try again."
+          );
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
 
-      // Load banners separately so a banner API failure
-      // does not prevent the products from displaying.
+      // Load banners separately.
+      // Banner failures should not affect product loading.
       try {
         const bannersResponse = await getBanners();
+        const bannersData = getResponseData(bannersResponse);
 
-        setBanners(getResponseData(bannersResponse));
+        if (isMounted) {
+          setBanners(bannersData);
+        }
       } catch (err) {
         console.error("Failed to load banners:", err);
-        setBanners([]);
+
+        if (isMounted) {
+          setBanners([]);
+        }
       }
     }
 
     fetchStoreData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // Only display active banners.
+  /* =====================================
+     ACTIVE BANNERS
+  ===================================== */
+
   const activeBanners = useMemo(() => {
     return banners
       .filter((banner) => {
@@ -93,42 +133,78 @@ function Home() {
       })
       .sort(
         (a, b) =>
-          Number(a.sort_order || 0) - Number(b.sort_order || 0)
+          Number(a.sort_order || 0) -
+          Number(b.sort_order || 0)
       );
   }, [banners]);
 
-  // Get the main hero banner.
+  /* =====================================
+     HERO BANNER
+  ===================================== */
+
   const heroBanner = useMemo(() => {
     return activeBanners.find(
       (banner) => banner.position === "hero"
     );
   }, [activeBanners]);
 
-  // Get smaller promotional banners.
+  /* =====================================
+     PROMOTIONAL BANNERS
+  ===================================== */
+
   const promotionalBanners = useMemo(() => {
     return activeBanners.filter(
       (banner) => banner.position === "promo"
     );
   }, [activeBanners]);
 
-  // Flatten parent categories and their subcategories.
+  /* =====================================
+     FLATTEN CATEGORIES
+  ===================================== */
+
   const allCategories = useMemo(() => {
-    return categories.flatMap((category) => [
-      category,
-      ...(category.children || []),
-    ]);
+    const flattened = [];
+
+    categories.forEach((category) => {
+      flattened.push(category);
+
+      if (Array.isArray(category.children)) {
+        category.children.forEach((child) => {
+          flattened.push(child);
+        });
+      }
+    });
+
+    // Remove duplicate category IDs.
+    return [
+      ...new Map(
+        flattened.map((category) => [
+          Number(category.id),
+          category,
+        ])
+      ).values(),
+    ];
   }, [categories]);
 
-  // Search products by name, description, or SKU.
+  /* =====================================
+     SEARCH PRODUCTS
+  ===================================== */
+
   const filteredProducts = useMemo(() => {
     const searchTerm = search.trim().toLowerCase();
 
-    if (!searchTerm) return products;
+    if (!searchTerm) {
+      return products;
+    }
 
     return products.filter((product) => {
-      const name = product.name?.toLowerCase() || "";
-      const description = product.description?.toLowerCase() || "";
-      const sku = product.sku?.toLowerCase() || "";
+      const name = String(product.name || "").toLowerCase();
+
+      const description = String(
+        product.description || ""
+      ).toLowerCase();
+
+      const sku = String(product.sku || "").toLowerCase();
 
       return (
         name.includes(searchTerm) ||
@@ -138,13 +214,23 @@ function Home() {
     });
   }, [products, search]);
 
-  // Group products by category.
+  /* =====================================
+     GROUP PRODUCTS BY CATEGORY
+  ===================================== */
+
   const categorySections = useMemo(() => {
     return allCategories
       .map((category) => {
+        const categoryId = Number(category.id);
+
         const categoryProducts = filteredProducts.filter(
-          (product) =>
-            Number(product.category?.id) === Number(category.id)
+          (product) => {
+            const productCategoryId = Number(
+              product.category?.id ?? product.category_id
+            );
+
+            return productCategoryId === categoryId;
+          }
         );
 
         return {
@@ -155,18 +241,49 @@ function Home() {
       .filter((category) => category.products.length > 0);
   }, [allCategories, filteredProducts]);
 
-  // Products without a category.
+  /* =====================================
+     UNCATEGORIZED PRODUCTS
+  ===================================== */
+
   const uncategorizedProducts = useMemo(() => {
     const knownCategoryIds = new Set(
       allCategories.map((category) => Number(category.id))
     );
 
-    return filteredProducts.filter(
-      (product) =>
-        !product.category ||
-        !knownCategoryIds.has(Number(product.category.id))
-    );
+    return filteredProducts.filter((product) => {
+      const categoryId = Number(
+        product.category?.id ?? product.category_id
+      );
+
+      return (
+        !product.category &&
+        !product.category_id ||
+        !knownCategoryIds.has(categoryId)
+      );
+    });
   }, [filteredProducts, allCategories]);
+
+  /* =====================================
+     DEBUGGING
+  ===================================== */
+
+  useEffect(() => {
+    console.log("TOTAL PRODUCTS:", products.length);
+    console.log("TOTAL CATEGORIES:", categories.length);
+    console.log("FLATTENED CATEGORIES:", allCategories);
+    console.log("CATEGORY SECTIONS:", categorySections);
+    console.log("PRODUCTS WITHOUT CATEGORY:", uncategorizedProducts);
+  }, [
+    products,
+    categories,
+    allCategories,
+    categorySections,
+    uncategorizedProducts,
+  ]);
+
+  /* =====================================
+     SCROLL TO PRODUCTS
+  ===================================== */
 
   const scrollToProducts = () => {
     document.getElementById("products")?.scrollIntoView({
@@ -175,7 +292,10 @@ function Home() {
     });
   };
 
-  // Render a banner image using desktop and optional mobile images.
+  /* =====================================
+     BANNER IMAGES
+  ===================================== */
+
   const getBannerImage = (banner) => {
     return banner.image_url || banner.image || "";
   };
@@ -188,12 +308,21 @@ function Home() {
     );
   };
 
+  /* =====================================
+     BANNER BUTTON
+  ===================================== */
+
   const renderBannerButton = (banner, className) => {
-    if (!banner.button_text) return null;
+    if (!banner.button_text) {
+      return null;
+    }
 
     const link = banner.button_link || "#products";
 
-    if (link.startsWith("http://") || link.startsWith("https://")) {
+    if (
+      link.startsWith("http://") ||
+      link.startsWith("https://")
+    ) {
       return (
         <a
           href={link}
@@ -215,8 +344,14 @@ function Home() {
     );
   };
 
+  /* =====================================
+     RENDER
+  ===================================== */
+
   return (
     <div className="store">
+
+      {/* NAVBAR */}
       <Navbar
         categories={categories}
         search={search}
@@ -224,9 +359,14 @@ function Home() {
       />
 
       <main>
-        {/* HERO BANNER */}
+
+        {/* =====================================
+            HERO BANNER
+        ===================================== */}
+
         {heroBanner ? (
           <section className="dynamic-hero">
+
             <picture className="dynamic-hero-picture">
               <source
                 media="(max-width: 768px)"
@@ -242,6 +382,7 @@ function Home() {
             <div className="dynamic-hero-overlay"></div>
 
             <div className="dynamic-hero-content">
+
               <div className="street-hero-tag">
                 <FaBolt />
                 <span>MEGA STORE</span>
@@ -257,14 +398,16 @@ function Home() {
                 heroBanner,
                 "dynamic-hero-button"
               )}
+
             </div>
           </section>
         ) : (
-          /* DEFAULT HERO WHEN NO HERO BANNER EXISTS */
           <section className="street-hero">
+
             <div className="street-hero-overlay"></div>
 
             <div className="street-hero-content">
+
               <div className="street-hero-tag">
                 <FaBolt />
                 <span>THE NEW STREET CULTURE</span>
@@ -292,18 +435,23 @@ function Home() {
               </button>
 
               <div className="street-hero-bottom">
-                <span>ADRIAN COLLECTIONS</span>
+                <span>MEGA STORE COLLECTIONS</span>
                 <span>EST. FOR THE BOLD</span>
               </div>
+
             </div>
 
             <div className="street-hero-side-text">
               STREETWEAR / EVERYDAY CULTURE
             </div>
+
           </section>
         )}
 
-        {/* BRAND MESSAGE */}
+        {/* =====================================
+            BRAND MARQUEE
+        ===================================== */}
+
         <section className="street-marquee">
           <div className="street-marquee-track">
             <span>BE BOLD</span>
@@ -320,22 +468,31 @@ function Home() {
           </div>
         </section>
 
-        {/* PROMOTIONAL BANNERS */}
+        {/* =====================================
+            PROMOTIONAL BANNERS
+        ===================================== */}
+
         {promotionalBanners.length > 0 && (
           <section className="home-promotional-banners">
+
             <div className="promotional-banner-heading">
-              <p className="section-eyebrow">DISCOVER MORE</p>
+              <p className="section-eyebrow">
+                DISCOVER MORE
+              </p>
+
               <h2>
                 EXPLORE OUR <span>COLLECTIONS.</span>
               </h2>
             </div>
 
             <div className="promotional-banner-grid">
+
               {promotionalBanners.map((banner) => (
                 <article
                   className="promotional-banner"
                   key={banner.id}
                 >
+
                   <picture>
                     <source
                       media="(max-width: 600px)"
@@ -352,6 +509,7 @@ function Home() {
                   <div className="promotional-banner-overlay"></div>
 
                   <div className="promotional-banner-content">
+
                     {banner.subtitle && (
                       <p>{banner.subtitle}</p>
                     )}
@@ -362,16 +520,24 @@ function Home() {
                       banner,
                       "promotional-banner-button"
                     )}
+
                   </div>
+
                 </article>
               ))}
+
             </div>
           </section>
         )}
 
-        {/* PRODUCTS SECTION */}
+        {/* =====================================
+            PRODUCTS
+        ===================================== */}
+
         <section className="store-products" id="products">
+
           <div className="products-heading">
+
             <div>
               <p className="section-eyebrow">
                 {search.trim()
@@ -402,16 +568,23 @@ function Home() {
                 <FaArrowRight />
               </button>
             )}
+
           </div>
 
+          {/* LOADING */}
           {loading ? (
             <div className="store-message">
               <div className="street-loader"></div>
               <p>LOADING THE COLLECTION...</p>
             </div>
+
           ) : error ? (
+
+            /* ERROR */
             <div className="store-error">
+
               <h3>SOMETHING WENT WRONG</h3>
+
               <p>{error}</p>
 
               <button
@@ -421,25 +594,36 @@ function Home() {
               >
                 TRY AGAIN
               </button>
+
             </div>
+
           ) : filteredProducts.length === 0 ? (
+
+            /* EMPTY SEARCH */
             <div className="store-empty">
               <h3>NOTHING FOUND.</h3>
+
               <p>
                 {search.trim()
                   ? "Try another search term."
                   : "Our collection is being updated. Check back soon."}
               </p>
             </div>
+
           ) : (
+
+            /* CATEGORY SECTIONS */
             <div className="category-sections">
+
               {categorySections.map((category) => (
                 <section
                   key={category.id}
                   id={`category-${category.id}`}
                   className="category-section"
                 >
+
                   <div className="category-section-heading">
+
                     <div>
                       <p className="section-eyebrow">
                         EXPLORE THE COLLECTION
@@ -452,22 +636,29 @@ function Home() {
                       {String(category.products.length).padStart(2, "0")}{" "}
                       PRODUCTS
                     </span>
+
                   </div>
 
                   <div className="product-grid">
+
                     {category.products.map((product) => (
                       <ProductCard
                         key={product.id}
                         product={product}
                       />
                     ))}
+
                   </div>
+
                 </section>
               ))}
 
+              {/* OTHER PRODUCTS */}
               {uncategorizedProducts.length > 0 && (
                 <section className="category-section">
+
                   <div className="category-section-heading">
+
                     <div>
                       <p className="section-eyebrow">
                         MORE TO EXPLORE
@@ -475,19 +666,24 @@ function Home() {
 
                       <h2>OTHER PRODUCTS.</h2>
                     </div>
+
                   </div>
 
                   <div className="product-grid">
+
                     {uncategorizedProducts.map((product) => (
                       <ProductCard
                         key={product.id}
                         product={product}
                       />
                     ))}
+
                   </div>
+
                 </section>
               )}
 
+              {/* NO CATEGORY MATCHES */}
               {categorySections.length === 0 &&
                 uncategorizedProducts.length === 0 && (
                   <div className="store-empty">
@@ -495,14 +691,23 @@ function Home() {
                     <p>Try another search term.</p>
                   </div>
                 )}
+
             </div>
           )}
+
         </section>
 
-        {/* CALL TO ACTION */}
+        {/* =====================================
+            CALL TO ACTION
+        ===================================== */}
+
         <section className="street-cta">
+
           <div>
-            <p className="section-eyebrow">YOUR STYLE. YOUR RULES.</p>
+            <p className="section-eyebrow">
+              YOUR STYLE. YOUR RULES.
+            </p>
+
             <h2>
               DON'T FOLLOW.
               <br />
@@ -518,22 +723,33 @@ function Home() {
             SHOP THE COLLECTION
             <FaArrowRight />
           </button>
+
         </section>
+
       </main>
 
-      {/* FOOTER */}
+      {/* =====================================
+          FOOTER
+      ===================================== */}
+
       <footer className="store-footer">
+
         <div className="footer-brand">
           MEGA<span>.</span>
           <small>STORE</small>
         </div>
 
-        <p>MORE THAN FASHION. IT'S AN ATTITUDE.</p>
+        <p>
+          MORE THAN FASHION. IT'S AN ATTITUDE.
+        </p>
 
         <span>
-          © {new Date().getFullYear()} Adrian Collections. All rights reserved.
+          © {new Date().getFullYear()} MEGA STORE COLLECTIONS.
+          All rights reserved.
         </span>
+
       </footer>
+
     </div>
   );
 }

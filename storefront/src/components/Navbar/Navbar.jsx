@@ -281,18 +281,20 @@ function Navbar({
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile theme toggle */}
           <button
-            type="button"
-            className="navbar-mobile-toggle"
-            onClick={() =>
-              setMobileMenuOpen((previous) => !previous)
-            }
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileMenuOpen}
-            aria-controls="navbar-mobile-menu"
+              type="button"
+              className="mobile-theme-toggle"
+              onClick={handleThemeToggle}
+              aria-label={`Switch to ${
+                  theme === "dark" ? "light" : "dark"
+              } mode`}
           >
-            {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+              {theme === "dark" ? <FaSun /> : <FaMoon />}
+            
+              {theme === "dark"
+                  ? "SWITCH TO LIGHT MODE"
+                  : "SWITCH TO DARK MODE"}
           </button>
         </div>
 

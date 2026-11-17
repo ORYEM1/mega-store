@@ -8,6 +8,9 @@ import Cart from "./pages/Cart/Cart";
 import Checkout from "./pages/Checkout/Checkout";
 import ChatWidget from "./components/ChatWidget/ChatWidget";
 import OrderSuccess from "./pages/OrderSuccess/OrderSuccess";
+import PaymentPending from "./pages/PaymentPending/PaymentPending";
+import SellerLogin from "./pages/Seller/Login/SellerLogin";
+import SellerRegister from "./pages/Seller/Register/SellerRegister";
 
 function App() {
   return (
@@ -20,6 +23,13 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/order-success" element={<OrderSuccess />} />
+
+        <Route
+          path="/payment-pending"
+          element={<PaymentPending />}
+        />
+        <Route path="/seller/login" element={<SellerLogin />} />
+        <Route path="/seller/register" element={<SellerRegister />} />
       </Routes>
 
       {/* Live chat available across all pages */}

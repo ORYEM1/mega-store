@@ -34,15 +34,28 @@ function Cart() {
 
   // Cart state.
   const cart = useCartStore((state) => state.items);
+
   const updateQuantity = useCartStore(
     (state) => state.updateQuantity
   );
-  const removeItem = useCartStore((state) => state.removeItem);
-  const clearCart = useCartStore((state) => state.clearCart);
+
+  const removeItem = useCartStore(
+    (state) => state.removeItem
+  );
+
+  const clearCart = useCartStore(
+    (state) => state.clearCart
+  );
+
+  // Get a unique identifier for each product-size combination.
+  function getItemKey(item) {
+    return item.cart_key || `${item.id}::${item.selected_size || ""}`;
+  }
 
   // Calculate total units.
   const totalItems = cart.reduce(
-    (total, item) => total + (Number(item.quantity) || 0),
+    (total, item) =>
+      total + (Number(item.quantity) || 0),
     0
   );
 
@@ -76,7 +89,15 @@ function Cart() {
       return;
     }
 
-    updateQuantity(item.id, Math.min(quantity, stock));
+    updateQuantity(
+      getItemKey(item),
+      Math.min(quantity, stock)
+    );
+  }
+
+  // Remove a specific product-size combination.
+  function handleRemoveItem(item) {
+    removeItem(getItemKey(item));
   }
 
   // Proceed to checkout.
@@ -171,11 +192,19 @@ function Cart() {
               {cart.map((item) => {
                 const quantity = Number(item.quantity) || 0;
                 const stock = Number(item.stock_quantity) || 0;
+
                 const outOfStock = stock < 1;
-                const exceedsStock = !outOfStock && quantity > stock;
+
+                const exceedsStock =
+                  !outOfStock && quantity > stock;
+
+                const itemKey = getItemKey(item);
 
                 return (
-                  <article className="cart-item" key={item.id}>
+                  <article
+                    className="cart-item"
+                    key={itemKey}
+                  >
                     {/* Product image */}
                     <Link
                       to={`/products/${item.id}`}
@@ -207,6 +236,13 @@ function Cart() {
                         {item.name}
                       </Link>
 
+                      {/* Selected size */}
+                      {item.selected_size && (
+                        <p className="cart-item-size">
+                          SIZE: <strong>{item.selected_size}</strong>
+                        </p>
+                      )}
+
                       <p className="cart-item-unit-price">
                         {formatPrice(item.price)} <span>/ EACH</span>
                       </p>
@@ -232,7 +268,10 @@ function Cart() {
                           <button
                             type="button"
                             onClick={() =>
-                              handleQuantityChange(item, quantity - 1)
+                              handleQuantityChange(
+                                item,
+                                quantity - 1
+                              )
                             }
                             disabled={quantity <= 1}
                             aria-label={`Decrease quantity of ${item.name}`}
@@ -245,7 +284,10 @@ function Cart() {
                           <button
                             type="button"
                             onClick={() =>
-                              handleQuantityChange(item, quantity + 1)
+                              handleQuantityChange(
+                                item,
+                                quantity + 1
+                              )
                             }
                             disabled={
                               outOfStock || quantity >= stock
@@ -259,7 +301,7 @@ function Cart() {
                         <button
                           type="button"
                           className="cart-remove-button"
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => handleRemoveItem(item)}
                         >
                           <FaTrash />
                           REMOVE

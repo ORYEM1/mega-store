@@ -828,3 +828,122 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* =========================================
+   PRODUCT SIZE SELECTOR
+========================================= */
+
+.product-size-selector {
+  margin: 0 0 28px;
+  padding: 20px;
+  border: 1px solid #303030;
+  background: #141414;
+}
+
+.product-size-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.product-size-heading label {
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+
+.product-size-heading span {
+  color: #c6ff00;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.product-size-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.product-size-option {
+  min-width: 48px;
+  min-height: 45px;
+  padding: 10px 14px;
+  border: 1px solid #444;
+  background: #202020;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.product-size-option:hover:not(:disabled) {
+  border-color: #c6ff00;
+  color: #c6ff00;
+  transform: translateY(-2px);
+}
+
+.product-size-option.selected {
+  border-color: #c6ff00;
+  background: #c6ff00;
+  color: #0b0b0b;
+}
+
+.product-size-option.unavailable,
+.product-size-option:disabled {
+  position: relative;
+  border-color: #303030;
+  background: #171717;
+  color: #555;
+  text-decoration: line-through;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.selected-size-stock {
+  margin: 15px 0 0;
+  color: #c6ff00;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+}
+
+.size-selection-hint {
+  margin: 15px 0 0;
+  color: #888;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.product-size-option:focus-visible {
+  outline: 2px solid #c6ff00;
+  outline-offset: 4px;
+}
+
+/* =========================================
+   SIZE SELECTOR RESPONSIVENESS
+========================================= */
+
+@media (max-width: 520px) {
+  .product-size-selector {
+    padding: 16px;
+  }
+
+  .product-size-options {
+    gap: 8px;
+  }
+
+  .product-size-option {
+    min-width: 44px;
+    min-height: 42px;
+    padding: 9px 12px;
+  }
+}

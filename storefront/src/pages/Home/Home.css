@@ -709,8 +709,8 @@
     }
 
    .product-grid {
-        grid-template-columns: 1fr;
-        gap: 18px;
+    grid-template-columns: 1fr;
+    gap: 18px;
     }
 
     .category-sections {

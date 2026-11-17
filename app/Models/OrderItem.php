@@ -10,6 +10,8 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id',
         'product_id',
+        'seller_id',
+        'size',
         'quantity',
         'unit_price',
         'subtotal',
@@ -18,6 +20,7 @@ class OrderItem extends Model
     protected function casts(): array
     {
         return [
+            'seller_id' => 'integer',
             'quantity' => 'integer',
             'unit_price' => 'decimal:2',
             'subtotal' => 'decimal:2',
@@ -33,10 +36,18 @@ class OrderItem extends Model
     }
 
     /**
-     * Get the product associated with this item.
+     * Get the product associated with this order item.
      */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Get the seller responsible for this order item.
+     */
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(Seller::class);
     }
 }

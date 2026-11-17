@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class Product extends Model
 {
     protected $fillable = [
+        'seller_id',
         'category_id',
         'name',
         'slug',
@@ -26,6 +29,7 @@ class Product extends Model
     protected function casts(): array
     {
         return [
+            'seller_id' => 'integer',
             'price' => 'decimal:2',
             'compare_at_price' => 'decimal:2',
             'stock_quantity' => 'integer',
@@ -36,19 +40,16 @@ class Product extends Model
     protected static function booted(): void
     {
         static::creating(function (Product $product) {
-            // Generate a unique slug when one has not been provided.
             if (blank($product->slug) && filled($product->name)) {
                 $product->slug = static::generateUniqueSlug($product->name);
             }
 
-            // Generate a unique SKU when one has not been provided.
             if (blank($product->sku)) {
                 $product->sku = static::generateUniqueSku();
             }
         });
 
         static::updating(function (Product $product) {
-            // Generate a slug if it is missing.
             if (blank($product->slug) && filled($product->name)) {
                 $product->slug = static::generateUniqueSlug(
                     $product->name,
@@ -56,23 +57,26 @@ class Product extends Model
                 );
             }
 
-            // Generate an SKU if it is missing.
             if (blank($product->sku)) {
                 $product->sku = static::generateUniqueSku();
             }
         });
+
+        static::saved(function (Product $product) {
+            Cache::store('redis')->forget('products:published:v1');
+        });
+
+        static::deleted(function (Product $product) {
+            Cache::store('redis')->forget('products:published:v1');
+        });
     }
 
-    /**
-     * Generate a unique slug from the product name.
-     */
     protected static function generateUniqueSlug(
         string $name,
         ?int $ignoreId = null
     ): string {
         $baseSlug = Str::slug($name);
 
-        // Use a fallback if the name contains no slug-compatible characters.
         if ($baseSlug === '') {
             $baseSlug = 'product';
         }
@@ -94,9 +98,6 @@ class Product extends Model
         return $slug;
     }
 
-    /**
-     * Generate a unique SKU.
-     */
     protected static function generateUniqueSku(): string
     {
         do {
@@ -107,10 +108,25 @@ class Product extends Model
     }
 
     /**
-     * Product category relationship.
+     * Get the seller who owns this product.
      */
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(Seller::class);
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function sizes(): HasMany
+    {
+        return $this->hasMany(ProductSize::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
     }
 }

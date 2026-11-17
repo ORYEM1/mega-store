@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Products\Schemas;
 use App\Models\Category;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -19,10 +20,15 @@ class ProductForm
         return $schema
             ->components([
 
+                /*
+                |--------------------------------------------------------------------------
+                | Product Information
+                |--------------------------------------------------------------------------
+                */
+
                 Section::make('Product Information')
                     ->schema([
 
-                        // Product name
                         TextInput::make('name')
                             ->label('Product Name')
                             ->required()
@@ -31,14 +37,14 @@ class ProductForm
                             ->afterStateUpdated(function ($state, callable $set) {
                                 $set('slug', Str::slug($state));
 
-                                // Generate SKU only if it has not been set.
                                 $set(
                                     'sku',
-                                    $state ? 'ADR-' . strtoupper(Str::random(8)) : null
+                                    $state
+                                        ? 'ADR-' . strtoupper(Str::random(8))
+                                        : null
                                 );
                             }),
 
-                        // Automatically generated slug
                         TextInput::make('slug')
                             ->label('Product Slug')
                             ->required()
@@ -46,7 +52,6 @@ class ProductForm
                             ->maxLength(255)
                             ->readOnly(),
 
-                        // Automatically generated SKU
                         TextInput::make('sku')
                             ->label('SKU')
                             ->required()
@@ -54,7 +59,6 @@ class ProductForm
                             ->maxLength(255)
                             ->readOnly(),
 
-                        // Category
                         Select::make('category_id')
                             ->label('Category')
                             ->options(
@@ -67,31 +71,74 @@ class ProductForm
                             ->preload()
                             ->nullable(),
 
-                        // Optional color
                         TextInput::make('color')
                             ->label('Color')
                             ->placeholder('e.g. Black, White, Blue')
                             ->maxLength(100)
                             ->nullable(),
 
-                        // Optional size
-                        TextInput::make('size')
-                            ->label('Size')
-                            ->placeholder('e.g. S, M, L, XL or 42')
-                            ->maxLength(100)
-                            ->nullable(),
-
-                        // Description
                         Textarea::make('description')
                             ->label('Product Description')
                             ->rows(4)
                             ->columnSpanFull(),
+
                     ])
                     ->columns(2),
 
-                // Product photo
+                /*
+                |--------------------------------------------------------------------------
+                | Product Sizes
+                |--------------------------------------------------------------------------
+                */
+
+                Section::make('Sizes and Stock')
+                    ->description(
+                        'Add sizes and their individual stock quantities. Leave this section empty for products without sizes.'
+                    )
+                    ->schema([
+
+                        Repeater::make('sizes')
+                            ->label('Available Sizes')
+                            ->relationship()
+                            ->schema([
+
+                                TextInput::make('size')
+                                    ->label('Size')
+                                    ->placeholder('e.g. S, M, L, XL or 36')
+                                    ->required()
+                                    ->maxLength(50),
+
+                                TextInput::make('stock_quantity')
+                                    ->label('Stock Quantity')
+                                    ->numeric()
+                                    ->integer()
+                                    ->required()
+                                    ->minValue(0)
+                                    ->default(0),
+
+                            ])
+                            ->columns(2)
+                            ->defaultItems(0)
+                            ->addActionLabel('Add Product Size')
+                            ->reorderable(false)
+                            ->collapsible()
+                            ->itemLabel(
+                                fn (array $state): ?string =>
+                                    $state['size'] ?? 'New Size'
+                            )
+                            ->columnSpanFull(),
+
+                    ]),
+
+                /*
+                |--------------------------------------------------------------------------
+                | Product Photo
+                |--------------------------------------------------------------------------
+                */
+
                 Section::make('Product Photo')
                     ->schema([
+
                         FileUpload::make('photo')
                             ->label('Upload Product Photo')
                             ->image()
@@ -104,11 +151,18 @@ class ProductForm
                             ->helperText(
                                 'Upload one product image. Maximum file size: 5 MB.'
                             ),
+
                     ]),
 
-                // Pricing and inventory
+                /*
+                |--------------------------------------------------------------------------
+                | Pricing and Inventory
+                |--------------------------------------------------------------------------
+                */
+
                 Section::make('Pricing and Inventory')
                     ->schema([
+
                         TextInput::make('price')
                             ->label('Selling Price (UGX)')
                             ->required()
@@ -124,21 +178,32 @@ class ProductForm
                             ->nullable(),
 
                         TextInput::make('stock_quantity')
-                            ->label('Available Stock')
+                            ->label('Available Stock (Products Without Sizes)')
                             ->required()
                             ->numeric()
                             ->integer()
                             ->minValue(0)
-                            ->default(0),
+                            ->default(0)
+                            ->helperText(
+                                'Used for products that do not have size variations.'
+                            ),
+
                     ])
                     ->columns(3),
 
-                // Publication
+                /*
+                |--------------------------------------------------------------------------
+                | Publication
+                |--------------------------------------------------------------------------
+                */
+
                 Section::make('Publication')
                     ->schema([
+
                         Checkbox::make('is_published')
                             ->label('Publish this product')
                             ->default(false),
+
                     ]),
 
             ]);

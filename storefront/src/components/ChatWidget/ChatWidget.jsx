@@ -198,7 +198,7 @@ const ChatWidget = () => {
                             </div>
 
                             <div>
-                                <h3>Adrian Support</h3>
+                                <h3>MEGA STORE Support</h3>
                                 <p>We're here to help you</p>
                             </div>
                         </div>

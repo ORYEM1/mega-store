@@ -45,6 +45,8 @@ function ProductDetails() {
   const [error, setError] = useState("");
 
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState("");
+
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
 
@@ -162,8 +164,39 @@ function ProductDetails() {
       .slice(0, 4);
   }, [products, product]);
 
-  const stock = normalizeStock(product?.stock_quantity);
-  const available = stock > 0;
+  // Product sizes returned by Laravel.
+  const productSizes = useMemo(
+    () => (Array.isArray(product?.sizes) ? product.sizes : []),
+    [product]
+  );
+
+  const hasSizes = productSizes.length > 0;
+
+  // Find the currently selected size.
+  const selectedSizeOption = useMemo(
+    () =>
+      productSizes.find(
+        (item) => String(item.size) === String(selectedSize)
+      ) || null,
+    [productSizes, selectedSize]
+  );
+
+  // Total stock across all sizes, or normal product stock.
+  const totalStock = normalizeStock(product?.stock_quantity);
+
+  // Stock available for the selected size.
+  const selectedSizeStock = selectedSizeOption
+    ? normalizeStock(selectedSizeOption.stock_quantity)
+    : 0;
+
+  // Use the selected size's stock when sizes are available.
+  const stock = hasSizes
+    ? selectedSizeOption
+      ? selectedSizeStock
+      : totalStock
+    : totalStock;
+
+  const available = totalStock > 0;
 
   const hasDiscount =
     product &&
@@ -171,9 +204,10 @@ function ProductDetails() {
     product.compare_at_price !== undefined &&
     Number(product.compare_at_price) > Number(product.price);
 
-  // Reset quantity and messages when switching products.
+  // Reset quantity, size and messages when switching products.
   useEffect(() => {
     setQuantity(1);
+    setSelectedSize("");
     setMessage("");
     setMessageType("");
   }, [id]);
@@ -190,14 +224,35 @@ function ProductDetails() {
     );
   }, [stock]);
 
+  // Handle size selection.
+  function handleSizeSelection(size) {
+    setSelectedSize(size);
+    setQuantity(1);
+    setMessage("");
+    setMessageType("");
+  }
+
   // Add product to cart.
   function addToCart() {
     if (!product) return;
 
-    const currentStock = normalizeStock(product.stock_quantity);
+    if (hasSizes && !selectedSizeOption) {
+      setMessage("Please select a size before adding this product.");
+      setMessageType("error");
+      return;
+    }
+
+    const currentStock = hasSizes
+      ? selectedSizeStock
+      : totalStock;
 
     if (currentStock < 1) {
-      setMessage("Sorry, this product is currently out of stock.");
+      setMessage(
+        hasSizes
+          ? `Size ${selectedSize} is currently out of stock.`
+          : "Sorry, this product is currently out of stock."
+      );
+
       setMessageType("error");
       return;
     }
@@ -213,8 +268,11 @@ function ProductDetails() {
       return;
     }
 
+    // A product with different sizes is treated as a separate cart item.
     const existingItem = cartItems.find(
-      (item) => String(item.id) === String(product.id)
+      (item) =>
+        String(item.id) === String(product.id) &&
+        String(item.selected_size || "") === String(selectedSize || "")
     );
 
     const currentCartQuantity = normalizeStock(existingItem?.quantity);
@@ -240,6 +298,14 @@ function ProductDetails() {
         ...product,
         price: Number(product.price) || 0,
         photo: product.photo || null,
+
+        // Selected variant information.
+        selected_size: hasSizes ? selectedSize : null,
+        selected_size_id: hasSizes
+          ? selectedSizeOption.id
+          : null,
+
+        // Use the selected size's stock for cart validation.
         stock_quantity: currentStock,
       },
       selectedQuantity
@@ -359,7 +425,7 @@ function ProductDetails() {
             )}
 
             <div className="details-image-label">
-              ADRIAN COLLECTIONS
+              MEGA STORE COLLECTIONS
             </div>
 
             {!available && (
@@ -420,7 +486,9 @@ function ProductDetails() {
               }`}
             >
               {available
-                ? `${stock} UNITS AVAILABLE`
+                ? hasSizes
+                  ? `${totalStock} UNITS AVAILABLE ACROSS ALL SIZES`
+                  : `${stock} UNITS AVAILABLE`
                 : "CURRENTLY OUT OF STOCK"}
             </p>
 
@@ -434,8 +502,73 @@ function ProductDetails() {
               </p>
             </div>
 
+            {/* Size selector */}
+            {hasSizes && (
+              <div className="product-size-selector">
+                <div className="product-size-heading">
+                  <label>SELECT SIZE</label>
+
+                  {selectedSize && (
+                    <span>
+                      Selected: {selectedSize}
+                    </span>
+                  )}
+                </div>
+
+                <div className="product-size-options">
+                  {productSizes.map((sizeOption) => {
+                    const sizeStock = normalizeStock(
+                      sizeOption.stock_quantity
+                    );
+
+                    const isSelected =
+                      String(selectedSize) === String(sizeOption.size);
+
+                    const isAvailable = sizeStock > 0;
+
+                    return (
+                      <button
+                        key={sizeOption.id}
+                        type="button"
+                        className={`product-size-option ${
+                          isSelected ? "selected" : ""
+                        } ${!isAvailable ? "unavailable" : ""}`}
+                        onClick={() =>
+                          isAvailable &&
+                          handleSizeSelection(sizeOption.size)
+                        }
+                        disabled={!isAvailable}
+                        aria-pressed={isSelected}
+                        title={
+                          isAvailable
+                            ? `${sizeStock} available`
+                            : "Out of stock"
+                        }
+                      >
+                        {sizeOption.size}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {selectedSizeOption && (
+                  <p className="selected-size-stock">
+                    {selectedSizeStock > 0
+                      ? `${selectedSizeStock} units available in size ${selectedSize}`
+                      : `Size ${selectedSize} is out of stock`}
+                  </p>
+                )}
+
+                {!selectedSize && (
+                  <p className="size-selection-hint">
+                    Please choose your preferred size.
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Quantity selector */}
-            {available && (
+            {available && (!hasSizes || selectedSizeOption) && stock > 0 && (
               <div className="product-quantity">
                 <label htmlFor="product-quantity">
                   SELECT QUANTITY
@@ -476,11 +609,18 @@ function ProductDetails() {
                 type="button"
                 className="product-add-to-cart"
                 onClick={addToCart}
-                disabled={!available}
+                disabled={
+                  !available ||
+                  (hasSizes && (!selectedSizeOption || selectedSizeStock < 1))
+                }
               >
                 <FaShoppingBag />
 
-                {available ? "ADD TO BAG" : "SOLD OUT"}
+                {!available
+                  ? "SOLD OUT"
+                  : hasSizes && !selectedSize
+                    ? "SELECT A SIZE"
+                    : "ADD TO BAG"}
 
                 {available && <FaArrowRight />}
               </button>
