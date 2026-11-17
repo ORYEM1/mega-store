@@ -1,0 +1,167 @@
+.seller-auth-page {
+    min-height: 100vh;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 15px;
+}
+
+.seller-auth-card {
+    width: 100%;
+    max-width: 750px;
+    background: #fff;
+    border-radius: 15px;
+    padding: 35px;
+}
+
+.seller-login-card {
+    max-width: 450px;
+}
+
+.seller-auth-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.seller-auth-brand svg {
+    color: #8bac00;
+    font-size: 27px;
+}
+
+.seller-auth-brand h2 {
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.seller-auth-brand span {
+    color: #86a900;
+}
+
+.seller-auth-card h1 {
+    font-size: 25px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.seller-auth-subtitle {
+    color: #888;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.seller-auth-card form h3 {
+    font-size: 15px;
+    margin: 25px 0 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.seller-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.seller-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 17px;
+}
+
+.seller-form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #444;
+}
+
+.seller-form-group input,
+.seller-form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    outline: none;
+    font-size: 13px;
+    background: #fff;
+}
+
+.seller-form-group input:focus,
+.seller-form-group textarea:focus {
+    border-color: #9bc900;
+    box-shadow: 0 0 0 2px rgba(198, 255, 0, 0.15);
+}
+
+.seller-form-group textarea {
+    resize: vertical;
+}
+
+.seller-auth-button {
+    width: 100%;
+    padding: 14px;
+    background: #c6ff00;
+    color: #111;
+    border: none;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 800;
+    margin-top: 10px;
+    transition: 0.2s;
+}
+
+.seller-auth-button:hover {
+    background: #a8db00;
+}
+
+.seller-auth-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.seller-auth-footer {
+    text-align: center;
+    color: #777;
+    font-size: 13px;
+    margin-top: 25px;
+}
+
+.seller-auth-footer a {
+    color: #719000;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.seller-auth-message {
+    padding: 12px;
+    border-radius: 7px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.seller-auth-message.error {
+    background: #ffe8e8;
+    color: #b00020;
+}
+
+.seller-auth-message.success {
+    background: #eaffd9;
+    color: #376600;
+}
+
+@media (max-width: 600px) {
+    .seller-auth-card {
+        padding: 25px 18px;
+    }
+
+    .seller-form-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}

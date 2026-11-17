@@ -1,0 +1,262 @@
+.create-product-page {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px;
+    color: #ffffff;
+}
+
+.create-product-header {
+    margin-bottom: 30px;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    background: transparent;
+    color: #c6ff00;
+    cursor: pointer;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+.create-product-header h1 {
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+.create-product-header p {
+    color: #999999;
+}
+
+.product-message {
+    padding: 15px;
+    margin-bottom: 20px;
+    background: #202020;
+    border-left: 4px solid #c6ff00;
+    border-radius: 5px;
+    color: #ffffff;
+}
+
+.create-product-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.product-form-section {
+    background: #181818;
+    border: 1px solid #303030;
+    border-radius: 10px;
+    padding: 25px;
+}
+
+.product-form-section h2 {
+    font-size: 19px;
+    margin-bottom: 22px;
+}
+
+.product-form-section p {
+    color: #999999;
+    font-size: 13px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-bottom: 20px;
+    flex: 1;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 13px;
+    background: #101010;
+    border: 1px solid #383838;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 14px;
+    outline: none;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #c6ff00;
+}
+
+.form-group select option {
+    background: #181818;
+}
+
+.form-group small,
+.product-form-section > small {
+    color: #ff7070;
+    font-size: 12px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.section-heading-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.section-heading-row h2 {
+    margin-bottom: 6px;
+}
+
+.add-size-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 15px;
+    background: #c6ff00;
+    border: none;
+    border-radius: 5px;
+    color: #000000;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.size-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: #111111;
+    border-radius: 7px;
+}
+
+.remove-size-button {
+    padding: 13px;
+    margin-bottom: 0;
+    background: #382020;
+    color: #ff7070;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.image-upload-area {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 25px;
+    border: 2px dashed #444444;
+    border-radius: 8px;
+    background: #101010;
+    cursor: pointer;
+    text-align: center;
+}
+
+.image-upload-area > svg {
+    font-size: 40px;
+    color: #c6ff00;
+}
+
+.image-upload-area span {
+    color: #999999;
+    font-size: 12px;
+}
+
+.product-image-preview {
+    max-width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+    border-radius: 7px;
+}
+
+.selected-file-name {
+    margin-top: 12px;
+    color: #c6ff00 !important;
+}
+
+.product-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    padding-bottom: 30px;
+}
+
+.cancel-product-button,
+.submit-product-button {
+    padding: 14px 22px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.cancel-product-button {
+    background: #252525;
+    border: 1px solid #444444;
+    color: #ffffff;
+}
+
+.submit-product-button {
+    background: #c6ff00;
+    border: none;
+    color: #000000;
+}
+
+.submit-product-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 650px) {
+    .create-product-page {
+        padding: 18px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .size-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .section-heading-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .remove-size-button {
+        align-self: flex-end;
+    }
+
+    .product-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .product-form-actions button {
+        width: 100%;
+    }
+}
