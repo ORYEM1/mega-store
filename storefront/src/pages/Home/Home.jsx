@@ -1,6 +1,6 @@
-
 import { useEffect, useMemo, useState } from "react";
-import { FaArrowRight, FaBolt } from "react-icons/fa";
+import { useSearchParams } from "react-router-dom";
+import { FaArrowRight, FaBolt, FaTimes } from "react-icons/fa";
 
 import {
   getCategories,
@@ -18,17 +18,14 @@ import "./Home.css";
 ===================================== */
 
 function getResponseData(response) {
-  // Direct array.
   if (Array.isArray(response)) {
     return response;
   }
 
-  // Laravel response: { success: true, data: [...] }
   if (Array.isArray(response?.data)) {
     return response.data;
   }
 
-  // Laravel paginated response: { data: { data: [...] } }
   if (Array.isArray(response?.data?.data)) {
     return response.data.data;
   }
@@ -41,6 +38,10 @@ function getResponseData(response) {
 ===================================== */
 
 function Home() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const selectedCategoryId = searchParams.get("category");
+
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [banners, setBanners] = useState([]);
@@ -71,9 +72,6 @@ function Home() {
         const productsData = getResponseData(productsResponse);
         const categoriesData = getResponseData(categoriesResponse);
 
-        console.log("PRODUCTS FROM API:", productsData);
-        console.log("CATEGORIES FROM API:", categoriesData);
-
         if (!isMounted) return;
 
         setProducts(productsData);
@@ -95,6 +93,7 @@ function Home() {
 
       // Load banners separately.
       // Banner failures should not affect product loading.
+
       try {
         const bannersResponse = await getBanners();
         const bannersData = getResponseData(bannersResponse);
@@ -102,6 +101,7 @@ function Home() {
         if (isMounted) {
           setBanners(bannersData);
         }
+
       } catch (err) {
         console.error("Failed to load banners:", err);
 
@@ -176,6 +176,7 @@ function Home() {
     });
 
     // Remove duplicate category IDs.
+
     return [
       ...new Map(
         flattened.map((category) => [
@@ -187,32 +188,71 @@ function Home() {
   }, [categories]);
 
   /* =====================================
-     SEARCH PRODUCTS
+     SELECTED CATEGORY
+  ===================================== */
+
+  const selectedCategory = useMemo(() => {
+    if (!selectedCategoryId) {
+      return null;
+    }
+
+    return (
+      allCategories.find(
+        (category) =>
+          Number(category.id) === Number(selectedCategoryId)
+      ) || null
+    );
+  }, [allCategories, selectedCategoryId]);
+
+  /* =====================================
+     FILTER PRODUCTS BY CATEGORY AND SEARCH
   ===================================== */
 
   const filteredProducts = useMemo(() => {
-    const searchTerm = search.trim().toLowerCase();
+    let result = [...products];
 
-    if (!searchTerm) {
-      return products;
+    // Category filtering.
+
+    if (selectedCategoryId) {
+      result = result.filter((product) => {
+        const productCategoryId = Number(
+          product.category?.id ?? product.category_id
+        );
+
+        return (
+          productCategoryId === Number(selectedCategoryId)
+        );
+      });
     }
 
-    return products.filter((product) => {
-      const name = String(product.name || "").toLowerCase();
+    // Search filtering.
 
-      const description = String(
-        product.description || ""
-      ).toLowerCase();
+    const searchTerm = search.trim().toLowerCase();
 
-      const sku = String(product.sku || "").toLowerCase();
+    if (searchTerm) {
+      result = result.filter((product) => {
+        const name = String(
+          product.name || ""
+        ).toLowerCase();
 
-      return (
-        name.includes(searchTerm) ||
-        description.includes(searchTerm) ||
-        sku.includes(searchTerm)
-      );
-    });
-  }, [products, search]);
+        const description = String(
+          product.description || ""
+        ).toLowerCase();
+
+        const sku = String(
+          product.sku || ""
+        ).toLowerCase();
+
+        return (
+          name.includes(searchTerm) ||
+          description.includes(searchTerm) ||
+          sku.includes(searchTerm)
+        );
+      });
+    }
+
+    return result;
+  }, [products, search, selectedCategoryId]);
 
   /* =====================================
      GROUP PRODUCTS BY CATEGORY
@@ -238,7 +278,9 @@ function Home() {
           products: categoryProducts,
         };
       })
-      .filter((category) => category.products.length > 0);
+      .filter(
+        (category) => category.products.length > 0
+      );
   }, [allCategories, filteredProducts]);
 
   /* =====================================
@@ -246,6 +288,12 @@ function Home() {
   ===================================== */
 
   const uncategorizedProducts = useMemo(() => {
+    // Don't show unrelated products when filtering a category.
+
+    if (selectedCategoryId) {
+      return [];
+    }
+
     const knownCategoryIds = new Set(
       allCategories.map((category) => Number(category.id))
     );
@@ -256,29 +304,14 @@ function Home() {
       );
 
       return (
-        !product.category &&
-        !product.category_id ||
+        (!product.category && !product.category_id) ||
         !knownCategoryIds.has(categoryId)
       );
     });
-  }, [filteredProducts, allCategories]);
-
-  /* =====================================
-     DEBUGGING
-  ===================================== */
-
-  useEffect(() => {
-    console.log("TOTAL PRODUCTS:", products.length);
-    console.log("TOTAL CATEGORIES:", categories.length);
-    console.log("FLATTENED CATEGORIES:", allCategories);
-    console.log("CATEGORY SECTIONS:", categorySections);
-    console.log("PRODUCTS WITHOUT CATEGORY:", uncategorizedProducts);
   }, [
-    products,
-    categories,
+    filteredProducts,
     allCategories,
-    categorySections,
-    uncategorizedProducts,
+    selectedCategoryId,
   ]);
 
   /* =====================================
@@ -291,6 +324,53 @@ function Home() {
       block: "start",
     });
   };
+
+  /* =====================================
+     SCROLL WHEN CATEGORY CHANGES
+  ===================================== */
+
+  useEffect(() => {
+    if (!selectedCategoryId) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      document.getElementById("products")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [selectedCategoryId]);
+
+  /* =====================================
+     CLEAR CATEGORY FILTER
+  ===================================== */
+
+  const clearCategoryFilter = () => {
+    setSearchParams({});
+  };
+
+  /* =====================================
+     DEBUGGING
+  ===================================== */
+
+  useEffect(() => {
+    console.log("TOTAL PRODUCTS:", products.length);
+    console.log("TOTAL CATEGORIES:", categories.length);
+    console.log("SELECTED CATEGORY:", selectedCategory);
+    console.log("FILTERED PRODUCTS:", filteredProducts);
+    console.log("CATEGORY SECTIONS:", categorySections);
+    console.log("UNCATEGORIZED PRODUCTS:", uncategorizedProducts);
+  }, [
+    products,
+    categories,
+    selectedCategory,
+    filteredProducts,
+    categorySections,
+    uncategorizedProducts,
+  ]);
 
   /* =====================================
      BANNER IMAGES
@@ -352,6 +432,7 @@ function Home() {
     <div className="store">
 
       {/* NAVBAR */}
+
       <Navbar
         categories={categories}
         search={search}
@@ -368,6 +449,7 @@ function Home() {
           <section className="dynamic-hero">
 
             <picture className="dynamic-hero-picture">
+
               <source
                 media="(max-width: 768px)"
                 srcSet={getMobileBannerImage(heroBanner)}
@@ -375,8 +457,9 @@ function Home() {
 
               <img
                 src={getBannerImage(heroBanner)}
-                alt={heroBanner.title || "Adrian Collections"}
+                alt={heroBanner.title || "Mega Store"}
               />
+
             </picture>
 
             <div className="dynamic-hero-overlay"></div>
@@ -400,8 +483,11 @@ function Home() {
               )}
 
             </div>
+
           </section>
+
         ) : (
+
           <section className="street-hero">
 
             <div className="street-hero-overlay"></div>
@@ -446,6 +532,7 @@ function Home() {
             </div>
 
           </section>
+
         )}
 
         {/* =====================================
@@ -453,6 +540,7 @@ function Home() {
         ===================================== */}
 
         <section className="street-marquee">
+
           <div className="street-marquee-track">
             <span>BE BOLD</span>
             <span>✳</span>
@@ -466,6 +554,7 @@ function Home() {
             <span>✳</span>
             <span>OWN YOUR STYLE</span>
           </div>
+
         </section>
 
         {/* =====================================
@@ -473,9 +562,11 @@ function Home() {
         ===================================== */}
 
         {promotionalBanners.length > 0 && (
+
           <section className="home-promotional-banners">
 
             <div className="promotional-banner-heading">
+
               <p className="section-eyebrow">
                 DISCOVER MORE
               </p>
@@ -483,17 +574,20 @@ function Home() {
               <h2>
                 EXPLORE OUR <span>COLLECTIONS.</span>
               </h2>
+
             </div>
 
             <div className="promotional-banner-grid">
 
               {promotionalBanners.map((banner) => (
+
                 <article
                   className="promotional-banner"
                   key={banner.id}
                 >
 
                   <picture>
+
                     <source
                       media="(max-width: 600px)"
                       srcSet={getMobileBannerImage(banner)}
@@ -504,6 +598,7 @@ function Home() {
                       alt={banner.title || "Promotional collection"}
                       loading="lazy"
                     />
+
                   </picture>
 
                   <div className="promotional-banner-overlay"></div>
@@ -524,41 +619,69 @@ function Home() {
                   </div>
 
                 </article>
+
               ))}
 
             </div>
+
           </section>
+
         )}
 
         {/* =====================================
             PRODUCTS
         ===================================== */}
 
-        <section className="store-products" id="products">
+        <section
+          className="store-products"
+          id="products"
+        >
+
+          {/* PRODUCTS HEADING */}
 
           <div className="products-heading">
 
             <div>
+
               <p className="section-eyebrow">
+
                 {search.trim()
                   ? "SEARCH THE COLLECTION"
-                  : "CURATED FOR YOU"}
+                  : selectedCategory
+                    ? "EXPLORE THIS COLLECTION"
+                    : "CURATED FOR YOU"}
+
               </p>
 
               <h2>
+
                 {search.trim() ? (
+
                   <>
                     SEARCH <span>RESULTS</span>
                   </>
+
+                ) : selectedCategory ? (
+
+                  <>
+                    {selectedCategory.name.toUpperCase()}{" "}
+                    <span>COLLECTION.</span>
+                  </>
+
                 ) : (
+
                   <>
                     THE <span>COLLECTION.</span>
                   </>
+
                 )}
+
               </h2>
+
             </div>
 
             {!search.trim() && (
+
               <button
                 type="button"
                 className="view-all-button"
@@ -567,20 +690,51 @@ function Home() {
                 EXPLORE ALL
                 <FaArrowRight />
               </button>
+
             )}
 
           </div>
 
+          {/* ACTIVE CATEGORY FILTER */}
+
+          {selectedCategoryId && (
+
+            <div className="active-category-filter">
+
+              <span>
+                CATEGORY:{" "}
+                {selectedCategory?.name || "Selected category"}
+              </span>
+
+              <button
+                type="button"
+                onClick={clearCategoryFilter}
+                className="clear-category-filter"
+              >
+                VIEW ALL PRODUCTS
+                <FaTimes />
+              </button>
+
+            </div>
+
+          )}
+
           {/* LOADING */}
+
           {loading ? (
+
             <div className="store-message">
+
               <div className="street-loader"></div>
+
               <p>LOADING THE COLLECTION...</p>
+
             </div>
 
           ) : error ? (
 
             /* ERROR */
+
             <div className="store-error">
 
               <h3>SOMETHING WENT WRONG</h3>
@@ -599,23 +753,44 @@ function Home() {
 
           ) : filteredProducts.length === 0 ? (
 
-            /* EMPTY SEARCH */
+            /* EMPTY RESULTS */
+
             <div className="store-empty">
+
               <h3>NOTHING FOUND.</h3>
 
               <p>
-                {search.trim()
-                  ? "Try another search term."
-                  : "Our collection is being updated. Check back soon."}
+
+                {selectedCategoryId
+                  ? "There are currently no products in this category."
+                  : search.trim()
+                    ? "Try another search term."
+                    : "Our collection is being updated. Check back soon."}
+
               </p>
+
+              {selectedCategoryId && (
+
+                <button
+                  type="button"
+                  onClick={clearCategoryFilter}
+                  className="clear-category-filter"
+                >
+                  VIEW ALL PRODUCTS
+                </button>
+
+              )}
+
             </div>
 
           ) : (
 
             /* CATEGORY SECTIONS */
+
             <div className="category-sections">
 
               {categorySections.map((category) => (
+
                 <section
                   key={category.id}
                   id={`category-${category.id}`}
@@ -625,16 +800,25 @@ function Home() {
                   <div className="category-section-heading">
 
                     <div>
+
                       <p className="section-eyebrow">
                         EXPLORE THE COLLECTION
                       </p>
 
-                      <h2>{category.name}.</h2>
+                      <h2>
+                        {category.name}.
+                      </h2>
+
                     </div>
 
                     <span className="category-product-count">
-                      {String(category.products.length).padStart(2, "0")}{" "}
+
+                      {String(
+                        category.products.length
+                      ).padStart(2, "0")}{" "}
+
                       PRODUCTS
+
                     </span>
 
                   </div>
@@ -642,29 +826,38 @@ function Home() {
                   <div className="product-grid">
 
                     {category.products.map((product) => (
+
                       <ProductCard
                         key={product.id}
                         product={product}
                       />
+
                     ))}
 
                   </div>
 
                 </section>
+
               ))}
 
               {/* OTHER PRODUCTS */}
+
               {uncategorizedProducts.length > 0 && (
+
                 <section className="category-section">
 
                   <div className="category-section-heading">
 
                     <div>
+
                       <p className="section-eyebrow">
                         MORE TO EXPLORE
                       </p>
 
-                      <h2>OTHER PRODUCTS.</h2>
+                      <h2>
+                        OTHER PRODUCTS.
+                      </h2>
+
                     </div>
 
                   </div>
@@ -672,27 +865,39 @@ function Home() {
                   <div className="product-grid">
 
                     {uncategorizedProducts.map((product) => (
+
                       <ProductCard
                         key={product.id}
                         product={product}
                       />
+
                     ))}
 
                   </div>
 
                 </section>
+
               )}
 
               {/* NO CATEGORY MATCHES */}
+
               {categorySections.length === 0 &&
                 uncategorizedProducts.length === 0 && (
+
                   <div className="store-empty">
+
                     <h3>NO MATCHES FOUND.</h3>
-                    <p>Try another search term.</p>
+
+                    <p>
+                      Try another search term.
+                    </p>
+
                   </div>
+
                 )}
 
             </div>
+
           )}
 
         </section>
@@ -704,6 +909,7 @@ function Home() {
         <section className="street-cta">
 
           <div>
+
             <p className="section-eyebrow">
               YOUR STYLE. YOUR RULES.
             </p>
@@ -713,6 +919,7 @@ function Home() {
               <br />
               <span>SET THE TREND.</span>
             </h2>
+
           </div>
 
           <button

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+
 import {
   FaArrowLeft,
   FaArrowRight,
@@ -8,11 +9,20 @@ import {
   FaMinus,
   FaPlus,
   FaShoppingBag,
+  FaStar,
+  FaRegStar,
+  FaEdit,
 } from "react-icons/fa";
 
-import { getProducts } from "../../services/api";
+import {
+  getProducts,
+  getProductReviews,
+  submitProductReview,
+} from "../../services/api";
+
 import Navbar from "../../components/Navbar/Navbar";
 import { useCartStore } from "../../store/cartStore";
+import { useAuthStore } from "../../store/authStore";
 
 import "./ProductDetails.css";
 
@@ -38,6 +48,10 @@ function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  // =====================================
+  // PRODUCT STATE
+  // =====================================
+
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
 
@@ -50,10 +64,48 @@ function ProductDetails() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
 
+  // =====================================
+  // CART STORE
+  // =====================================
+
   const cartItems = useCartStore((state) => state.items);
   const addItem = useCartStore((state) => state.addItem);
 
-  // Fetch products from Laravel.
+  // =====================================
+  // AUTHENTICATION STORE
+  // =====================================
+
+  const customer = useAuthStore((state) => state.customer);
+
+  const isAuthenticated = useAuthStore(
+    (state) => state.isAuthenticated
+  );
+
+  // =====================================
+  // REVIEW STATE
+  // =====================================
+
+  const [reviews, setReviews] = useState([]);
+  const [myReview, setMyReview] = useState(null);
+
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewError, setReviewError] = useState("");
+
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState("");
+
+  const [editingReview, setEditingReview] = useState(false);
+
+  const [reviewPage, setReviewPage] = useState(1);
+  const [reviewPagination, setReviewPagination] = useState(null);
+
+  // =====================================
+  // FETCH PRODUCTS
+  // =====================================
+
   const fetchProducts = useCallback(
     async ({ showLoading = false } = {}) => {
       try {
@@ -74,6 +126,7 @@ function ProductDetails() {
         setProducts(productList);
       } catch (err) {
         console.error("Failed to load products:", err);
+
         setError("We could not load this product. Please try again.");
       } finally {
         if (showLoading) {
@@ -143,13 +196,19 @@ function ProductDetails() {
     };
   }, [fetchProducts]);
 
-  // Find the selected product.
+  // =====================================
+  // SELECTED PRODUCT
+  // =====================================
+
   const product = useMemo(
     () => products.find((item) => String(item.id) === String(id)),
     [products, id]
   );
 
-  // Find similar products.
+  // =====================================
+  // SIMILAR PRODUCTS
+  // =====================================
+
   const similarProducts = useMemo(() => {
     if (!product?.category?.id) {
       return [];
@@ -164,7 +223,10 @@ function ProductDetails() {
       .slice(0, 4);
   }, [products, product]);
 
-  // Product sizes returned by Laravel.
+  // =====================================
+  // PRODUCT SIZES
+  // =====================================
+
   const productSizes = useMemo(
     () => (Array.isArray(product?.sizes) ? product.sizes : []),
     [product]
@@ -172,7 +234,6 @@ function ProductDetails() {
 
   const hasSizes = productSizes.length > 0;
 
-  // Find the currently selected size.
   const selectedSizeOption = useMemo(
     () =>
       productSizes.find(
@@ -181,15 +242,12 @@ function ProductDetails() {
     [productSizes, selectedSize]
   );
 
-  // Total stock across all sizes, or normal product stock.
   const totalStock = normalizeStock(product?.stock_quantity);
 
-  // Stock available for the selected size.
   const selectedSizeStock = selectedSizeOption
     ? normalizeStock(selectedSizeOption.stock_quantity)
     : 0;
 
-  // Use the selected size's stock when sizes are available.
   const stock = hasSizes
     ? selectedSizeOption
       ? selectedSizeStock
@@ -204,12 +262,22 @@ function ProductDetails() {
     product.compare_at_price !== undefined &&
     Number(product.compare_at_price) > Number(product.price);
 
-  // Reset quantity, size and messages when switching products.
+  // =====================================
+  // RESET WHEN CHANGING PRODUCTS
+  // =====================================
+
   useEffect(() => {
     setQuantity(1);
     setSelectedSize("");
+
     setMessage("");
     setMessageType("");
+
+    setReviewPage(1);
+    setRating(0);
+    setReviewText("");
+    setEditingReview(false);
+    setReviewMessage("");
   }, [id]);
 
   // Keep quantity within available stock.
@@ -224,15 +292,191 @@ function ProductDetails() {
     );
   }, [stock]);
 
-  // Handle size selection.
+  // =====================================
+  // PRODUCT REVIEW FUNCTIONS
+  // =====================================
+
+  const fetchReviews = useCallback(async () => {
+    if (!id) return;
+
+    try {
+      setReviewsLoading(true);
+      setReviewError("");
+
+      const response = await getProductReviews(id, reviewPage);
+
+      const paginator = response.reviews;
+
+      setReviews(
+        Array.isArray(paginator?.data)
+          ? paginator.data
+          : []
+      );
+
+      setReviewPagination(paginator || null);
+
+      setMyReview(response.my_review || null);
+    } catch (err) {
+      console.error("Failed to load product reviews:", err);
+
+      setReviewError(
+        "Unable to load reviews. Please try again."
+      );
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, [id, reviewPage]);
+
+  // Load reviews when the product or review page changes.
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
+
+  // Prepare an existing review for editing.
+  function handleEditReview() {
+    if (!myReview) return;
+
+    setRating(Number(myReview.rating));
+    setReviewText(myReview.review || "");
+
+    setEditingReview(true);
+    setReviewMessage("");
+
+    document
+      .getElementById("product-review-form")
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+  }
+
+  // Cancel editing.
+  function cancelReviewEdit() {
+    setRating(0);
+    setReviewText("");
+
+    setEditingReview(false);
+    setReviewMessage("");
+  }
+
+  // Submit a review.
+  async function handleSubmitReview(event) {
+    event.preventDefault();
+
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    if (!rating) {
+      setReviewMessage("Please select a star rating.");
+      return;
+    }
+
+    try {
+      setSubmittingReview(true);
+      setReviewMessage("");
+
+      const response = await submitProductReview(id, {
+        rating,
+        review: reviewText.trim() || null,
+      });
+
+      setReviewMessage(
+        response.message || "Your review has been saved."
+      );
+
+      setEditingReview(false);
+
+      setRating(Number(response.review.rating));
+      setReviewText(response.review.review || "");
+
+      // Refresh reviews and the customer's review.
+      await fetchReviews();
+
+      // Update product rating in local product state.
+      setProducts((currentProducts) =>
+        currentProducts.map((item) =>
+          String(item.id) === String(id)
+            ? {
+                ...item,
+                average_rating: response.average_rating,
+                reviews_count: response.reviews_count,
+              }
+            : item
+        )
+      );
+    } catch (err) {
+      console.error("Review submission failed:", err);
+
+      const validationErrors = err.response?.data?.errors;
+
+      if (validationErrors) {
+        setReviewMessage(
+          Object.values(validationErrors).flat().join(" ")
+        );
+      } else {
+        setReviewMessage(
+          err.response?.data?.message ||
+            "Could not save your review. Please try again."
+        );
+      }
+    } finally {
+      setSubmittingReview(false);
+    }
+  }
+
+  // Display star ratings.
+  function renderStars(value, interactive = false, onChange = null) {
+    const selectedRating = Number(value) || 0;
+
+    return (
+      <div className="review-stars">
+        {[1, 2, 3, 4, 5].map((star) => {
+          const filled = star <= selectedRating;
+
+          if (interactive) {
+            return (
+              <button
+                key={star}
+                type="button"
+                className={`review-star-button ${
+                  filled ? "active" : ""
+                }`}
+                onClick={() => onChange(star)}
+                aria-label={`Rate ${star} out of 5`}
+                aria-pressed={filled}
+              >
+                {filled ? <FaStar /> : <FaRegStar />}
+              </button>
+            );
+          }
+
+          return (
+            <span
+              key={star}
+              className={filled ? "filled" : ""}
+            >
+              {filled ? <FaStar /> : <FaRegStar />}
+            </span>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // =====================================
+  // CART FUNCTIONS
+  // =====================================
+
   function handleSizeSelection(size) {
     setSelectedSize(size);
     setQuantity(1);
+
     setMessage("");
     setMessageType("");
   }
 
-  // Add product to cart.
   function addToCart() {
     if (!product) return;
 
@@ -268,7 +512,6 @@ function ProductDetails() {
       return;
     }
 
-    // A product with different sizes is treated as a separate cart item.
     const existingItem = cartItems.find(
       (item) =>
         String(item.id) === String(product.id) &&
@@ -299,13 +542,12 @@ function ProductDetails() {
         price: Number(product.price) || 0,
         photo: product.photo || null,
 
-        // Selected variant information.
         selected_size: hasSizes ? selectedSize : null,
+
         selected_size_id: hasSizes
           ? selectedSizeOption.id
           : null,
 
-        // Use the selected size's stock for cart validation.
         stock_quantity: currentStock,
       },
       selectedQuantity
@@ -327,7 +569,10 @@ function ProductDetails() {
     setQuantity((current) => Math.max(1, current - 1));
   }
 
-  // Loading screen.
+  // =====================================
+  // LOADING SCREEN
+  // =====================================
+
   if (loading) {
     return (
       <div className="product-details-page">
@@ -341,7 +586,10 @@ function ProductDetails() {
     );
   }
 
-  // Error screen.
+  // =====================================
+  // ERROR SCREEN
+  // =====================================
+
   if (error && products.length === 0) {
     return (
       <div className="product-details-page">
@@ -349,6 +597,7 @@ function ProductDetails() {
 
         <div className="product-details-message product-details-error">
           <h2>SOMETHING WENT WRONG</h2>
+
           <p>{error}</p>
 
           <button
@@ -365,7 +614,10 @@ function ProductDetails() {
     );
   }
 
-  // Product not found.
+  // =====================================
+  // PRODUCT NOT FOUND
+  // =====================================
+
   if (!product) {
     return (
       <div className="product-details-page">
@@ -383,6 +635,10 @@ function ProductDetails() {
       </div>
     );
   }
+
+  // =====================================
+  // MAIN PAGE
+  // =====================================
 
   return (
     <div className="product-details-page">
@@ -405,7 +661,10 @@ function ProductDetails() {
           <span>{product.name}</span>
         </nav>
 
-        {/* Product section */}
+        {/* =====================================
+            PRODUCT SECTION
+        ===================================== */}
+
         <section className="product-details-layout">
 
           {/* Product image */}
@@ -568,40 +827,42 @@ function ProductDetails() {
             )}
 
             {/* Quantity selector */}
-            {available && (!hasSizes || selectedSizeOption) && stock > 0 && (
-              <div className="product-quantity">
-                <label htmlFor="product-quantity">
-                  SELECT QUANTITY
-                </label>
+            {available &&
+              (!hasSizes || selectedSizeOption) &&
+              stock > 0 && (
+                <div className="product-quantity">
+                  <label htmlFor="product-quantity">
+                    SELECT QUANTITY
+                  </label>
 
-                <div className="product-quantity-controls">
-                  <button
-                    type="button"
-                    onClick={decreaseQuantity}
-                    disabled={quantity <= 1}
-                    aria-label="Decrease quantity"
-                  >
-                    <FaMinus />
-                  </button>
+                  <div className="product-quantity-controls">
+                    <button
+                      type="button"
+                      onClick={decreaseQuantity}
+                      disabled={quantity <= 1}
+                      aria-label="Decrease quantity"
+                    >
+                      <FaMinus />
+                    </button>
 
-                  <span
-                    id="product-quantity"
-                    aria-live="polite"
-                  >
-                    {quantity}
-                  </span>
+                    <span
+                      id="product-quantity"
+                      aria-live="polite"
+                    >
+                      {quantity}
+                    </span>
 
-                  <button
-                    type="button"
-                    onClick={increaseQuantity}
-                    disabled={quantity >= stock}
-                    aria-label="Increase quantity"
-                  >
-                    <FaPlus />
-                  </button>
+                    <button
+                      type="button"
+                      onClick={increaseQuantity}
+                      disabled={quantity >= stock}
+                      aria-label="Increase quantity"
+                    >
+                      <FaPlus />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Cart buttons */}
             <div className="product-details-buttons">
@@ -611,7 +872,8 @@ function ProductDetails() {
                 onClick={addToCart}
                 disabled={
                   !available ||
-                  (hasSizes && (!selectedSizeOption || selectedSizeStock < 1))
+                  (hasSizes &&
+                    (!selectedSizeOption || selectedSizeStock < 1))
                 }
               >
                 <FaShoppingBag />
@@ -652,7 +914,330 @@ function ProductDetails() {
           </div>
         </section>
 
-        {/* Similar products */}
+        {/* =====================================
+            CUSTOMER REVIEWS
+        ===================================== */}
+
+        <section className="product-reviews-section">
+
+          {/* Review heading */}
+          <div className="product-reviews-heading">
+            <div>
+              <p className="section-eyebrow">
+                CUSTOMER FEEDBACK
+              </p>
+
+              <h2>
+                RATINGS & REVIEWS<span>.</span>
+              </h2>
+            </div>
+
+            <div className="reviews-summary">
+              <div className="reviews-average">
+                {Number(product.average_rating || 0).toFixed(1)}
+              </div>
+
+              {renderStars(product.average_rating || 0)}
+
+              <p>
+                {product.reviews_count || 0} customer reviews
+              </p>
+            </div>
+          </div>
+
+          {/* Review form */}
+          <div
+            className="product-review-form-wrapper"
+            id="product-review-form"
+          >
+
+            {isAuthenticated ? (
+              <form
+                className="product-review-form"
+                onSubmit={handleSubmitReview}
+              >
+
+                <div className="review-form-heading">
+                  <div>
+                    <h3>
+                      {editingReview
+                        ? "EDIT YOUR REVIEW"
+                        : myReview
+                          ? "YOUR REVIEW"
+                          : "SHARE YOUR EXPERIENCE"}
+                    </h3>
+
+                    <p>
+                      Tell other customers what you think about this product.
+                    </p>
+                  </div>
+
+                  {myReview && !editingReview && (
+                    <button
+                      type="button"
+                      className="edit-review-button"
+                      onClick={handleEditReview}
+                    >
+                      <FaEdit /> EDIT REVIEW
+                    </button>
+                  )}
+                </div>
+
+                <label className="review-rating-label">
+                  YOUR RATING
+                </label>
+
+                {renderStars(
+                  rating,
+                  true,
+                  setRating
+                )}
+
+                <label
+                  htmlFor="product-review-text"
+                  className="review-comment-label"
+                >
+                  YOUR REVIEW (OPTIONAL)
+                </label>
+
+                <textarea
+                  id="product-review-text"
+                  value={reviewText}
+                  onChange={(event) =>
+                    setReviewText(event.target.value)
+                  }
+                  placeholder="Share your thoughts about this product..."
+                  maxLength={2000}
+                  rows={5}
+                />
+
+                <div className="review-character-count">
+                  {reviewText.length}/2000
+                </div>
+
+                {reviewMessage && (
+                  <p
+                    className="review-form-message"
+                    role="status"
+                  >
+                    {reviewMessage}
+                  </p>
+                )}
+
+                <div className="review-form-actions">
+
+                  <button
+                    type="submit"
+                    className="submit-review-button"
+                    disabled={submittingReview}
+                  >
+                    {submittingReview
+                      ? "SAVING..."
+                      : editingReview
+                        ? "UPDATE REVIEW"
+                        : "SUBMIT REVIEW"}
+
+                    {!submittingReview && <FaArrowRight />}
+                  </button>
+
+                  {editingReview && (
+                    <button
+                      type="button"
+                      className="cancel-review-button"
+                      onClick={cancelReviewEdit}
+                    >
+                      CANCEL
+                    </button>
+                  )}
+
+                </div>
+              </form>
+            ) : (
+              <div className="review-login-prompt">
+
+                <div>
+                  <h3>HAVE SOMETHING TO SAY?</h3>
+
+                  <p>
+                    Log in to rate this product and share your experience.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => navigate("/login")}
+                >
+                  LOGIN TO WRITE A REVIEW <FaArrowRight />
+                </button>
+
+              </div>
+            )}
+
+          </div>
+
+          {/* Reviews list */}
+          <div className="product-reviews-list">
+
+            <div className="reviews-list-heading">
+              <h3>CUSTOMER REVIEWS</h3>
+
+              <span>
+                {product.reviews_count || 0} TOTAL
+              </span>
+            </div>
+
+            {reviewsLoading ? (
+              <div className="reviews-loading">
+                LOADING REVIEWS...
+              </div>
+            ) : reviewError ? (
+              <div className="reviews-empty">
+                <p>{reviewError}</p>
+
+                <button
+                  type="button"
+                  onClick={fetchReviews}
+                >
+                  TRY AGAIN
+                </button>
+              </div>
+            ) : reviews.length === 0 ? (
+              <div className="reviews-empty">
+
+                <div className="empty-review-stars">
+                  <FaRegStar />
+                  <FaRegStar />
+                  <FaRegStar />
+                  <FaRegStar />
+                  <FaRegStar />
+                </div>
+
+                <h3>NO REVIEWS YET</h3>
+
+                <p>
+                  Be the first customer to review this product.
+                </p>
+
+              </div>
+            ) : (
+              <>
+                {reviews.map((item) => {
+                  const reviewerName = [
+                    item.customer?.first_name,
+                    item.customer?.last_name,
+                  ]
+                    .filter(Boolean)
+                    .join(" ") || "Customer";
+
+                  const isOwnReview =
+                    String(item.customer_id) === String(customer?.id);
+
+                  return (
+                    <article
+                      className="product-review-card"
+                      key={item.id}
+                    >
+
+                      <div className="review-card-top">
+
+                        <div className="reviewer-avatar">
+                          {reviewerName.charAt(0).toUpperCase()}
+                        </div>
+
+                        <div className="reviewer-information">
+                          <h4>{reviewerName}</h4>
+
+                          <span>
+                            {item.created_at
+                              ? new Date(
+                                  item.created_at
+                                ).toLocaleDateString("en-UG", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : ""}
+                          </span>
+                        </div>
+
+                        {isOwnReview && (
+                          <span className="your-review-badge">
+                            YOUR REVIEW
+                          </span>
+                        )}
+
+                      </div>
+
+                      {renderStars(item.rating)}
+
+                      {item.review ? (
+                        <p className="review-card-comment">
+                          {item.review}
+                        </p>
+                      ) : (
+                        <p className="review-card-no-comment">
+                          No written comment provided.
+                        </p>
+                      )}
+
+                      {isOwnReview && (
+                        <button
+                          type="button"
+                          className="review-card-edit"
+                          onClick={handleEditReview}
+                        >
+                          <FaEdit /> EDIT YOUR REVIEW
+                        </button>
+                      )}
+
+                    </article>
+                  );
+                })}
+
+                {/* Review pagination */}
+                {reviewPagination &&
+                  reviewPagination.last_page > 1 && (
+                    <div className="reviews-pagination">
+
+                      <button
+                        type="button"
+                        disabled={!reviewPagination.prev_page_url}
+                        onClick={() =>
+                          setReviewPage((page) =>
+                            Math.max(1, page - 1)
+                          )
+                        }
+                      >
+                        <FaArrowLeft /> PREVIOUS
+                      </button>
+
+                      <span>
+                        PAGE {reviewPagination.current_page} OF{" "}
+                        {reviewPagination.last_page}
+                      </span>
+
+                      <button
+                        type="button"
+                        disabled={!reviewPagination.next_page_url}
+                        onClick={() =>
+                          setReviewPage((page) => page + 1)
+                        }
+                      >
+                        NEXT <FaArrowRight />
+                      </button>
+
+                    </div>
+                  )}
+              </>
+            )}
+
+          </div>
+        </section>
+
+        {/* =====================================
+            SIMILAR PRODUCTS
+        ===================================== */}
+
         {similarProducts.length > 0 && (
           <section className="similar-products">
 
@@ -681,6 +1266,7 @@ function ProductDetails() {
                     className="similar-product-card"
                   >
                     <div className="similar-product-image-wrapper">
+
                       {item.photo ? (
                         <img
                           src={item.photo}
@@ -698,6 +1284,7 @@ function ProductDetails() {
                           SOLD OUT
                         </span>
                       )}
+
                     </div>
 
                     <div className="similar-product-info">

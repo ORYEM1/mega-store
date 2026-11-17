@@ -50,6 +50,23 @@ function formatPrice(price) {
   }).format(Number(price) || 0);
 }
 
+
+// Get the product image URL.
+function getProductImage(item) {
+  const image = item.photo || item.image || item.product?.photo;
+
+  if (!image) return "/images/product-placeholder.png";
+
+  if (image.startsWith("http://") || image.startsWith("https://")) {
+    return image;
+  }
+
+  if (image.startsWith("/")) {
+    return `http://192.168.10.246:8000${image}`;
+  }
+
+  return `http://192.168.10.246:8000/storage/${image}`;
+}
 // Normalize Ugandan phone numbers to 2567XXXXXXXX.
 function normalizeUgandanPhone(phone) {
   const cleaned = phone.replace(/[\s-]/g, "");
@@ -911,114 +928,130 @@ function Checkout() {
               )}
             </section>
 
-            {/* Order summary */}
+            {/* Right section - Order Summary */}
             <aside className="checkout-summary">
-              <p className="checkout-eyebrow">FINAL STEP</p>
 
-              <h2>YOUR ORDER.</h2>
+              <div className="checkout-summary-heading">
+                <FaShoppingBag />
+                <h2>YOUR ORDER</h2>
+              </div>
 
+              {/* Products */}
               <div className="checkout-summary-items">
-                   {cart.map((item) => (
-                     <div
-                       key={
-                         item.cart_key ||
-                         `${item.id}::${item.selected_size || ""}`
-                       }
-                     >
-                       <div className="checkout-summary-product">
-                         <span className="checkout-summary-quantity">
-                           {item.quantity}
-                         </span>
-                     
-                         <span className="checkout-summary-name">
-                           {item.name}
-                     
-                           {item.selected_size && (
-                             <small className="checkout-summary-size">
-                               SIZE: {item.selected_size}
-                             </small>
-                           )}
-                         </span>
-                       </div>
-                         
-                       <strong>
-                         {formatPrice(
-                           Number(item.price || 0) *
-                             Number(item.quantity || 0)
-                         )}
-                       </strong>
-                     </div>
-                   ))}
+                {cart.map((item) => {
+                  const itemPrice = Number(item.price || 0);
+                  const quantity = Number(item.quantity || 0);
+                  const lineTotal = itemPrice * quantity;
+                
+                  return (
+                    <div
+                      className="checkout-summary-product-card"
+                      key={
+                        item.cart_key ||
+                        `${item.id}::${item.selected_size || ""}`
+                      }
+                    >
+                      <div className="checkout-summary-image">
+                        <img
+                          src={getProductImage(item)}
+                          alt={item.name}
+                          onError={(event) => {
+                            event.currentTarget.src =
+                              "/images/product-placeholder.png";
+                          }}
+                        />
+                      </div>
+                        
+                      <div className="checkout-summary-product-info">
+                        <h3>{item.name}</h3>
+                        
+                        {item.selected_size && (
+                          <p className="checkout-summary-size">
+                            Size: <strong>{item.selected_size}</strong>
+                          </p>
+                        )}
+
+                        {item.color && (
+                          <p className="checkout-summary-detail">
+                            Color: {item.color}
+                          </p>
+                        )}
+
+                        <p className="checkout-summary-detail">
+                          Quantity: {quantity}
+                        </p>
+                      
+                        <p className="checkout-summary-unit-price">
+                          Unit price: {formatPrice(itemPrice)}
+                        </p>
+                      
+                        <strong className="checkout-summary-line-total">
+                          {formatPrice(lineTotal)}
+                        </strong>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-
-              <div className="checkout-summary-row">
-                <span>ITEMS</span>
-
-                <span>
-                  {cart.reduce(
-                    (total, item) =>
-                      total + Number(item.quantity || 0),
-                    0
-                  )}
-                </span>
+              
+              {/* Totals */}
+              <div className="checkout-summary-totals">
+              
+                <div className="checkout-total-row">
+                  <span>Subtotal</span>
+                  <strong>{formatPrice(subtotal)}</strong>
+                </div>
+              
+                <div className="checkout-total-row">
+                  <span>Delivery</span>
+                  <strong>To be confirmed</strong>
+                </div>
+              
+                <div className="checkout-grand-total">
+                  <span>TOTAL</span>
+                  <strong>{formatPrice(subtotal)}</strong>
+                </div>
+              
               </div>
-
-              <div className="checkout-summary-row">
-                <span>SUBTOTAL</span>
-                <span>{formatPrice(subtotal)}</span>
-              </div>
-
-              <div className="checkout-summary-row checkout-summary-total">
-                <span>TOTAL</span>
-                <span>{formatPrice(subtotal)}</span>
-              </div>
-
-              <p className="checkout-summary-note">
-                The final order total will be calculated and
-                validated by the server. Delivery charges, if
-                applicable, may be confirmed separately.
-              </p>
-
+              
+              {/* Stock warning */}
               {hasStockIssue && (
-                <div className="checkout-stock-warning">
+                <div className="checkout-error">
                   <FaExclamationCircle />
-
                   <span>
-                    Please review your cart. Some products have
-                    insufficient stock.
+                    Some products have insufficient stock. Please review your cart.
                   </span>
                 </div>
               )}
 
+              {/* Place Order Button */}
               <button
                 type="submit"
-                className="checkout-submit-button"
-                disabled={submitting || hasStockIssue}
+                className="checkout-place-order-button"
+                disabled={submitting || hasStockIssue || cart.length === 0}
               >
                 {submitting ? (
-                  "PLACING ORDER..."
+                  "PROCESSING YOUR ORDER..."
                 ) : (
                   <>
-                    PLACE ORDER <FaArrowRight />
+                    PLACE ORDER
+                    <FaArrowRight />
                   </>
                 )}
               </button>
-
-              <Link
-                to="/cart"
-                className="checkout-back-link"
-              >
+              
+              <p className="checkout-secure-message">
+                Please confirm your delivery and payment details before placing your order.
+              </p>
+              
+              <Link to="/cart" className="checkout-back-to-cart">
                 <FaArrowLeft />
-                RETURN TO SHOPPING BAG
+                BACK TO SHOPPING BAG
               </Link>
-
-              <div className="checkout-secure-note">
-                <FaShoppingBag />
-                <span>THANK YOU FOR SHOPPING WITH ADRIAN.</span>
-              </div>
+              
             </aside>
-          </form>
-        )}
+            </form>
+         )}
       </main>
     </div>
   );

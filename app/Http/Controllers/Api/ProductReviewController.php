@@ -60,9 +60,9 @@ class ProductReviewController extends Controller
     }
 
     /**
-     * Return reviews for a product.
+     * Return product reviews and the authenticated customer's review.
      */
-    public function index(Product $product): JsonResponse
+    public function index(Request $request, Product $product): JsonResponse
     {
         if (!$product->is_published) {
             return response()->json([
@@ -75,6 +75,17 @@ class ProductReviewController extends Controller
             ->latest()
             ->paginate(10);
 
-        return response()->json($reviews);
+        $myReview = null;
+
+        if ($request->user()) {
+            $myReview = $product->reviews()
+                ->where('customer_id', $request->user()->id)
+                ->first();
+        }
+
+        return response()->json([
+            'reviews' => $reviews,
+            'my_review' => $myReview,
+        ]);
     }
 }

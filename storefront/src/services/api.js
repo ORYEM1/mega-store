@@ -101,6 +101,18 @@ export const getAuthenticatedCustomer = async () => {
   return response.data;
 };
 
+// Fetch authenticated customer's order history.
+export const getCustomerOrders = async (page = 1) => {
+  const response = await api.get(`/orders?page=${page}`);
+  return response.data;
+};
+
+// Fetch details of one customer's order.
+export const getCustomerOrder = async (orderId) => {
+  const response = await api.get(`/orders/${orderId}`);
+  return response.data;
+};
+
 // Log out a customer.
 export const logoutCustomer = async () => {
   try {
@@ -149,6 +161,25 @@ export const sendChatMessage = async (token, body) => {
   const response = await api.post(
     `/chat/conversations/${token}/messages`,
     { body }
+  );
+
+  return response.data;
+};
+
+// Fetch reviews for a product.
+export const getProductReviews = async (productId, page = 1) => {
+  const response = await api.get(
+    `/products/${productId}/reviews?page=${page}`
+  );
+
+  return response.data;
+};
+
+// Submit a new review or update the customer's existing review.
+export const submitProductReview = async (productId, reviewData) => {
+  const response = await api.post(
+    `/products/${productId}/reviews`,
+    reviewData
   );
 
   return response.data;

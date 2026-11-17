@@ -10,6 +10,7 @@ function formatPrice(price) {
   }).format(Number(price) || 0);
 }
 
+
 function ProductCard({ product }) {
   const navigate = useNavigate();
 
@@ -18,6 +19,8 @@ function ProductCard({ product }) {
 
   const price = Number(product.price) || 0;
   const comparePrice = Number(product.compare_at_price) || 0;
+
+
 
   const hasDiscount =
     product.compare_at_price !== null &&
@@ -28,6 +31,8 @@ function ProductCard({ product }) {
   const discountPercentage = hasDiscount
     ? Math.round(((comparePrice - price) / comparePrice) * 100)
     : 0;
+
+  
 
   function openProductDetails() {
     navigate(`/products/${product.id}`);

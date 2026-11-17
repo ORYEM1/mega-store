@@ -220,3 +220,25 @@
         height: min(500px, 75vh);
     }
 }
+/* Mobile */
+@media (max-width: 768px) {
+    .chat-widget {
+        right: 12px;
+        bottom: calc(85px + env(safe-area-inset-bottom));
+    }
+
+    .chat-window {
+        width: calc(100vw - 24px);
+        height: min(500px, 65vh);
+    }
+
+    .chat-toggle {
+        padding: 12px 17px;
+        gap: 9px;
+        font-size: 12px;
+    }
+
+    .chat-toggle svg {
+        font-size: 19px;
+    }
+}

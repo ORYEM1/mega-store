@@ -1,122 +1,221 @@
+/* =========================================
+   ORDER SUCCESS PAGE
+========================================= */
+
 .order-success-page {
-  min-height: 70vh;
+  min-height: 80vh;
+  width: 100%;
   display: flex;
-  justify-content: center;
+  justify-self: center;
   align-items: center;
-  padding: 40px 20px;
-  background: #f8fafc;
+  padding: 50px 20px;
+  background: #0b0b0b;
+  color: #ffffff;
 }
+
+/* =========================================
+   SUCCESS CARD
+========================================= */
 
 .success-card {
   width: 100%;
   max-width: 520px;
-  padding: 40px 30px;
+  padding: 45px 35px;
   text-align: center;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: #151515;
+  border: 1px solid #292929;
+  border-radius: 16px;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.35);
 }
 
+/* =========================================
+   SUCCESS ICON
+========================================= */
+
 .success-icon {
-  width: 76px;
-  height: 76px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 24px;
+  margin: 0 auto 25px;
   border-radius: 50%;
-  background: #dcfce7;
-  color: #15803d;
+  background: rgba(198, 255, 0, 0.12);
+  border: 2px solid #c6ff00;
+  color: #c6ff00;
   font-size: 42px;
   font-weight: bold;
 }
 
+/* =========================================
+   HEADING
+========================================= */
+
 .success-card h1 {
   margin: 0 0 16px;
-  color: #166534;
-  font-size: 28px;
+  color: #c6ff00;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  letter-spacing: 1px;
 }
 
+/* =========================================
+   SUCCESS MESSAGE
+========================================= */
+
 .success-message {
-  margin-bottom: 25px;
-  color: #475569;
-  line-height: 1.7;
+  margin: 0 0 25px;
+  color: #b5b5b5;
+  font-size: 15px;
+  line-height: 1.8;
 }
+
+/* =========================================
+   ORDER REFERENCE
+========================================= */
 
 .order-reference {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 18px;
-  margin-bottom: 20px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 8px;
-  background: #f8fafc;
+  gap: 10px;
+  padding: 20px;
+  margin-bottom: 22px;
+  border: 1px dashed #555;
+  border-radius: 10px;
+  background: #1d1d1d;
 }
 
 .order-reference span {
-  color: #64748b;
-  font-size: 14px;
+  color: #999;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .order-reference strong {
-  color: #0f172a;
-  font-size: 20px;
+  color: #c6ff00;
+  font-size: 21px;
+  font-weight: 800;
   overflow-wrap: anywhere;
 }
 
+/* =========================================
+   SUCCESS NOTE
+========================================= */
+
 .success-note {
-  color: #64748b;
+  margin: 0;
+  color: #999;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.7;
 }
+
+/* =========================================
+   ACTION BUTTONS
+========================================= */
 
 .success-actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 28px;
+  gap: 13px;
+  margin-top: 30px;
 }
 
 .continue-shopping,
 .home-button {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 13px 18px;
-  border: none;
-  border-radius: 7px;
+  min-height: 48px;
+  padding: 13px 0px;
+  border: 1px solid transparent;
+  border-radius: 8px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.25s ease;
 }
 
+/* Continue Shopping */
+
 .continue-shopping {
-  background: #111827;
-  color: #ffffff;
+  background: #c6ff00;
+  color: #080808;
 }
 
 .continue-shopping:hover {
-  background: #374151;
+  background: #b2e600;
+  transform: translateY(-2px);
 }
 
+/* Home Button */
+
 .home-button {
-  background: #e2e8f0;
-  color: #1e293b;
+  background: #222;
+  border-color: #383838;
+  color: #ffffff;
 }
 
 .home-button:hover {
-  background: #cbd5e1;
+  background: #303030;
+  border-color: #c6ff00;
+  color: #c6ff00;
+  transform: translateY(-2px);
 }
 
-@media (max-width: 480px) {
+/* =========================================
+   MOBILE RESPONSIVENESS
+========================================= */
+
+@media (max-width: 600px) {
+  .order-success-page {
+    min-height: 75vh;
+    padding: 30px 15px;
+  }
+
   .success-card {
-    padding: 30px 20px;
+    max-width: 100%;
+    padding: 35px 22px;
+    border-radius: 12px;
+  }
+
+  .success-icon {
+    width: 70px;
+    height: 70px;
+    font-size: 36px;
+    margin-bottom: 20px;
   }
 
   .success-card h1 {
-    font-size: 24px;
+    font-size: 30px;
+  }
+
+  .success-message {
+    font-size: 14px;
+  }
+
+  .order-reference {
+    padding: 17px 12px;
+  }
+
+  .order-reference strong {
+    font-size: 18px;
+  }
+
+  .success-actions {
+    margin-top: 25px;
+  }
+}
+
+@media (max-width: 360px) {
+  .success-card {
+    padding: 28px 16px;
+  }
+
+  .success-card h1 {
+    font-size: 27px;
   }
 }

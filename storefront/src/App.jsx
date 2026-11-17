@@ -11,10 +11,13 @@ import OrderSuccess from "./pages/OrderSuccess/OrderSuccess";
 import PaymentPending from "./pages/PaymentPending/PaymentPending";
 import SellerLogin from "./pages/Seller/Login/SellerLogin";
 import SellerRegister from "./pages/Seller/Register/SellerRegister";
+import Account from "./pages/Account/Account";
+import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop/>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
@@ -30,6 +33,7 @@ function App() {
         />
         <Route path="/seller/login" element={<SellerLogin />} />
         <Route path="/seller/register" element={<SellerRegister />} />
+        <Route path="/account" element={<Account/>}/>
       </Routes>
 
       {/* Live chat available across all pages */}
