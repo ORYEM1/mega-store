@@ -36,14 +36,13 @@
   text-align: left;
   cursor: pointer;
 }
-
 .product-image-container {
-  height: 250px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   background: #202020;
   position: relative;
   overflow: hidden;
 }
-
 .product-image {
   display: block;
   width: 100%;
@@ -313,9 +312,6 @@
 ========================================= */
 
 @media (max-width: 768px) {
-    .product-image-container {
-        height: 260px;
-    }
 
     .product-card-content {
         padding: 14px;
@@ -336,9 +332,6 @@
 }
 
 @media (max-width: 480px) {
-    .product-image-container {
-        height: 280px;
-    }
 
     .product-card-content {
         padding: 15px;

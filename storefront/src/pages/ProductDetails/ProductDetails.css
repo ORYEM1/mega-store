@@ -1110,6 +1110,7 @@
   resize: vertical;
   font-family: inherit;
   font-size: 14px;
+  justify-self:center;
 }
 
 .product-review-form textarea:focus {

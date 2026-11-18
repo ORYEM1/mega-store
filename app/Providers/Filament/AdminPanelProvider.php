@@ -42,10 +42,8 @@ class AdminPanelProvider extends PanelProvider
             ])
 
             ->assets([
-                Css::make(
-                    'order-details',
-                    resource_path('css/filament/orders/view-orders.css')
-                ),
+                Css::make('order-details')
+                    ->relativePublicPath('css/filament/orders/view-orders.css'),
             ])
 
 

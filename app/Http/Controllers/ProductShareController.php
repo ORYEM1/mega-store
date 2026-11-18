@@ -13,32 +13,47 @@ class ProductShareController extends Controller
             ->where('is_published', true)
             ->findOrFail($id);
 
-        $title = htmlspecialchars(
-            $product->name . ' | Mega Store',
-            ENT_QUOTES,
-            'UTF-8'
-        );
+        // Product information.
+        $title = $product->name . ' | Mega Store';
 
-        $description = htmlspecialchars(
-            'UGX ' . number_format((float) $product->price)
-                . ' - ' . ($product->description ?: $product->name),
-            ENT_QUOTES,
-            'UTF-8'
-        );
+        $description = $product->description
+            ?: 'Shop ' . $product->name . ' at Mega Store.';
 
+        $description = preg_replace('/\s+/', ' ', $description);
+        $description = mb_substr($description, 0, 160);
+
+        // Product image.
         $image = $product->photo
             ? asset('storage/' . $product->photo)
             : asset('images/default-product.jpg');
 
-        $url = url('/share/products/' . $product->id);
+        // Public URLs.
+        $shareUrl = url('/share/products/' . $product->id);
+        $productUrl = url('/products/' . $product->id);
 
-        $frontendUrl = url('/products/' . $product->id);
+        // Escape dynamic values before inserting them into HTML.
+        $title = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
+        $description = htmlspecialchars(
+            $description,
+            ENT_QUOTES,
+            'UTF-8'
+        );
 
         $image = htmlspecialchars($image, ENT_QUOTES, 'UTF-8');
-        $url = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
+        $productUrl = htmlspecialchars(
+            $productUrl,
+            ENT_QUOTES,
+            'UTF-8'
+        );
 
-        $frontendUrl = htmlspecialchars(
-            $frontendUrl,
+        $shareUrl = htmlspecialchars(
+            $shareUrl,
+            ENT_QUOTES,
+            'UTF-8'
+        );
+
+        $price = htmlspecialchars(
+            (string) $product->price,
             ENT_QUOTES,
             'UTF-8'
         );
@@ -48,37 +63,42 @@ class ProductShareController extends Controller
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>{$title}</title>
 
     <meta name="description" content="{$description}">
+    <meta name="robots" content="noindex, follow">
 
+    <link rel="canonical" href="{$productUrl}">
+
+    <!-- Open Graph -->
     <meta property="og:type" content="product">
+    <meta property="og:site_name" content="Mega Store">
     <meta property="og:title" content="{$title}">
     <meta property="og:description" content="{$description}">
     <meta property="og:image" content="{$image}">
-    <meta property="og:url" content="{$url}">
+    <meta property="og:image:alt" content="{$title}">
+    <meta property="og:url" content="{$productUrl}">
 
-    <meta property="product:price:amount"
-          content="{$product->price}">
+    <!-- Product information -->
+    <meta property="product:price:amount" content="{$price}">
+    <meta property="product:price:currency" content="UGX">
 
-    <meta property="product:price:currency"
-          content="UGX">
-
+    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{$title}">
     <meta name="twitter:description" content="{$description}">
     <meta name="twitter:image" content="{$image}">
 
-    <meta http-equiv="refresh" content="0;url={$frontendUrl}">
+    <!-- Redirect customers to the React product page -->
+    <meta http-equiv="refresh" content="2;url={$productUrl}">
 </head>
 
 <body>
-    <p>Redirecting to product...</p>
+    <p>Redirecting to Mega Store...</p>
 
-    <a href="{$frontendUrl}">View product</a>
+    <a href="{$productUrl}">View product</a>
 </body>
 </html>
 HTML;

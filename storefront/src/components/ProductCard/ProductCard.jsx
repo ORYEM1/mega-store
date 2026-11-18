@@ -54,6 +54,9 @@ function ProductCard({ product }) {
               alt={product.name}
               className="product-image"
               loading="lazy"
+              decoding="async"
+              width="600"
+              height="600"
             />
           ) : (
             <div className="product-image-placeholder">

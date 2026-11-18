@@ -23,7 +23,7 @@ class OrderItemResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'OrderItem';
 
-    protected static ?string $cluster = SalesCluster::class;
+    //protected static ?string $cluster = SalesCluster::class;
 
     public static function form(Schema $schema): Schema
     {

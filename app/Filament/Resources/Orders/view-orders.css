@@ -17,6 +17,7 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
+    align-items: stretch;
 }
 
 .order-info-card,
@@ -24,8 +25,9 @@
 .order-notes-card {
     background: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 12px;
+    border-radius: 14px;
     overflow: hidden;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 3%);
 }
 
 .order-info-card {
@@ -34,9 +36,9 @@
 
 .order-card-title {
     font-size: 17px;
-    font-weight: 700;
+    font-weight: 800;
     color: #111827;
-    margin-bottom: 20px;
+    margin-bottom: 22px;
 }
 
 /* =========================================
@@ -46,26 +48,29 @@
 .order-info-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 17px;
 }
 
 .order-info-row {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     gap: 16px;
 }
 
 .order-info-label {
     color: #6b7280;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 500;
+    flex-shrink: 0;
 }
 
 .order-info-value {
     color: #111827;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
     text-align: right;
+    overflow-wrap: anywhere;
 }
 
 /* =========================================
@@ -75,11 +80,13 @@
 .order-status {
     display: inline-flex;
     align-items: center;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 800;
     text-transform: capitalize;
+    white-space: nowrap;
 }
 
 .order-status-pending {
@@ -113,11 +120,12 @@
 }
 
 .order-shipping-address p {
-    margin-top: 8px;
+    margin-top: 9px;
     color: #111827;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
-    line-height: 1.6;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
 }
 
 /* =========================================
@@ -128,13 +136,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 22px 24px;
+    padding: 24px;
     border-bottom: 1px solid #e5e7eb;
 }
 
 .order-items-title {
     font-size: 18px;
-    font-weight: 700;
+    font-weight: 800;
     color: #111827;
 }
 
@@ -145,7 +153,7 @@
 }
 
 /* =========================================
-   ORDER ITEMS TABLE
+   ORDER TABLE
 ========================================= */
 
 .order-table-wrapper {
@@ -156,7 +164,7 @@
 .order-items-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 650px;
+    min-width: 760px;
 }
 
 .order-items-table thead {
@@ -166,18 +174,29 @@
 .order-items-table th {
     padding: 16px 20px;
     color: #6b7280;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     white-space: nowrap;
+    text-align: left;
+}
+
+.order-items-table th:nth-child(3) {
+    text-align: center;
+}
+
+.order-items-table th:nth-child(4),
+.order-items-table th:nth-child(5) {
+    text-align: right;
 }
 
 .order-items-table td {
-    padding: 18px 20px;
+    padding: 16px 20px;
     color: #374151;
-    font-size: 14px;
+    font-size: 13px;
     border-top: 1px solid #e5e7eb;
+    vertical-align: middle;
 }
 
 .order-items-table tbody tr {
@@ -188,34 +207,101 @@
     background: #f9fafb;
 }
 
-.order-product-name {
-    font-weight: 700;
-    color: #111827 !important;
+/* =========================================
+   PRODUCT IMAGE AND INFORMATION
+========================================= */
+
+.order-product-cell {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 240px;
 }
 
+.order-product-image {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    object-fit: cover;
+    border-radius: 9px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    display: block;
+}
+
+.order-product-image-placeholder {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+}
+
+.order-product-image-placeholder span {
+    font-size: 23px;
+    font-weight: 900;
+    color: #d97706;
+}
+
+.order-product-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.order-product-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: #111827 !important;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.order-product-id {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+/* =========================================
+   SIZE
+========================================= */
+
 .order-product-size {
-    display: inline-block;
-    padding: 5px 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    padding: 6px 11px;
     background: #f3f4f6;
     border-radius: 6px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
+    color: #374151;
 }
+
+/* =========================================
+   QUANTITY AND PRICES
+========================================= */
 
 .order-quantity {
     text-align: center;
-    font-weight: 600;
+    font-weight: 800;
 }
 
-.order-price {
+.order-price,
+.order-item-subtotal {
     text-align: right;
     white-space: nowrap;
 }
 
 .order-item-subtotal {
-    text-align: right;
-    font-weight: 700;
-    white-space: nowrap;
+    font-weight: 800;
+    color: #111827 !important;
 }
 
 /* =========================================
@@ -240,11 +326,11 @@
 
 .order-totals-inner {
     width: 100%;
-    max-width: 350px;
+    max-width: 360px;
     margin-left: auto;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 17px;
 }
 
 .order-total-row {
@@ -256,17 +342,19 @@
 
 .order-total-label {
     color: #6b7280;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .order-total-value {
     color: #111827;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 800;
+    white-space: nowrap;
 }
 
 .order-grand-total {
-    padding-top: 16px;
+    padding-top: 17px;
     border-top: 1px solid #e5e7eb;
 }
 
@@ -274,7 +362,7 @@
 .order-grand-total .order-total-value {
     color: #d97706;
     font-size: 18px;
-    font-weight: 800;
+    font-weight: 900;
 }
 
 /* =========================================
@@ -287,8 +375,10 @@
 
 .order-notes-content {
     color: #4b5563;
-    font-size: 14px;
-    line-height: 1.7;
+    font-size: 13px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 /* =========================================
@@ -334,13 +424,37 @@
     color: #e5e7eb;
 }
 
+.dark .order-product-image,
+.dark .order-product-image-placeholder {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+.dark .order-product-image-placeholder span {
+    color: #c6ff00;
+}
+
 .dark .order-notes-content {
     color: #d1d5db;
+}
+
+.dark .order-product-id {
+    color: #9ca3af;
 }
 
 /* =========================================
    RESPONSIVE DESIGN
 ========================================= */
+
+@media (max-width: 1024px) {
+    .order-info-grid {
+        gap: 16px;
+    }
+
+    .order-info-card {
+        padding: 20px;
+    }
+}
 
 @media (max-width: 768px) {
     .order-info-grid {
@@ -359,11 +473,18 @@
 
     .order-items-table th,
     .order-items-table td {
-        padding: 14px;
+        padding: 13px;
     }
 
     .order-totals {
         padding: 18px;
+    }
+
+    .order-product-image,
+    .order-product-image-placeholder {
+        width: 54px;
+        height: 54px;
+        min-width: 54px;
     }
 }
 
@@ -374,11 +495,15 @@
 
     .order-info-label,
     .order-info-value {
-        font-size: 13px;
+        font-size: 12px;
     }
 
     .order-grand-total .order-total-label,
     .order-grand-total .order-total-value {
         font-size: 16px;
+    }
+
+    .order-totals-inner {
+        max-width: 100%;
     }
 }

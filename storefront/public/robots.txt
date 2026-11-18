@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# Private customer pages
+Disallow: /account
+Disallow: /cart
+Disallow: /checkout
+Disallow: /order-success
+Disallow: /payment-pending
+Disallow: /login
+Disallow: /register
+
+# Seller pages
+Disallow: /seller/
+
+# API and administration
+Disallow: /api/
+Disallow: /admin/
+
+# Sitemap
+#Sitemap: https://YOUR-DOMAIN.com/sitemap.xml

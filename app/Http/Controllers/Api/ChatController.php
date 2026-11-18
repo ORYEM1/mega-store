@@ -7,12 +7,13 @@ use App\Models\ChatConversation;
 use App\Events\ChatMessageSent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ChatController extends Controller
 {
     /**
-     * Create a new customer conversation.
+     * Create or resume a customer conversation.
      */
     public function createConversation(Request $request): JsonResponse
     {
@@ -20,24 +21,66 @@ class ChatController extends Controller
             'guest_name' => ['required', 'string', 'max:255'],
             'guest_email' => ['nullable', 'email', 'max:255'],
             'subject' => ['nullable', 'string', 'max:255'],
+            'token' => ['nullable', 'string', 'size:64'],
         ]);
 
-        $conversation = ChatConversation::create([
-            'guest_name' => $validated['guest_name'],
-            'guest_email' => $validated['guest_email'] ?? null,
-            'subject' => $validated['subject'] ?? 'Customer Support',
-            'status' => 'open',
-        ]);
+        // Resolve an authenticated customer if one is logged in.
+        $customer = Auth::guard('sanctum')->user();
+
+        $conversation = null;
+
+        // Logged-in customers resume their latest conversation.
+        if ($customer) {
+            $conversation = ChatConversation::where(
+                'customer_id',
+                $customer->id
+            )
+                ->latest('id')
+                ->first();
+        }
+
+        // Guests resume a conversation using their saved token.
+        if (!$conversation && !empty($validated['token'])) {
+            $conversation = ChatConversation::where(
+                'token',
+                $validated['token']
+            )->first();
+        }
+
+        $reused = (bool) $conversation;
+
+        if ($conversation) {
+            // Reopen the existing conversation when the customer
+            // deliberately starts/resumes a chat.
+            $conversation->update([
+                'guest_name' => $validated['guest_name'],
+                'guest_email' => $validated['guest_email'] ?? null,
+                'status' => 'open',
+            ]);
+        } else {
+            $conversation = ChatConversation::create([
+                'customer_id' => $customer?->id,
+                'guest_name' => $validated['guest_name'],
+                'guest_email' => $validated['guest_email'] ?? null,
+                'subject' => $validated['subject'] ?? 'Customer Support',
+                'status' => 'open',
+            ]);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Conversation created successfully.',
+            'message' => $reused
+                ? 'Existing conversation resumed successfully.'
+                : 'Conversation created successfully.',
             'data' => [
                 'token' => $conversation->token,
                 'conversation_id' => $conversation->id,
+                'guest_name' => $conversation->guest_name,
+                'guest_email' => $conversation->guest_email,
                 'status' => $conversation->status,
+                'reused' => $reused,
             ],
-        ], 201);
+        ], $reused ? 200 : 201);
     }
 
     /**
@@ -46,17 +89,23 @@ class ChatController extends Controller
     public function showConversation(string $token): JsonResponse
     {
         $conversation = ChatConversation::where('token', $token)
-            ->with(['messages' => function ($query) {
-                $query->oldest()->limit(100);
-            }])
+            ->with([
+                'messages' => function ($query) {
+                    $query->oldest()->limit(100);
+                },
+            ])
             ->firstOrFail();
 
         return response()->json([
             'success' => true,
             'data' => [
                 'conversation' => [
+                    'id' => $conversation->id,
                     'token' => $conversation->token,
+                    'customer_id' => $conversation->customer_id,
                     'guest_name' => $conversation->guest_name,
+                    'guest_email' => $conversation->guest_email,
+                    'subject' => $conversation->subject,
                     'status' => $conversation->status,
                 ],
                 'messages' => $conversation->messages,
@@ -80,7 +129,6 @@ class ChatController extends Controller
             ->where('status', 'open')
             ->firstOrFail();
 
-        // Save the message and update the conversation.
         $message = DB::transaction(function () use (
             $conversation,
             $validated
@@ -88,7 +136,7 @@ class ChatController extends Controller
             $message = $conversation->messages()->create([
                 'sender_type' => 'customer',
                 'sender_id' => $conversation->customer_id,
-                'body' => $validated['body'],
+                'body' => trim($validated['body']),
             ]);
 
             $conversation->update([
@@ -98,8 +146,8 @@ class ChatController extends Controller
             return $message;
         });
 
-        // Broadcast only after the database transaction succeeds.
-       broadcast(new ChatMessageSent($message));
+        // Broadcast after the message has been saved.
+        broadcast(new ChatMessageSent($message));
 
         return response()->json([
             'success' => true,

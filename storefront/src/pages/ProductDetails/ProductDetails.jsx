@@ -207,6 +207,143 @@ function ProductDetails() {
   );
 
   // =====================================
+// PRODUCT SEO METADATA
+// =====================================
+
+useEffect(() => {
+  if (!product) return;
+
+  const siteUrl =
+    import.meta.env.VITE_SITE_URL || window.location.origin;
+
+  const productUrl = `${siteUrl.replace(/\/$/, "")}/products/${product.id}`;
+
+  const title = `${product.name} | Mega Store`;
+
+  const description = (
+    product.description ||
+    `Shop ${product.name} at Mega Store.`
+  ).replace(/\s+/g, " ").slice(0, 160);
+
+  const image = product.photo || "";
+
+  // Update browser title.
+  document.title = title;
+
+  // Create or update metadata.
+  const updateMeta = (attribute, key, content) => {
+    let element = document.head.querySelector(
+      `meta[${attribute}="${key}"]`
+    );
+
+    if (!element) {
+      element = document.createElement("meta");
+      element.setAttribute(attribute, key);
+      document.head.appendChild(element);
+    }
+
+    element.setAttribute("content", content);
+  };
+
+  updateMeta("name", "description", description);
+  updateMeta("name", "robots", "index, follow");
+
+  updateMeta("property", "og:type", "product");
+  updateMeta("property", "og:title", title);
+  updateMeta("property", "og:description", description);
+  updateMeta("property", "og:url", productUrl);
+  updateMeta("property", "og:image", image);
+
+  updateMeta("name", "twitter:card", "summary_large_image");
+  updateMeta("name", "twitter:title", title);
+  updateMeta("name", "twitter:description", description);
+  updateMeta("name", "twitter:image", image);
+
+  // Canonical URL.
+  let canonical = document.head.querySelector(
+    'link[rel="canonical"]'
+  );
+
+  if (!canonical) {
+    canonical = document.createElement("link");
+    canonical.rel = "canonical";
+    document.head.appendChild(canonical);
+  }
+
+  canonical.href = productUrl;
+
+}, [product]);
+
+
+// =====================================
+// PRODUCT STRUCTURED DATA (JSON-LD)
+// =====================================
+
+useEffect(() => {
+  if (!product) return;
+
+  const siteUrl =
+    import.meta.env.VITE_SITE_URL || window.location.origin;
+
+  const productUrl =
+    `${siteUrl.replace(/\/$/, "")}/products/${product.id}`;
+
+  const imageUrl = product.photo || undefined;
+
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+
+    name: product.name,
+
+    description:
+      product.description ||
+      `Shop ${product.name} at Mega Store.`,
+
+    sku: product.sku || undefined,
+
+    image: imageUrl ? [imageUrl] : undefined,
+
+    brand: {
+      "@type": "Brand",
+      name: "Mega Store",
+    },
+
+    offers: {
+      "@type": "Offer",
+
+      url: productUrl,
+
+      priceCurrency: "UGX",
+
+      price: Number(product.price).toFixed(0),
+
+      availability:
+        Number(product.stock_quantity) > 0
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+
+      itemCondition: "https://schema.org/NewCondition",
+    },
+  };
+
+  let script = document.getElementById("product-json-ld");
+
+  if (!script) {
+    script = document.createElement("script");
+    script.id = "product-json-ld";
+    script.type = "application/ld+json";
+    document.head.appendChild(script);
+  }
+
+  script.textContent = JSON.stringify(productSchema);
+
+  return () => {
+    document.getElementById("product-json-ld")?.remove();
+  };
+}, [product]);
+
+  // =====================================
   // SIMILAR PRODUCTS
   // =====================================
 

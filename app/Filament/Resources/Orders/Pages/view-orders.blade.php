@@ -7,38 +7,50 @@
         ]);
     @endphp
 
-    <div class="order-details-page">
+    <div class="order-details-page space-y-6">
 
-        {{-- Information Cards --}}
+        {{-- =========================================
+             ORDER AND CUSTOMER INFORMATION
+        ========================================== --}}
+
         <div class="order-info-grid">
 
             {{-- Order Information --}}
-            <div class="order-info-card">
+            <section class="order-info-card">
 
-                <h2 class="order-card-title">Order Information</h2>
+                <h2 class="order-card-title">
+                    Order Information
+                </h2>
 
                 <div class="order-info-list">
 
                     <div class="order-info-row">
                         <span class="order-info-label">Order Number</span>
-                        <span class="order-info-value">{{ $order->order_number }}</span>
+                        <span class="order-info-value">
+                            {{ $order->order_number }}
+                        </span>
                     </div>
 
                     <div class="order-info-row">
                         <span class="order-info-label">Order Status</span>
+
                         <span class="order-status order-status-{{ $order->status }}">
-                            {{ $order->status }}
+                            {{ ucfirst($order->status) }}
                         </span>
                     </div>
 
                     <div class="order-info-row">
                         <span class="order-info-label">Payment Status</span>
-                        <span class="order-info-value">{{ ucfirst($order->payment_status) }}</span>
+                        <span class="order-info-value">
+                            {{ ucfirst($order->payment_status) }}
+                        </span>
                     </div>
 
                     <div class="order-info-row">
                         <span class="order-info-label">Payment Method</span>
-                        <span class="order-info-value">{{ $order->payment_method ?? 'N/A' }}</span>
+                        <span class="order-info-value">
+                            {{ $order->payment_method ?? 'N/A' }}
+                        </span>
                     </div>
 
                     <div class="order-info-row">
@@ -49,14 +61,18 @@
                     </div>
 
                 </div>
-            </div>
+
+            </section>
+
 
             {{-- Customer Information --}}
-            <div class="order-info-card">
+            <section class="order-info-card">
 
-                <h2 class="order-card-title">Customer Information</h2>
+                <h2 class="order-card-title">
+                    Customer Information
+                </h2>
 
-                @if($order->customer)
+                @if ($order->customer)
 
                     <div class="order-info-list">
 
@@ -70,52 +86,76 @@
 
                         <div class="order-info-row">
                             <span class="order-info-label">Email</span>
-                            <span class="order-info-value">{{ $order->customer->email ?? 'N/A' }}</span>
+                            <span class="order-info-value">
+                                {{ $order->customer->email ?? 'N/A' }}
+                            </span>
                         </div>
 
                         <div class="order-info-row">
                             <span class="order-info-label">Phone</span>
-                            <span class="order-info-value">{{ $order->customer->phone ?? 'N/A' }}</span>
+                            <span class="order-info-value">
+                                {{ $order->customer->phone ?? 'N/A' }}
+                            </span>
                         </div>
 
                     </div>
 
                 @else
 
-                    <p class="order-info-label">Guest Customer</p>
+                    <p class="order-info-label">
+                        Guest Customer
+                    </p>
 
                 @endif
 
                 <div class="order-shipping-address">
-                    <span class="order-info-label">Shipping Address</span>
-                    <p>{{ $order->shipping_address ?? 'No shipping address' }}</p>
+
+                    <span class="order-info-label">
+                        Shipping Address
+                    </span>
+
+                    <p>
+                        {{ $order->shipping_address ?? 'No shipping address' }}
+                    </p>
+
                 </div>
 
-            </div>
+            </section>
 
         </div>
 
-        {{-- Order Items --}}
-        <div class="order-items-card">
+
+        {{-- =========================================
+             ORDER ITEMS
+        ========================================== --}}
+
+        <section class="order-items-card">
 
             <div class="order-items-header">
+
                 <div>
-                    <h2 class="order-items-title">Order Items</h2>
+                    <h2 class="order-items-title">
+                        Order Items
+                    </h2>
 
                     <p class="order-items-count">
-                        {{ $order->items->count() }} item(s) in this order
+                        {{ $order->items->count() }}
+                        item(s) in this order
                     </p>
                 </div>
+
             </div>
 
+
+            {{-- Product Table --}}
             <div class="order-table-wrapper">
 
                 <table class="order-items-table">
 
                     <thead>
                         <tr>
-                            <th class="text-left">Product</th>
-                            <th class="text-left">Size</th>
+                            <th>Product</th>
+                            <th>Size</th>
                             <th class="text-center">Quantity</th>
                             <th class="text-right">Unit Price</th>
                             <th class="text-right">Subtotal</th>
@@ -124,28 +164,77 @@
 
                     <tbody>
 
-                        @forelse($order->items as $item)
+                        @forelse ($order->items as $item)
+
+                            @php
+                                $productImage = $item->product?->photo
+                                    ? \Illuminate\Support\Facades\Storage::disk('public')->url($item->product->photo)
+                                    : null;
+                            @endphp
 
                             <tr>
 
-                                <td class="order-product-name">
-                                    {{ $item->product?->name ?? 'Product #' . $item->product_id }}
+                                {{-- Product Image and Name --}}
+                                <td>
+
+                                    <div class="order-product-cell">
+
+                                        @if ($productImage)
+
+                                            <img
+                                                src="{{ $productImage }}"
+                                                alt="{{ $item->product?->name ?? 'Product image' }}"
+                                                class="order-product-image"
+                                                loading="lazy"
+                                                decoding="async"
+                                            >
+
+                                        @else
+
+                                            <div class="order-product-image-placeholder">
+                                                <span>AC.</span>
+                                            </div>
+
+                                        @endif
+
+                                        <div class="order-product-details">
+
+                                            <span class="order-product-name">
+                                                {{ $item->product?->name ?? 'Product #' . $item->product_id }}
+                                            </span>
+
+                                            <span class="order-product-id">
+                                                Product ID: {{ $item->product_id }}
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
                                 </td>
 
+
+                                {{-- Size --}}
                                 <td>
                                     <span class="order-product-size">
                                         {{ $item->size ?? 'N/A' }}
                                     </span>
                                 </td>
 
+
+                                {{-- Quantity --}}
                                 <td class="order-quantity">
                                     {{ $item->quantity }}
                                 </td>
 
+
+                                {{-- Unit Price --}}
                                 <td class="order-price">
                                     UGX {{ number_format((float) $item->unit_price) }}
                                 </td>
 
+
+                                {{-- Subtotal --}}
                                 <td class="order-item-subtotal">
                                     UGX {{ number_format((float) $item->subtotal) }}
                                 </td>
@@ -168,45 +257,64 @@
 
             </div>
 
-            {{-- Totals --}}
+
+            {{-- =========================================
+                 ORDER TOTALS
+            ========================================== --}}
+
             <div class="order-totals">
 
                 <div class="order-totals-inner">
 
                     <div class="order-total-row">
-                        <span class="order-total-label">Subtotal</span>
+
+                        <span class="order-total-label">
+                            Subtotal
+                        </span>
 
                         <span class="order-total-value">
                             UGX {{ number_format((float) $order->subtotal) }}
                         </span>
+
                     </div>
 
+
                     <div class="order-total-row order-grand-total">
-                        <span class="order-total-label">Order Total</span>
+
+                        <span class="order-total-label">
+                            Order Total
+                        </span>
 
                         <span class="order-total-value">
                             UGX {{ number_format((float) $order->total) }}
                         </span>
+
                     </div>
 
                 </div>
 
             </div>
 
-        </div>
+        </section>
 
-        {{-- Order Notes --}}
-        @if($order->notes)
 
-            <div class="order-notes-card">
+        {{-- =========================================
+             ORDER NOTES
+        ========================================== --}}
 
-                <h2 class="order-card-title">Order Notes</h2>
+        @if ($order->notes)
+
+            <section class="order-notes-card">
+
+                <h2 class="order-card-title">
+                    Order Notes
+                </h2>
 
                 <p class="order-notes-content">
                     {{ $order->notes }}
                 </p>
 
-            </div>
+            </section>
 
         @endif
 

@@ -204,6 +204,49 @@ function Home() {
     );
   }, [allCategories, selectedCategoryId]);
 
+
+  /* =====================================
+   HOMEPAGE SEO METADATA
+===================================== */
+
+useEffect(() => {
+  const siteName = "Mega Store";
+
+  const title = selectedCategory
+    ? `${selectedCategory.name} Collection | ${siteName}`
+    : `${siteName} | Fashion, Clothing & Accessories`;
+
+  const description = selectedCategory
+    ? `Explore the ${selectedCategory.name} collection at Mega Store. Discover quality fashion, clothing and accessories at great prices.`
+    : "Discover the latest fashion, clothing and accessories at Mega Store. Shop quality products at great prices.";
+
+  document.title = title;
+
+  let metaDescription = document.querySelector(
+    'meta[name="description"]'
+  );
+
+  if (!metaDescription) {
+    metaDescription = document.createElement("meta");
+    metaDescription.name = "description";
+    document.head.appendChild(metaDescription);
+  }
+
+  metaDescription.setAttribute("content", description);
+
+  const robots = document.querySelector(
+    'meta[name="robots"]'
+  );
+
+  if (robots) {
+    robots.setAttribute(
+      "content",
+      search.trim() ? "noindex, follow" : "index, follow"
+    );
+  }
+
+}, [selectedCategory, search]);
+
   /* =====================================
      FILTER PRODUCTS BY CATEGORY AND SEARCH
   ===================================== */

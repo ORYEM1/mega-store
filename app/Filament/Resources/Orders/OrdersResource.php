@@ -51,5 +51,5 @@ class OrdersResource extends Resource
             'edit' => EditOrders::route('/{record}/edit'),
         ];
     }
-    protected static ?string $cluster = SalesCluster::class;
+    //protected static ?string $cluster = SalesCluster::class;
 }
