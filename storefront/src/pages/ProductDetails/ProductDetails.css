@@ -1447,3 +1447,45 @@
     text-align: center;
   }
 }
+/* =====================================
+   WHATSAPP PRODUCT SHARING
+===================================== */
+
+.product-whatsapp-share {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 15px;
+  padding: 14px 20px;
+
+  background: #25d366;
+  color: #fff;
+
+  border: none;
+  border-radius: 8px;
+
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.product-whatsapp-share svg {
+  font-size: 23px;
+  flex-shrink: 0;
+}
+
+.product-whatsapp-share:hover {
+  background: #1da851;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(37, 211, 102, 0.2);
+}
+
+.product-whatsapp-share:active {
+  transform: scale(0.98);
+}

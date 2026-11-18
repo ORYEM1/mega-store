@@ -12,6 +12,7 @@ import {
   FaStar,
   FaRegStar,
   FaEdit,
+  FaWhatsapp,
 } from "react-icons/fa";
 
 import {
@@ -570,6 +571,21 @@ function ProductDetails() {
   }
 
   // =====================================
+  // WHATSAPP PRODUCT SHARING
+  // =====================================
+
+ const handleWhatsAppShare = () => {
+  const shareUrl = `${window.location.origin}/share/products/${product.id}`;
+
+  const message = `Check out ${product.name} at Mega Store!`;
+
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
+    `${message}\n${shareUrl}`
+  )}`;
+
+  window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+};
+  // =====================================
   // LOADING SCREEN
   // =====================================
 
@@ -895,6 +911,16 @@ function ProductDetails() {
                 VIEW YOUR BAG
               </button>
             </div>
+
+            {/* WhatsApp share button */}
+            <button
+              type="button"
+              className="product-whatsapp-share"
+              onClick={handleWhatsAppShare}
+            >
+              <FaWhatsapp />
+              SHARE THIS PRODUCT WITH A FRIEND
+            </button>
 
             {/* Cart message */}
             {message && (
