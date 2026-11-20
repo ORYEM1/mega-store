@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use App\Models\SellerStaff;
+
 
 class SellerProductController extends Controller
 {
@@ -19,10 +21,10 @@ class SellerProductController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $seller = $request->user();
+        $sellerId = $this->getSellerId($request);
 
         $products = Product::query()
-            ->where('seller_id', $seller->id)
+            ->where('seller_id', $sellerId)
             ->with([
                 'category:id,name,slug',
                 'sizes:id,product_id,size,stock_quantity',
@@ -118,7 +120,7 @@ class SellerProductController extends Controller
             ],
         ]);
 
-        $seller = $request->user();
+        $sellerId = $this->getSellerId($request);
 
         $photoPath = null;
 
@@ -136,13 +138,13 @@ class SellerProductController extends Controller
         try {
             $product = DB::transaction(function () use (
                 $validated,
-                $seller,
+                $sellerId,
                 $photoPath,
                 $sizes,
                 $totalStock
             ) {
                 $product = Product::create([
-                    'seller_id' => $seller->id,
+                    'seller_id' => $sellerId,
                     'category_id' => $validated['category_id'] ?? null,
                     'name' => $validated['name'],
                     'description' => $validated['description'] ?? null,
@@ -186,7 +188,7 @@ class SellerProductController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         $product = Product::query()
-            ->where('seller_id', $request->user()->id)
+            ->where('seller_id', $this->getSellerId($request))
             ->with(['category', 'sizes'])
             ->findOrFail($id);
 
@@ -201,7 +203,7 @@ class SellerProductController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $product = Product::query()
-            ->where('seller_id', $request->user()->id)
+            ->where('seller_id', $this->getSellerId($request))
             ->findOrFail($id);
 
         $validated = $request->validate([
@@ -328,7 +330,7 @@ class SellerProductController extends Controller
     public function destroy(Request $request, int $id): JsonResponse
     {
         $product = Product::query()
-            ->where('seller_id', $request->user()->id)
+          ->where('seller_id', $this->getSellerId($request))
             ->findOrFail($id);
 
         if ($product->photo) {
@@ -340,5 +342,26 @@ class SellerProductController extends Controller
         return response()->json([
             'message' => 'Product deleted successfully.',
         ]);
+    }
+
+    /**
+ * Resolve the business owner's ID.
+ *
+ * A seller uses their own ID.
+ * A staff member uses their associated seller_id.
+ */
+    private function getSellerId(Request $request): int
+    {
+        $user = $request->user();
+
+        if ($user instanceof Seller) {
+            return (int) $user->id;
+        }
+
+        if ($user instanceof SellerStaff) {
+            return (int) $user->seller_id;
+        }
+
+        abort(403, 'Access denied. Seller account required.');
     }
 }

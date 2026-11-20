@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Models\SellerStaff;
+use Spatie\Permission\PermissionRegistrar;
+
 
 class SellerAuthController extends Controller
 {
@@ -82,22 +85,31 @@ class SellerAuthController extends Controller
     /**
      * Log in an approved seller.
      */
-    public function login(Request $request)
-    {
-        $validated = $request->validate([
-            'login' => ['required', 'string'],
-            'password' => ['required', 'string'],
-        ]);
+    /**
+ * Log in an approved seller or an active seller employee.
+ */
+public function login(Request $request)
+{
+    $validated = $request->validate([
+        'login' => ['required', 'string'],
+        'password' => ['required', 'string'],
+    ]);
 
-        $seller = Seller::query()
-            ->where('email', $validated['login'])
-            ->orWhere('phone', $validated['login'])
-            ->first();
+    /*
+    |--------------------------------------------------------------------------
+    | 1. Try seller owner login first
+    |--------------------------------------------------------------------------
+    */
 
-        if (
-            ! $seller ||
-            ! Hash::check($validated['password'], $seller->password)
-        ) {
+    $seller = Seller::query()
+        ->where(function ($query) use ($validated) {
+            $query->where('email', $validated['login'])
+                ->orWhere('phone', $validated['login']);
+        })
+        ->first();
+
+    if ($seller) {
+        if (! Hash::check($validated['password'], $seller->password)) {
             throw ValidationException::withMessages([
                 'login' => ['The provided credentials are incorrect.'],
             ]);
@@ -111,15 +123,112 @@ class SellerAuthController extends Controller
             ]);
         }
 
-        $token = $seller->createToken('adrian-seller-dashboard')->plainTextToken;
+        $token = $seller->createToken(
+            'adrian-seller-dashboard'
+        )->plainTextToken;
 
         return response()->json([
             'message' => 'Login successful.',
+            'account_type' => 'owner',
             'seller' => $seller,
+            'account' => $seller,
+            'role' => 'Owner',
+            'permissions' => ['*'],
             'token' => $token,
             'token_type' => 'Bearer',
         ]);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 2. Try employee login
+    |--------------------------------------------------------------------------
+    */
+
+    $staff = SellerStaff::with('seller')
+        ->where('email', $validated['login'])
+        ->first();
+
+    if (
+        ! $staff ||
+        ! Hash::check($validated['password'], $staff->password)
+    ) {
+        throw ValidationException::withMessages([
+            'login' => ['The provided credentials are incorrect.'],
+        ]);
+    }
+
+    if (! $staff->is_active) {
+        throw ValidationException::withMessages([
+            'login' => ['Your employee account has been deactivated.'],
+        ]);
+    }
+
+    $seller = $staff->seller;
+
+    if (! $seller || $seller->approval_status !== 'approved') {
+        throw ValidationException::withMessages([
+            'login' => [
+                'The associated business is currently unavailable.',
+            ],
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 3. Retrieve employee role and permissions
+    |--------------------------------------------------------------------------
+    */
+
+    $registrar = app(PermissionRegistrar::class);
+
+    $registrar->setPermissionsTeamId($seller->id);
+
+    try {
+        $role = $staff->getRoleNames()->first();
+
+        $permissions = $staff->getAllPermissions()
+            ->pluck('name')
+            ->values()
+            ->all();
+    } finally {
+        $registrar->setPermissionsTeamId(null);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 4. Generate employee token
+    |--------------------------------------------------------------------------
+    */
+
+    $token = $staff->createToken(
+        'adrian-seller-staff-dashboard'
+    )->plainTextToken;
+
+    return response()->json([
+        'message' => 'Employee login successful.',
+        'account_type' => 'staff',
+
+        // Preserve the seller object expected by the existing frontend.
+        'seller' => $seller,
+
+        // Employee-specific account information.
+        'account' => $staff->only([
+            'id',
+            'seller_id',
+            'name',
+            'email',
+            'phone',
+            'is_active',
+        ]),
+
+        'role' => $role,
+        'permissions' => $permissions,
+
+        'token' => $token,
+        'token_type' => 'Bearer',
+    ]);
+}
 
     /**
      * Return the authenticated seller's profile.

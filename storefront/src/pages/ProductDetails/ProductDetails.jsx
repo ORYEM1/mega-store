@@ -1,31 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import {
-  FaArrowLeft,
-  FaArrowRight,
-  FaBolt,
-  FaCheck,
-  FaMinus,
-  FaPlus,
-  FaShoppingBag,
-  FaStar,
-  FaRegStar,
-  FaEdit,
-  FaWhatsapp,
-} from "react-icons/fa";
+import {FaArrowLeft,FaArrowRight,FaBolt,FaCheck,FaMinus,FaPlus,FaShoppingBag,FaStar,FaRegStar,FaEdit,FaWhatsapp} from "react-icons/fa";
 
-import {
-  getProducts,
-  getProductReviews,
-  submitProductReview,
-} from "../../services/api";
+import {getProducts,getProductReviews,submitProductReview} from "../../services/api";
 
 import Navbar from "../../components/Navbar/Navbar";
 import { useCartStore } from "../../store/cartStore";
 import { useAuthStore } from "../../store/authStore";
 
 import "./ProductDetails.css";
+
+
 
 function formatPrice(price) {
   return new Intl.NumberFormat("en-UG", {
@@ -358,7 +344,7 @@ useEffect(() => {
           String(item.id) !== String(product.id) &&
           String(item.category?.id) === String(product.category.id)
       )
-      .slice(0, 4);
+      .slice(0, 8);
   }, [products, product]);
 
   // =====================================
@@ -1401,27 +1387,28 @@ useEffect(() => {
             SIMILAR PRODUCTS
         ===================================== */}
 
+                
         {similarProducts.length > 0 && (
           <section className="similar-products">
-
+          
             <div className="similar-products-heading">
               <div>
                 <p className="section-eyebrow">
                   THE COLLECTION
                 </p>
-
+        
                 <h2>YOU MAY ALSO LIKE<span>.</span></h2>
               </div>
-
+        
               <Link to="/">
                 EXPLORE MORE <FaArrowRight />
               </Link>
             </div>
-
-            <div className="similar-products-grid">
+        
+            <div className="similar-products-scroll">
               {similarProducts.map((item) => {
                 const itemStock = normalizeStock(item.stock_quantity);
-
+              
                 return (
                   <Link
                     key={item.id}
@@ -1429,7 +1416,7 @@ useEffect(() => {
                     className="similar-product-card"
                   >
                     <div className="similar-product-image-wrapper">
-
+                
                       {item.photo ? (
                         <img
                           src={item.photo}
@@ -1441,22 +1428,22 @@ useEffect(() => {
                           AC.
                         </div>
                       )}
-
+        
                       {itemStock === 0 && (
                         <span className="product-out-of-stock">
                           SOLD OUT
                         </span>
                       )}
-
+        
                     </div>
-
+                    
                     <div className="similar-product-info">
                       <h3>{item.name}</h3>
-
+                    
                       <p className="similar-product-price">
                         {formatPrice(item.price)}
                       </p>
-
+                    
                       <p className="similar-product-stock">
                         {itemStock > 0
                           ? `${itemStock} AVAILABLE`
@@ -1467,8 +1454,10 @@ useEffect(() => {
                 );
               })}
             </div>
+            
           </section>
         )}
+
 
         {/* Continue shopping */}
         <div className="product-details-back">

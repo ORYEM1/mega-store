@@ -9,38 +9,29 @@ use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
 {
-    /**
-     * Return active parent categories and their active subcategories.
-     * Cache the results in Redis for 10 minutes.
-     */
     public function index(): JsonResponse
     {
         $categories = Cache::store('redis')
-            ->remember('categories:active:v1', now()->addMinutes(10), function () {
+            ->remember(
+                'categories:active:v1',
+                now()->addMinutes(10),
+                function () {
 
-                return Category::query()
-                    ->whereNull('parent_id')
-                    ->where('is_active', true)
-                    ->with([
-                        'children' => function ($query) {
-                            $query->where('is_active', true)
-                                ->select([
-                                    'id',
-                                    'name',
-                                    'slug',
-                                    'parent_id',
-                                ])
-                                ->orderBy('name');
-                        },
-                    ])
-                    ->orderBy('name')
-                    ->get([
-                        'id',
-                        'name',
-                        'slug',
-                        'description',
-                    ]);
-            });
+                    return Category::query()
+                        ->whereNull('parent_id')
+                        ->where('is_active', true)
+                        ->with([
+                            'children' => function ($query) {
+                                $query->where('is_active', true)
+                                    ->select(['id','name','slug','parent_id'])
+                                    ->orderBy('name');
+                            },
+                        ])
+                        ->orderBy('name')
+                        ->get(['id','name','slug','description'])
+                        ->toArray(); // Important: cache a plain array
+                }
+            );
 
         return response()->json([
             'success' => true,

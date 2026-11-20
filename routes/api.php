@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\ProductReviewController;
 use App\Http\Controllers\Api\SellerAuthController;
 use App\Http\Middleware\EnsureSellerIsApproved;
 use App\Http\Controllers\Api\SellerProductController;
+use App\Http\Controllers\Api\SellerStaffController;
 
 // Public storefront routes
 Route::get('/products', [ProductController::class, 'index']);
@@ -48,6 +49,24 @@ Route::prefix('seller')->group(function () {
         Route::get('/profile', [SellerAuthController::class, 'profile']);
         Route::post('/logout', [SellerAuthController::class, 'logout']);
 
+
+                // Seller staff management (business owner only)
+        Route::get('/staff', [SellerStaffController::class, 'index']);
+        
+        Route::post('/staff', [SellerStaffController::class, 'store']);
+        
+        Route::put('/staff/{id}', [SellerStaffController::class, 'update']);
+        
+        Route::patch('/staff/{id}/status', [
+            SellerStaffController::class,
+            'updateStatus'
+        ]);
+        
+        Route::delete('/staff/{id}', [
+            SellerStaffController::class,
+            'destroy'
+        ]);
+
         // Seller products
         Route::get('/categories', [SellerProductController::class, 'categories']);
 
@@ -57,6 +76,8 @@ Route::prefix('seller')->group(function () {
         Route::get('/products/{id}', [SellerProductController::class, 'show']);
         Route::post('/products/{id}', [SellerProductController::class, 'update']);
         Route::delete('/products/{id}', [SellerProductController::class, 'destroy']);
+
+
     });
 });
 // Protected customer routes
@@ -66,6 +87,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/customer', [AuthController::class, 'customer']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
+
+
+    
     // Order creation
     Route::post('/orders', [OrderController::class, 'store']);
 

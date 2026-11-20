@@ -23,10 +23,9 @@ class PaymentController extends Controller
         // 1. Get the authenticated customer.
         $customer = $request->user('sanctum');
 
-        if (! $customer instanceof Customer) {
-            return response()->json([
-                'message' => 'Please log in again.',
-            ], 401);
+        if (! $customer instanceof Customer)
+        {
+            return response()->json(['message' => 'Please log in again.'], 401);
         }
 
         // 2. Find the payment and associated order.
@@ -34,27 +33,20 @@ class PaymentController extends Controller
             ->where('reference_id', $referenceId)
             ->first();
 
-        if (! $payment || ! $payment->order) {
-            return response()->json([
-                'message' => 'Payment not found.',
-            ], 404);
+        if (! $payment || ! $payment->order)
+        {
+            return response()->json(['message' => 'Payment not found.'], 404);
         }
 
         // 3. Verify that this payment belongs to the customer.
-        if (
-            (int) $payment->order->customer_id !==
-            (int) $customer->id
-        ) {
-            return response()->json([
-                'message' => 'Payment not found.',
-            ], 404);
+        if ((int) $payment->order->customer_id !==(int) $customer->id)
+        {
+            return response()->json(['message' => 'Payment not found.'], 404);
         }
 
         // 4. Verify the payment provider.
         if ($payment->provider !== 'mtn_momo') {
-            return response()->json([
-                'message' => 'Unsupported payment provider.',
-            ], 422);
+            return response()->json([ 'message' => 'Unsupported payment provider.'], 422);
         }
 
         // 5. Return immediately for already completed payments.

@@ -40,24 +40,28 @@ class Product extends Model
     protected static function booted(): void
     {
         static::creating(function (Product $product) {
-            if (blank($product->slug) && filled($product->name)) {
+            if (blank($product->slug) && filled($product->name))
+            {
                 $product->slug = static::generateUniqueSlug($product->name);
             }
 
-            if (blank($product->sku)) {
+            if (blank($product->sku))
+            {
                 $product->sku = static::generateUniqueSku();
             }
         });
 
         static::updating(function (Product $product) {
-            if (blank($product->slug) && filled($product->name)) {
+            if (blank($product->slug) && filled($product->name))
+            {
                 $product->slug = static::generateUniqueSlug(
                     $product->name,
                     $product->id
                 );
             }
 
-            if (blank($product->sku)) {
+            if (blank($product->sku))
+            {
                 $product->sku = static::generateUniqueSku();
             }
         });
@@ -71,13 +75,12 @@ class Product extends Model
         });
     }
 
-    protected static function generateUniqueSlug(
-        string $name,
-        ?int $ignoreId = null
-    ): string {
+    protected static function generateUniqueSlug(string $name,?int $ignoreId = null): string
+    {
         $baseSlug = Str::slug($name);
 
-        if ($baseSlug === '') {
+        if ($baseSlug === '')
+        {
             $baseSlug = 'product';
         }
 

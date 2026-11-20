@@ -1490,3 +1490,93 @@
 .product-whatsapp-share:active {
   transform: scale(0.98);
 }
+
+/* =================================
+   SIMILAR PRODUCTS HORIZONTAL SCROLL
+================================= */
+
+.similar-products {
+  width: 100%;
+  margin-top: 70px;
+  overflow: hidden;
+}
+
+.similar-products-scroll {
+  display: flex;
+  gap: 20px;
+
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  padding: 10px 2px 25px;
+
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Product cards */
+
+.similar-products-scroll .similar-product-card {
+  flex: 0 0 240px;
+  min-width: 240px;
+
+  scroll-snap-align: start;
+}
+
+/* Images */
+
+.similar-products-scroll .similar-product-image-wrapper {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  position: relative;
+}
+
+.similar-products-scroll .similar-product-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.similar-products-scroll .similar-product-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Scrollbar */
+
+.similar-products-scroll::-webkit-scrollbar {
+  height: 5px;
+}
+
+.similar-products-scroll::-webkit-scrollbar-track {
+  background: #222;
+}
+
+.similar-products-scroll::-webkit-scrollbar-thumb {
+  background: #c6ff00;
+  border-radius: 10px;
+}
+
+/* Firefox */
+
+.similar-products-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #c6ff00 #222;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .similar-products-scroll {
+    gap: 12px;
+  }
+
+  .similar-products-scroll .similar-product-card {
+    flex: 0 0 165px;
+    min-width: 165px;
+  }
+}

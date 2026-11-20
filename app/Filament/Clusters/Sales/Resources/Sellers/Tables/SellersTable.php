@@ -11,6 +11,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use App\Services\SellerRoleService;
 
 class SellersTable
 {
@@ -90,7 +91,7 @@ class SellersTable
 
             ->recordActions([
 
-                Action::make('approve')
+                 Action::make('approve')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -100,14 +101,15 @@ class SellersTable
                     ->visible(fn (Seller $record): bool =>
                         $record->approval_status === 'pending'
                     )
-                    ->action(function (Seller $record): void {
+                    ->action(function (Seller $record, SellerRoleService $roleService): void {
                         $record->update([
                             'approval_status' => 'approved',
                             'approved_at' => now(),
                             'rejection_reason' => null,
                         ]);
-                    }),
 
+                        $roleService->initializeDefaultRoles($record);
+                    }),
                 Action::make('reject')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
