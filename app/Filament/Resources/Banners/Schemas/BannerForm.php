@@ -69,6 +69,7 @@ class BannerForm
 
             Section::make('Display Settings')
                 ->schema([
+
                     Select::make('position')
                         ->label('Banner Position')
                         ->options([
@@ -77,6 +78,17 @@ class BannerForm
                         ])
                         ->default('promo')
                         ->required(),
+
+                    Select::make('collection')
+                        ->label('Show Banner For')
+                        ->options([
+                            'all' => 'All Collections',
+                            'men' => 'Men',
+                            'ladies' => 'Ladies',
+                        ])
+                        ->default('all')
+                        ->required()
+                        ->helperText('Choose which collection should display this banner.'),
 
                     TextInput::make('sort_order')
                         ->label('Display Order')
@@ -92,7 +104,7 @@ class BannerForm
                         ->default(true)
                         ->helperText('Only active banners should appear on the homepage.'),
                 ])
-                ->columns(3),
+                ->columns(2),
 
             Section::make('Publication Schedule')
                 ->description('Optionally control when this banner should be displayed.')

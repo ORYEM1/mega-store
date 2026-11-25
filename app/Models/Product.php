@@ -10,9 +10,22 @@ use Illuminate\Support\Str;
 
 class Product extends Model
 {
+    public const LEVEL_AFFORDABLE = 'affordable';
+
+    public const LEVEL_EXECUTIVE = 'executive';
+
+    public const EXECUTIVE_CATEGORIES = [
+        'premium' => 'Premium',
+        'luxury' => 'Luxury',
+        'designer' => 'Designer',
+        'exclusive' => 'Exclusive',
+    ];
+
     protected $fillable = [
         'seller_id',
         'category_id',
+        'product_level',
+        'executive_category',
         'name',
         'slug',
         'sku',
@@ -40,29 +53,37 @@ class Product extends Model
     protected static function booted(): void
     {
         static::creating(function (Product $product) {
-            if (blank($product->slug) && filled($product->name))
-            {
+            if (blank($product->slug) && filled($product->name)) {
                 $product->slug = static::generateUniqueSlug($product->name);
             }
 
-            if (blank($product->sku))
-            {
+            if (blank($product->sku)) {
                 $product->sku = static::generateUniqueSku();
+            }
+
+            if (blank($product->product_level)) {
+                $product->product_level = self::LEVEL_AFFORDABLE;
+            }
+
+            if ($product->product_level !== self::LEVEL_EXECUTIVE) {
+                $product->executive_category = null;
             }
         });
 
         static::updating(function (Product $product) {
-            if (blank($product->slug) && filled($product->name))
-            {
+            if (blank($product->slug) && filled($product->name)) {
                 $product->slug = static::generateUniqueSlug(
                     $product->name,
                     $product->id
                 );
             }
 
-            if (blank($product->sku))
-            {
+            if (blank($product->sku)) {
                 $product->sku = static::generateUniqueSku();
+            }
+
+            if ($product->product_level !== self::LEVEL_EXECUTIVE) {
+                $product->executive_category = null;
             }
         });
 
@@ -75,12 +96,13 @@ class Product extends Model
         });
     }
 
-    protected static function generateUniqueSlug(string $name,?int $ignoreId = null): string
-    {
+    protected static function generateUniqueSlug(
+        string $name,
+        ?int $ignoreId = null
+    ): string {
         $baseSlug = Str::slug($name);
 
-        if ($baseSlug === '')
-        {
+        if ($baseSlug === '') {
             $baseSlug = 'product';
         }
 
@@ -131,5 +153,31 @@ class Product extends Model
     public function reviews(): HasMany
     {
         return $this->hasMany(ProductReview::class);
+    }
+
+    /**
+     * Scope: Affordable products.
+     */
+    public function scopeAffordable($query)
+    {
+        return $query->where('product_level', self::LEVEL_AFFORDABLE);
+    }
+
+    /**
+     * Scope: Executive products.
+     */
+    public function scopeExecutive($query)
+    {
+        return $query->where('product_level', self::LEVEL_EXECUTIVE);
+    }
+
+    /**
+     * Scope: Products in a specific executive category.
+     */
+    public function scopeExecutiveCategory($query, string $category)
+    {
+        return $query
+            ->where('product_level', self::LEVEL_EXECUTIVE)
+            ->where('executive_category', $category);
     }
 }

@@ -11,6 +11,7 @@ import {
     createChatConversation,
     getChatConversation,
     sendChatMessage,
+    getChatSupportStatus,
 } from "../../services/api";
 
 import echo from "../../services/echo";
@@ -39,7 +40,40 @@ const ChatWidget = () => {
 
     const [restoring, setRestoring] = useState(true);
 
+    // Support availability.
+    const [supportOnline, setSupportOnline] = useState(null);
+
     const messagesEndRef = useRef(null);
+
+    // Check whether an administrator is available.
+    useEffect(() => {
+        let active = true;
+
+        const checkSupportStatus = async () => {
+            try {
+                const response = await getChatSupportStatus();
+
+                if (active) {
+                    setSupportOnline(Boolean(response.online));
+                }
+            } catch (error) {
+                console.error("Could not check support status:", error);
+
+                if (active) {
+                    setSupportOnline(null);
+                }
+            }
+        };
+
+        checkSupportStatus();
+
+        const interval = setInterval(checkSupportStatus, 10000);
+
+        return () => {
+            active = false;
+            clearInterval(interval);
+        };
+    }, []);
 
     // Scroll to the latest message.
     const scrollToBottom = () => {
@@ -86,8 +120,6 @@ const ChatWidget = () => {
             } catch (error) {
                 console.error("Could not restore chat:", error);
 
-                // Only remove the token if the server confirms
-                // that the conversation does not exist.
                 if (error.response?.status === 404) {
                     localStorage.removeItem(CHAT_TOKEN_KEY);
                 }
@@ -157,8 +189,10 @@ const ChatWidget = () => {
             setConversation(newConversation);
 
             setCustomer({
-                guest_name: conversationData.guest_name || customer.guest_name,
-                guest_email: conversationData.guest_email || customer.guest_email,
+                guest_name:
+                    conversationData.guest_name || customer.guest_name,
+                guest_email:
+                    conversationData.guest_email || customer.guest_email,
             });
 
             localStorage.setItem(
@@ -166,8 +200,6 @@ const ChatWidget = () => {
                 conversationData.token
             );
 
-            // Load previous messages when an existing conversation
-            // has been resumed.
             const history = await getChatConversation(
                 conversationData.token
             );
@@ -231,6 +263,30 @@ const ChatWidget = () => {
         }
     };
 
+    // Support status display.
+    const getSupportStatus = () => {
+        if (supportOnline === true) {
+            return {
+                text: "Support is online",
+                className: "online",
+            };
+        }
+
+        if (supportOnline === false) {
+            return {
+                text: "Support is offline",
+                className: "offline",
+            };
+        }
+
+        return {
+            text: "Checking availability...",
+            className: "unknown",
+        };
+    };
+
+    const supportStatus = getSupportStatus();
+
     return (
         <div className="chat-widget">
 
@@ -258,7 +314,14 @@ const ChatWidget = () => {
 
                             <div>
                                 <h3>ADRIAN COLLECTIONS Support</h3>
-                                <p>We're here to help you</p>
+
+                                <div
+                                    className={`chat-support-status ${supportStatus.className}`}
+                                >
+                                    <span className="chat-status-dot"></span>
+
+                                    <p>{supportStatus.text}</p>
+                                </div>
                             </div>
 
                         </div>

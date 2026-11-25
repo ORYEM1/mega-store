@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaArrowRight, FaBolt } from "react-icons/fa";
 import "./ProductCard.css";
 
@@ -10,17 +10,25 @@ function formatPrice(price) {
   }).format(Number(price) || 0);
 }
 
-
 function ProductCard({ product }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const stockQuantity = Number(product.stock_quantity) || 0;
+  // Preserve the currently selected collection.
+  const selectedCollection =
+    searchParams.get("collection") === "ladies"
+      ? "ladies"
+      : "men";
+
+  const stockQuantity = Math.max(
+    0,
+    Number(product.stock_quantity) || 0
+  );
+
   const inStock = stockQuantity > 0;
 
   const price = Number(product.price) || 0;
   const comparePrice = Number(product.compare_at_price) || 0;
-
-
 
   const hasDiscount =
     product.compare_at_price !== null &&
@@ -29,17 +37,20 @@ function ProductCard({ product }) {
     comparePrice > 0;
 
   const discountPercentage = hasDiscount
-    ? Math.round(((comparePrice - price) / comparePrice) * 100)
+    ? Math.round(
+        ((comparePrice - price) / comparePrice) * 100
+      )
     : 0;
 
-  
-
   function openProductDetails() {
-    navigate(`/products/${product.id}`);
+    navigate(
+      `/products/${product.id}?collection=${selectedCollection}`
+    );
   }
 
   return (
     <article className="product-card">
+
       {/* Product image */}
       <button
         type="button"
@@ -48,6 +59,7 @@ function ProductCard({ product }) {
         aria-label={`View details for ${product.name}`}
       >
         <div className="product-image-container">
+
           {product.photo ? (
             <img
               src={product.photo}
@@ -60,34 +72,41 @@ function ProductCard({ product }) {
             />
           ) : (
             <div className="product-image-placeholder">
-              <span>AC.</span>
+              <span>LE.</span>
               <p>NO IMAGE AVAILABLE</p>
             </div>
           )}
 
+          {/* Quick view overlay */}
           <div className="product-image-overlay">
             <span>
               QUICK VIEW <FaArrowRight />
             </span>
           </div>
 
+          {/* Stock badge */}
           {!inStock && (
             <span className="product-out-of-stock">
               SOLD OUT
             </span>
           )}
 
+          {/* Discount badge */}
           {hasDiscount && inStock && (
             <span className="product-sale-badge">
               -{discountPercentage}%
             </span>
           )}
+
         </div>
       </button>
 
       {/* Product information */}
       <div className="product-card-content">
+
+        {/* Category and availability */}
         <div className="product-card-top">
+
           <p className="product-category">
             {product.category?.name || "UNCATEGORIZED"}
           </p>
@@ -98,8 +117,10 @@ function ProductCard({ product }) {
               AVAILABLE
             </span>
           )}
+
         </div>
 
+        {/* Product name */}
         <h3 className="product-name">
           <button
             type="button"
@@ -113,19 +134,22 @@ function ProductCard({ product }) {
 
         {/* Pricing */}
         <div className="product-pricing">
+
           <span className="product-price">
-            {formatPrice(product.price)}
+            {formatPrice(price)}
           </span>
 
           {hasDiscount && (
             <span className="product-old-price">
-              {formatPrice(product.compare_at_price)}
+              {formatPrice(comparePrice)}
             </span>
           )}
+
         </div>
 
-        {/* Stock information */}
+        {/* Stock information and action */}
         <div className="product-card-bottom">
+
           <p
             className={`product-stock ${
               inStock ? "in-stock" : "out-of-stock"
@@ -150,6 +174,7 @@ function ProductCard({ product }) {
               "SOLD OUT"
             )}
           </button>
+
         </div>
       </div>
     </article>

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\Schemas;
 
 use App\Models\Category;
+use App\Models\Product;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -70,6 +71,42 @@ class ProductForm
                             ->searchable()
                             ->preload()
                             ->nullable(),
+
+                        Select::make('product_level')
+                            ->label('Product Collection')
+                            ->options([
+                                Product::LEVEL_AFFORDABLE => 'Affordable',
+                                Product::LEVEL_EXECUTIVE => 'Executive',
+                            ])
+                            ->required()
+                            ->default(Product::LEVEL_AFFORDABLE)
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                if ($state !== Product::LEVEL_EXECUTIVE) {
+                                    $set('executive_category', null);
+                                }
+                            })
+                            ->helperText(
+                                'Choose whether this product belongs to the Affordable or Executive collection.'
+                            ),
+
+                        Select::make('executive_category')
+                            ->label('Executive Subcategory')
+                            ->options(Product::EXECUTIVE_CATEGORIES)
+                            ->visible(
+                                fn (callable $get): bool =>
+                                    $get('product_level') === Product::LEVEL_EXECUTIVE
+                            )
+                            ->required(
+                                fn (callable $get): bool =>
+                                    $get('product_level') === Product::LEVEL_EXECUTIVE
+                            )
+                            ->live()
+                            ->searchable()
+                            ->placeholder('Select executive subcategory')
+                            ->helperText(
+                                'Choose Premium, Luxury, Designer or Exclusive.'
+                            ),
 
                         TextInput::make('color')
                             ->label('Color')

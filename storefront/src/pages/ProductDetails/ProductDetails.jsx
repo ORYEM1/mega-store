@@ -1,9 +1,31 @@
+
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 
-import {FaArrowLeft,FaArrowRight,FaBolt,FaCheck,FaMinus,FaPlus,FaShoppingBag,FaStar,FaRegStar,FaEdit,FaWhatsapp} from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaArrowRight,
+  FaBolt,
+  FaCheck,
+  FaMinus,
+  FaPlus,
+  FaShoppingBag,
+  FaStar,
+  FaRegStar,
+  FaEdit,
+  FaWhatsapp,
+} from "react-icons/fa";
 
-import {getProducts,getProductReviews,submitProductReview} from "../../services/api";
+import {
+  getProducts,
+  getProductReviews,
+  submitProductReview,
+} from "../../services/api";
 
 import Navbar from "../../components/Navbar/Navbar";
 import { useCartStore } from "../../store/cartStore";
@@ -11,7 +33,32 @@ import { useAuthStore } from "../../store/authStore";
 
 import "./ProductDetails.css";
 
+// =====================================
+// COLLECTION CONFIGURATION
+// =====================================
 
+const COLLECTION_SLUGS = {
+  men: [
+    "men-shirt",
+    "men-suite",
+    "jeans",
+    "shoes",
+    "watches",
+    "jacket",
+    "head-wear",
+    "under-wear",
+  ],
+
+  ladies: [
+    "ladies-dress",
+    "ladies-suite",
+    "kitenge",
+  ],
+};
+
+// =====================================
+// HELPERS
+// =====================================
 
 function formatPrice(price) {
   return new Intl.NumberFormat("en-UG", {
@@ -31,9 +78,45 @@ function normalizeStock(value) {
   return Math.floor(stock);
 }
 
+function normalizeProductLevel(level) {
+  return String(level || "affordable").toLowerCase() === "executive"
+    ? "executive"
+    : "affordable";
+}
+
+function formatExecutiveCategory(category) {
+  const labels = {
+    premium: "Premium",
+    luxury: "Luxury",
+    designer: "Designer",
+    exclusive: "Exclusive",
+  };
+
+  return labels[String(category || "").toLowerCase()] || "";
+}
+
 function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const [searchParams] = useSearchParams();
+
+  // =====================================
+  // COLLECTION
+  // =====================================
+
+  const selectedCollection =
+    searchParams.get("collection") === "ladies"
+      ? "ladies"
+      : "men";
+
+  const collectionLabel =
+    selectedCollection === "ladies" ? "Ladies" : "Men";
+
+  const homeUrl = `/?collection=${selectedCollection}`;
+
+  const allowedCategorySlugs =
+    COLLECTION_SLUGS[selectedCollection];
 
   // =====================================
   // PRODUCT STATE
@@ -114,7 +197,9 @@ function ProductDetails() {
       } catch (err) {
         console.error("Failed to load products:", err);
 
-        setError("We could not load this product. Please try again.");
+        setError(
+          "We could not load this product. Please try again."
+        );
       } finally {
         if (showLoading) {
           setLoading(false);
@@ -148,7 +233,9 @@ function ProductDetails() {
         console.error("Failed to load product details:", err);
 
         if (!cancelled) {
-          setError("We could not load this product. Please try again.");
+          setError(
+            "We could not load this product. Please try again."
+          );
         }
       } finally {
         if (!cancelled) {
@@ -193,160 +280,206 @@ function ProductDetails() {
   );
 
   // =====================================
-// PRODUCT SEO METADATA
+// PRODUCT CLASSIFICATION
 // =====================================
 
-useEffect(() => {
-  if (!product) return;
+const productLevel = normalizeProductLevel(
+  product?.product_level
+);
 
-  const siteUrl =
-    import.meta.env.VITE_SITE_URL || window.location.origin;
+const executiveCategory = formatExecutiveCategory(
+  product?.executive_category
+);
 
-  const productUrl = `${siteUrl.replace(/\/$/, "")}/products/${product.id}`;
+const classificationLabel =
+  productLevel === "executive"
+    ? `Executive ${executiveCategory}`
+    : "Affordable Collection";
 
-  const title = `${product.name} | Mega Store`;
+  // =====================================
+  // PRODUCT SEO METADATA
+  // =====================================
 
-  const description = (
-    product.description ||
-    `Shop ${product.name} at Mega Store.`
-  ).replace(/\s+/g, " ").slice(0, 160);
+  useEffect(() => {
+    if (!product) return;
 
-  const image = product.photo || "";
+    const siteUrl =
+      import.meta.env.VITE_SITE_URL || window.location.origin;
 
-  // Update browser title.
-  document.title = title;
+    const productUrl =
+      `${siteUrl.replace(/\/$/, "")}/products/${product.id}`;
 
-  // Create or update metadata.
-  const updateMeta = (attribute, key, content) => {
-    let element = document.head.querySelector(
-      `meta[${attribute}="${key}"]`
+    const title = `${product.name} | Living Earth`;
+
+    const description = (
+      product.description ||
+      `Shop ${product.name} at Living Earth.`
+    )
+      .replace(/\s+/g, " ")
+      .slice(0, 160);
+
+    const image = product.photo || "";
+
+    document.title = title;
+
+    const updateMeta = (attribute, key, content) => {
+      let element = document.head.querySelector(
+        `meta[${attribute}="${key}"]`
+      );
+
+      if (!element) {
+        element = document.createElement("meta");
+        element.setAttribute(attribute, key);
+        document.head.appendChild(element);
+      }
+
+      element.setAttribute("content", content);
+    };
+
+    updateMeta("name", "description", description);
+    updateMeta("name", "robots", "index, follow");
+
+    updateMeta("property", "og:type", "product");
+    updateMeta("property", "og:title", title);
+    updateMeta("property", "og:description", description);
+    updateMeta("property", "og:url", productUrl);
+    updateMeta("property", "og:image", image);
+
+    updateMeta("name", "twitter:card", "summary_large_image");
+    updateMeta("name", "twitter:title", title);
+    updateMeta("name", "twitter:description", description);
+    updateMeta("name", "twitter:image", image);
+
+    let canonical = document.head.querySelector(
+      'link[rel="canonical"]'
     );
 
-    if (!element) {
-      element = document.createElement("meta");
-      element.setAttribute(attribute, key);
-      document.head.appendChild(element);
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      document.head.appendChild(canonical);
     }
 
-    element.setAttribute("content", content);
-  };
+    canonical.href = productUrl;
+  }, [product]);
 
-  updateMeta("name", "description", description);
-  updateMeta("name", "robots", "index, follow");
+  // =====================================
+  // PRODUCT STRUCTURED DATA (JSON-LD)
+  // =====================================
 
-  updateMeta("property", "og:type", "product");
-  updateMeta("property", "og:title", title);
-  updateMeta("property", "og:description", description);
-  updateMeta("property", "og:url", productUrl);
-  updateMeta("property", "og:image", image);
+  useEffect(() => {
+    if (!product) return;
 
-  updateMeta("name", "twitter:card", "summary_large_image");
-  updateMeta("name", "twitter:title", title);
-  updateMeta("name", "twitter:description", description);
-  updateMeta("name", "twitter:image", image);
+    const siteUrl =
+      import.meta.env.VITE_SITE_URL || window.location.origin;
 
-  // Canonical URL.
-  let canonical = document.head.querySelector(
-    'link[rel="canonical"]'
-  );
+    const productUrl =
+      `${siteUrl.replace(/\/$/, "")}/products/${product.id}`;
 
-  if (!canonical) {
-    canonical = document.createElement("link");
-    canonical.rel = "canonical";
-    document.head.appendChild(canonical);
-  }
+    const imageUrl = product.photo || undefined;
 
-  canonical.href = productUrl;
+    const productSchema = {
+      "@context": "https://schema.org",
+      "@type": "Product",
 
-}, [product]);
+      name: product.name,
 
+      description:
+        product.description ||
+        `Shop ${product.name} at Living Earth.`,
 
-// =====================================
-// PRODUCT STRUCTURED DATA (JSON-LD)
-// =====================================
+      sku: product.sku || undefined,
 
-useEffect(() => {
-  if (!product) return;
+      image: imageUrl ? [imageUrl] : undefined,
 
-  const siteUrl =
-    import.meta.env.VITE_SITE_URL || window.location.origin;
+      brand: {
+        "@type": "Brand",
+        name: "Living Earth",
+      },
 
-  const productUrl =
-    `${siteUrl.replace(/\/$/, "")}/products/${product.id}`;
+      offers: {
+        "@type": "Offer",
 
-  const imageUrl = product.photo || undefined;
+        url: productUrl,
 
-  const productSchema = {
-    "@context": "https://schema.org",
-    "@type": "Product",
+        priceCurrency: "UGX",
 
-    name: product.name,
+        price: Number(product.price).toFixed(0),
 
-    description:
-      product.description ||
-      `Shop ${product.name} at Mega Store.`,
+        availability:
+          Number(product.stock_quantity) > 0
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
 
-    sku: product.sku || undefined,
+        itemCondition: "https://schema.org/NewCondition",
+      },
+    };
 
-    image: imageUrl ? [imageUrl] : undefined,
+    let script = document.getElementById("product-json-ld");
 
-    brand: {
-      "@type": "Brand",
-      name: "Mega Store",
-    },
+    if (!script) {
+      script = document.createElement("script");
+      script.id = "product-json-ld";
+      script.type = "application/ld+json";
+      document.head.appendChild(script);
+    }
 
-    offers: {
-      "@type": "Offer",
+    script.textContent = JSON.stringify(productSchema);
 
-      url: productUrl,
-
-      priceCurrency: "UGX",
-
-      price: Number(product.price).toFixed(0),
-
-      availability:
-        Number(product.stock_quantity) > 0
-          ? "https://schema.org/InStock"
-          : "https://schema.org/OutOfStock",
-
-      itemCondition: "https://schema.org/NewCondition",
-    },
-  };
-
-  let script = document.getElementById("product-json-ld");
-
-  if (!script) {
-    script = document.createElement("script");
-    script.id = "product-json-ld";
-    script.type = "application/ld+json";
-    document.head.appendChild(script);
-  }
-
-  script.textContent = JSON.stringify(productSchema);
-
-  return () => {
-    document.getElementById("product-json-ld")?.remove();
-  };
-}, [product]);
+    return () => {
+      document.getElementById("product-json-ld")?.remove();
+    };
+  }, [product]);
 
   // =====================================
   // SIMILAR PRODUCTS
   // =====================================
 
-  const similarProducts = useMemo(() => {
-    if (!product?.category?.id) {
-      return [];
-    }
+  // =====================================
+// SIMILAR PRODUCTS
+// =====================================
 
-    return products
-      .filter(
-        (item) =>
-          String(item.id) !== String(product.id) &&
-          String(item.category?.id) === String(product.category.id)
-      )
-      .slice(0, 8);
-  }, [products, product]);
+const similarProducts = useMemo(() => {
+  if (!product?.category?.id) {
+    return [];
+  }
 
+  return products
+    .filter((item) => {
+      const sameCategory =
+        String(item.category?.id) ===
+        String(product.category.id);
+
+      const sameCollection =
+        allowedCategorySlugs.includes(item.category?.slug);
+
+      const sameProductLevel =
+        normalizeProductLevel(item.product_level) ===
+        productLevel;
+
+      const sameExecutiveCategory =
+        productLevel !== "executive" ||
+        String(item.executive_category || "").toLowerCase() ===
+          String(product.executive_category || "").toLowerCase();
+
+      const notCurrentProduct =
+        String(item.id) !== String(product.id);
+
+      return (
+        sameCategory &&
+        sameCollection &&
+        sameProductLevel &&
+        sameExecutiveCategory &&
+        notCurrentProduct
+      );
+    })
+    .slice(0, 8);
+}, [
+  products,
+  product,
+  allowedCategorySlugs,
+  productLevel,
+]);
   // =====================================
   // PRODUCT SIZES
   // =====================================
@@ -451,12 +584,10 @@ useEffect(() => {
     }
   }, [id, reviewPage]);
 
-  // Load reviews when the product or review page changes.
   useEffect(() => {
     fetchReviews();
   }, [fetchReviews]);
 
-  // Prepare an existing review for editing.
   function handleEditReview() {
     if (!myReview) return;
 
@@ -474,7 +605,6 @@ useEffect(() => {
       });
   }
 
-  // Cancel editing.
   function cancelReviewEdit() {
     setRating(0);
     setReviewText("");
@@ -483,7 +613,6 @@ useEffect(() => {
     setReviewMessage("");
   }
 
-  // Submit a review.
   async function handleSubmitReview(event) {
     event.preventDefault();
 
@@ -515,10 +644,8 @@ useEffect(() => {
       setRating(Number(response.review.rating));
       setReviewText(response.review.review || "");
 
-      // Refresh reviews and the customer's review.
       await fetchReviews();
 
-      // Update product rating in local product state.
       setProducts((currentProducts) =>
         currentProducts.map((item) =>
           String(item.id) === String(id)
@@ -550,7 +677,10 @@ useEffect(() => {
     }
   }
 
-  // Display star ratings.
+  // =====================================
+  // DISPLAY STAR RATINGS
+  // =====================================
+
   function renderStars(value, interactive = false, onChange = null) {
     const selectedRating = Number(value) || 0;
 
@@ -605,7 +735,10 @@ useEffect(() => {
     if (!product) return;
 
     if (hasSizes && !selectedSizeOption) {
-      setMessage("Please select a size before adding this product.");
+      setMessage(
+        "Please select a size before adding this product."
+      );
+
       setMessageType("error");
       return;
     }
@@ -639,12 +772,18 @@ useEffect(() => {
     const existingItem = cartItems.find(
       (item) =>
         String(item.id) === String(product.id) &&
-        String(item.selected_size || "") === String(selectedSize || "")
+        String(item.selected_size || "") ===
+          String(selectedSize || "")
     );
 
-    const currentCartQuantity = normalizeStock(existingItem?.quantity);
+    const currentCartQuantity = normalizeStock(
+      existingItem?.quantity
+    );
 
-    if (currentCartQuantity + selectedQuantity > currentStock) {
+    if (
+      currentCartQuantity + selectedQuantity >
+      currentStock
+    ) {
       const remaining = Math.max(
         0,
         currentStock - currentCartQuantity
@@ -663,7 +802,9 @@ useEffect(() => {
     addItem(
       {
         ...product,
+
         price: Number(product.price) || 0,
+
         photo: product.photo || null,
 
         selected_size: hasSizes ? selectedSize : null,
@@ -686,28 +827,42 @@ useEffect(() => {
   }
 
   function increaseQuantity() {
-    setQuantity((current) => Math.min(stock, current + 1));
+    setQuantity((current) =>
+      Math.min(stock, current + 1)
+    );
   }
 
   function decreaseQuantity() {
-    setQuantity((current) => Math.max(1, current - 1));
+    setQuantity((current) =>
+      Math.max(1, current - 1)
+    );
   }
 
   // =====================================
   // WHATSAPP PRODUCT SHARING
   // =====================================
 
- const handleWhatsAppShare = () => {
-  const shareUrl = `${window.location.origin}/share/products/${product.id}`;
+  const handleWhatsAppShare = () => {
+    if (!product) return;
 
-  const message = `Check out ${product.name} at Mega Store!`;
+    const shareUrl =
+      `${window.location.origin}/products/${product.id}?collection=${selectedCollection}`;
 
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
-    `${message}\n${shareUrl}`
-  )}`;
+    const message =
+      `Check out ${product.name} at Living Earth!`;
 
-  window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-};
+    const whatsappUrl =
+      `https://wa.me/?text=${encodeURIComponent(
+        `${message}\n${shareUrl}`
+      )}`;
+
+    window.open(
+      whatsappUrl,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
   // =====================================
   // LOADING SCREEN
   // =====================================
@@ -747,7 +902,7 @@ useEffect(() => {
             TRY AGAIN <FaArrowRight />
           </button>
 
-          <Link to="/">RETURN TO SHOPPING</Link>
+          <Link to={homeUrl}>RETURN TO SHOPPING</Link>
         </div>
       </div>
     );
@@ -769,7 +924,7 @@ useEffect(() => {
             This product may no longer be published or may not exist.
           </p>
 
-          <Link to="/">RETURN TO SHOPPING</Link>
+          <Link to={homeUrl}>RETURN TO SHOPPING</Link>
         </div>
       </div>
     );
@@ -787,7 +942,12 @@ useEffect(() => {
 
         {/* Breadcrumb */}
         <nav className="product-breadcrumb" aria-label="Breadcrumb">
-          <Link to="/">HOME</Link>
+          <Link to={homeUrl}>HOME</Link>
+
+          <span>/</span>
+
+          <span>{collectionLabel.toUpperCase()}</span>
+
           <span>/</span>
 
           {product.category && (
@@ -800,10 +960,7 @@ useEffect(() => {
           <span>{product.name}</span>
         </nav>
 
-        {/* =====================================
-            PRODUCT SECTION
-        ===================================== */}
-
+        {/* PRODUCT SECTION */}
         <section className="product-details-layout">
 
           {/* Product image */}
@@ -817,14 +974,15 @@ useEffect(() => {
               />
             ) : (
               <div className="product-details-no-image">
-                <span>AC.</span>
+                <span>LE.</span>
                 <p>NO IMAGE AVAILABLE</p>
               </div>
             )}
 
-            <div className="details-image-label">
-              MEGA STORE COLLECTIONS
-            </div>
+           <div className="details-image-label">
+  LIVING EARTH {collectionLabel.toUpperCase()} COLLECTION
+  <span>{classificationLabel.toUpperCase()}</span>
+</div>
 
             {!available && (
               <span className="product-out-of-stock">
@@ -843,16 +1001,28 @@ useEffect(() => {
           <div className="product-details-info">
 
             <div className="details-product-topline">
-              <p className="product-details-category">
-                {product.category?.name || "UNCATEGORIZED"}
-              </p>
+  <div className="product-details-classification">
+    <p className="product-details-category">
+      {product.category?.name || "UNCATEGORIZED"}
+    </p>
 
-              {available && (
-                <span className="details-available">
-                  <FaBolt /> IN STOCK
-                </span>
-              )}
-            </div>
+    <span
+      className={`product-level-badge ${
+        productLevel === "executive"
+          ? "executive"
+          : "affordable"
+      }`}
+    >
+      {classificationLabel}
+    </span>
+  </div>
+
+  {available && (
+    <span className="details-available">
+      <FaBolt /> IN STOCK
+    </span>
+  )}
+</div>
 
             <h1>{product.name}</h1>
 
@@ -920,7 +1090,8 @@ useEffect(() => {
                     );
 
                     const isSelected =
-                      String(selectedSize) === String(sizeOption.size);
+                      String(selectedSize) ===
+                      String(sizeOption.size);
 
                     const isAvailable = sizeStock > 0;
 
@@ -1063,13 +1234,9 @@ useEffect(() => {
           </div>
         </section>
 
-        {/* =====================================
-            CUSTOMER REVIEWS
-        ===================================== */}
-
+        {/* CUSTOMER REVIEWS */}
         <section className="product-reviews-section">
 
-          {/* Review heading */}
           <div className="product-reviews-heading">
             <div>
               <p className="section-eyebrow">
@@ -1099,13 +1266,11 @@ useEffect(() => {
             className="product-review-form-wrapper"
             id="product-review-form"
           >
-
             {isAuthenticated ? (
               <form
                 className="product-review-form"
                 onSubmit={handleSubmitReview}
               >
-
                 <div className="review-form-heading">
                   <div>
                     <h3>
@@ -1136,11 +1301,7 @@ useEffect(() => {
                   YOUR RATING
                 </label>
 
-                {renderStars(
-                  rating,
-                  true,
-                  setRating
-                )}
+                {renderStars(rating, true, setRating)}
 
                 <label
                   htmlFor="product-review-text"
@@ -1174,7 +1335,6 @@ useEffect(() => {
                 )}
 
                 <div className="review-form-actions">
-
                   <button
                     type="submit"
                     className="submit-review-button"
@@ -1198,12 +1358,10 @@ useEffect(() => {
                       CANCEL
                     </button>
                   )}
-
                 </div>
               </form>
             ) : (
               <div className="review-login-prompt">
-
                 <div>
                   <h3>HAVE SOMETHING TO SAY?</h3>
 
@@ -1218,15 +1376,12 @@ useEffect(() => {
                 >
                   LOGIN TO WRITE A REVIEW <FaArrowRight />
                 </button>
-
               </div>
             )}
-
           </div>
 
           {/* Reviews list */}
           <div className="product-reviews-list">
-
             <div className="reviews-list-heading">
               <h3>CUSTOMER REVIEWS</h3>
 
@@ -1252,7 +1407,6 @@ useEffect(() => {
               </div>
             ) : reviews.length === 0 ? (
               <div className="reviews-empty">
-
                 <div className="empty-review-stars">
                   <FaRegStar />
                   <FaRegStar />
@@ -1266,7 +1420,6 @@ useEffect(() => {
                 <p>
                   Be the first customer to review this product.
                 </p>
-
               </div>
             ) : (
               <>
@@ -1279,16 +1432,15 @@ useEffect(() => {
                     .join(" ") || "Customer";
 
                   const isOwnReview =
-                    String(item.customer_id) === String(customer?.id);
+                    String(item.customer_id) ===
+                    String(customer?.id);
 
                   return (
                     <article
                       className="product-review-card"
                       key={item.id}
                     >
-
                       <div className="review-card-top">
-
                         <div className="reviewer-avatar">
                           {reviewerName.charAt(0).toUpperCase()}
                         </div>
@@ -1314,7 +1466,6 @@ useEffect(() => {
                             YOUR REVIEW
                           </span>
                         )}
-
                       </div>
 
                       {renderStars(item.rating)}
@@ -1338,7 +1489,6 @@ useEffect(() => {
                           <FaEdit /> EDIT YOUR REVIEW
                         </button>
                       )}
-
                     </article>
                   );
                 })}
@@ -1347,7 +1497,6 @@ useEffect(() => {
                 {reviewPagination &&
                   reviewPagination.last_page > 1 && (
                     <div className="reviews-pagination">
-
                       <button
                         type="button"
                         disabled={!reviewPagination.prev_page_url}
@@ -1374,49 +1523,45 @@ useEffect(() => {
                       >
                         NEXT <FaArrowRight />
                       </button>
-
                     </div>
                   )}
               </>
             )}
-
           </div>
         </section>
 
-        {/* =====================================
-            SIMILAR PRODUCTS
-        ===================================== */}
-
-                
+        {/* SIMILAR PRODUCTS */}
         {similarProducts.length > 0 && (
           <section className="similar-products">
-          
             <div className="similar-products-heading">
               <div>
                 <p className="section-eyebrow">
-                  THE COLLECTION
+                  LIVING EARTH {collectionLabel.toUpperCase()}
                 </p>
-        
-                <h2>YOU MAY ALSO LIKE<span>.</span></h2>
+
+                <h2>
+                  YOU MAY ALSO LIKE<span>.</span>
+                </h2>
               </div>
-        
-              <Link to="/">
+
+              <Link to={homeUrl}>
                 EXPLORE MORE <FaArrowRight />
               </Link>
             </div>
-        
+
             <div className="similar-products-scroll">
               {similarProducts.map((item) => {
-                const itemStock = normalizeStock(item.stock_quantity);
-              
+                const itemStock = normalizeStock(
+                  item.stock_quantity
+                );
+
                 return (
                   <Link
                     key={item.id}
-                    to={`/products/${item.id}`}
+                    to={`/products/${item.id}?collection=${selectedCollection}`}
                     className="similar-product-card"
                   >
                     <div className="similar-product-image-wrapper">
-                
                       {item.photo ? (
                         <img
                           src={item.photo}
@@ -1425,25 +1570,36 @@ useEffect(() => {
                         />
                       ) : (
                         <div className="similar-product-no-image">
-                          AC.
+                          LE.
                         </div>
                       )}
-        
+
                       {itemStock === 0 && (
                         <span className="product-out-of-stock">
                           SOLD OUT
                         </span>
                       )}
-        
                     </div>
-                    
-                    <div className="similar-product-info">
-                      <h3>{item.name}</h3>
-                    
+
+                   <div className="similar-product-info">
+                       <span
+                         className={`similar-product-level ${
+                           normalizeProductLevel(item.product_level)
+                         }`}
+                       >
+                         {normalizeProductLevel(item.product_level) === "executive"
+                           ? `EXECUTIVE ${formatExecutiveCategory(
+                               item.executive_category
+                             ).toUpperCase()}`
+                           : "AFFORDABLE"}
+                       </span>
+                           
+                       <h3>{item.name}</h3>
+
                       <p className="similar-product-price">
                         {formatPrice(item.price)}
                       </p>
-                    
+
                       <p className="similar-product-stock">
                         {itemStock > 0
                           ? `${itemStock} AVAILABLE`
@@ -1454,19 +1610,16 @@ useEffect(() => {
                 );
               })}
             </div>
-            
           </section>
         )}
 
-
         {/* Continue shopping */}
         <div className="product-details-back">
-          <Link to="/">
+          <Link to={homeUrl}>
             <FaArrowLeft />
             CONTINUE SHOPPING
           </Link>
         </div>
-
       </main>
     </div>
   );

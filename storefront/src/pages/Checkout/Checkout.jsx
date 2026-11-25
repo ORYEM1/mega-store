@@ -961,6 +961,19 @@ function Checkout() {
                           }}
                         />
                       </div>
+
+
+                      <span
+                          className={`checkout-summary-product-level ${
+                            item.product_level === "executive"
+                              ? "executive"
+                              : "affordable"
+                          }`}
+                        >
+                          {item.product_level === "executive"
+                            ? `Executive ${(item.executive_category || "").toUpperCase()}`
+                            : "Affordable"}
+                        </span>
                         
                       <div className="checkout-summary-product-info">
                         <h3>{item.name}</h3>

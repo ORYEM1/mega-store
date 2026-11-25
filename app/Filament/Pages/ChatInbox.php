@@ -6,6 +6,7 @@ use App\Events\ChatMessageSent;
 use App\Models\ChatConversation;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Url;
 
 class ChatInbox extends Page
@@ -21,25 +22,45 @@ class ChatInbox extends Page
 
     protected static ?int $navigationSort = 5;
 
-    // Keep the selected conversation in the browser URL.
+    /**
+     * Shared support presence cache key.
+     */
+    private const PRESENCE_CACHE_KEY = 'chat:support:online';
+
+    /**
+     * How long support remains online without a heartbeat.
+     */
+    private const PRESENCE_TTL_SECONDS = 20;
+
     #[Url(as: 'conversation', history: true)]
     public ?int $selectedConversationId = null;
 
     public string $reply = '';
 
-    /**
-     * Handle a conversation ID supplied through the URL.
-     */
     public function mount(): void
     {
+        $this->updateSupportPresence();
+
         if ($this->selectedConversationId) {
             $this->markMessagesAsRead($this->selectedConversationId);
         }
     }
 
     /**
-     * Retrieve all customer conversations.
+     * Mark support as online while this inbox is open.
      */
+    private function updateSupportPresence(): void
+    {
+        Cache::put(
+            self::PRESENCE_CACHE_KEY,
+            [
+                'admin_id' => Auth::id(),
+                'last_seen' => now()->toISOString(),
+            ],
+            now()->addSeconds(self::PRESENCE_TTL_SECONDS)
+        );
+    }
+
     public function getConversations()
     {
         return ChatConversation::query()
@@ -58,9 +79,6 @@ class ChatInbox extends Page
             ->get();
     }
 
-    /**
-     * Retrieve messages belonging to the selected conversation.
-     */
     public function getSelectedConversation()
     {
         if (!$this->selectedConversationId) {
@@ -74,9 +92,6 @@ class ChatInbox extends Page
         ])->find($this->selectedConversationId);
     }
 
-    /**
-     * Select a conversation from the inbox.
-     */
     public function selectConversation(int $id): void
     {
         $conversation = ChatConversation::findOrFail($id);
@@ -90,9 +105,6 @@ class ChatInbox extends Page
         $this->markMessagesAsRead($conversation->id);
     }
 
-    /**
-     * Mark unread customer messages as read.
-     */
     private function markMessagesAsRead(int $conversationId): void
     {
         ChatConversation::findOrFail($conversationId)
@@ -105,17 +117,13 @@ class ChatInbox extends Page
     }
 
     /**
-     * Refresh the inbox through Livewire polling.
+     * Refresh inbox and renew the support heartbeat.
      */
     public function refreshInbox(): void
     {
-        // Livewire re-renders the page after this action.
-        // The selected conversation and reply text remain unchanged.
+        $this->updateSupportPresence();
     }
 
-    /**
-     * Send an admin reply to the selected conversation.
-     */
     public function sendReply(): void
     {
         $this->validate([
@@ -144,7 +152,6 @@ class ChatInbox extends Page
             'last_message_at' => now(),
         ]);
 
-        // Notify the customer through their conversation channel.
         broadcast(new ChatMessageSent($message));
 
         $this->reply = '';

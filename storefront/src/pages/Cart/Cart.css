@@ -1,11 +1,22 @@
 /* ========================================
-   CART PAGE - BOLD STREETWEAR
+   LIVING EARTH - CART PAGE
 ======================================== */
 
 .cart-page {
+  --earth-green: #263d19;
+  --earth-primary: #405b2d;
+  --earth-olive: #667746;
+  --earth-light-olive: #e2e3c9;
+  --earth-cream: #fbf3e7;
+  --earth-beige: #ead7bf;
+  --earth-text: #29271f;
+  --earth-muted: #777366;
+  --earth-border: #d8cbb7;
+  --earth-white: #fff;
+
   min-height: 100vh;
-  background: #0b0b0b;
-  color: #fff;
+  background: var(--earth-cream);
+  color: var(--earth-text);
   font-family: "Inter", sans-serif;
 }
 
@@ -17,29 +28,34 @@
   box-sizing: border-box;
 }
 
-/* Breadcrumb */
+/* ========================================
+   BREADCRUMB
+======================================== */
 
 .cart-breadcrumb {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 45px;
-  color: #666;
+  color: var(--earth-muted);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
 }
 
 .cart-breadcrumb a {
-  color: #999;
+  color: var(--earth-primary);
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 .cart-breadcrumb a:hover {
-  color: #c6ff00;
+  color: var(--earth-olive);
 }
 
-/* Heading */
+/* ========================================
+   HEADING
+======================================== */
 
 .cart-heading {
   display: flex;
@@ -48,12 +64,12 @@
   gap: 20px;
   margin-bottom: 45px;
   padding-bottom: 25px;
-  border-bottom: 1px solid #292929;
+  border-bottom: 1px solid var(--earth-border);
 }
 
 .cart-eyebrow {
   margin: 0 0 12px;
-  color: #c6ff00;
+  color: var(--earth-olive);
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 2px;
@@ -65,15 +81,16 @@
   font-size: clamp(48px, 6vw, 75px);
   line-height: 0.95;
   letter-spacing: 2px;
+  color: var(--earth-green);
 }
 
 .cart-heading h1 span {
-  color: #c6ff00;
+  color: var(--earth-olive);
 }
 
 .cart-heading-description {
   margin: 12px 0 0;
-  color: #888;
+  color: var(--earth-muted);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -85,9 +102,9 @@
   gap: 9px;
   padding: 12px 16px;
   background: transparent;
-  border: 1px solid #444;
+  border: 1px solid var(--earth-border);
   border-radius: 3px;
-  color: #aaa;
+  color: var(--earth-muted);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 1px;
@@ -96,11 +113,13 @@
 }
 
 .cart-clear-button:hover {
-  border-color: #ff5555;
-  color: #ff5555;
+  border-color: #b94b40;
+  color: #b94b40;
 }
 
-/* Empty cart */
+/* ========================================
+   EMPTY CART
+======================================== */
 
 .cart-empty {
   min-height: 430px;
@@ -110,8 +129,8 @@
   justify-content: center;
   padding: 40px 20px;
   text-align: center;
-  background: #141414;
-  border: 1px solid #292929;
+  background: var(--earth-white);
+  border: 1px solid var(--earth-border);
 }
 
 .cart-empty-icon {
@@ -121,10 +140,11 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 25px;
-  border: 1px solid #444;
+  border: 1px solid var(--earth-border);
   border-radius: 50%;
-  color: #c6ff00;
+  color: var(--earth-primary);
   font-size: 30px;
+  background: var(--earth-light-olive);
 }
 
 .cart-empty h2 {
@@ -132,12 +152,13 @@
   font-family: "Bebas Neue", sans-serif;
   font-size: 45px;
   letter-spacing: 1px;
+  color: var(--earth-green);
 }
 
 .cart-empty > p:not(.cart-eyebrow) {
   max-width: 400px;
   margin: 0 0 25px;
-  color: #888;
+  color: var(--earth-muted);
   font-size: 13px;
   line-height: 1.7;
 }
@@ -149,8 +170,8 @@
   justify-content: center;
   gap: 12px;
   padding: 0 25px;
-  background: #c6ff00;
-  color: #0b0b0b;
+  background: var(--earth-green);
+  color: var(--earth-white);
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 1px;
@@ -159,11 +180,13 @@
 }
 
 .cart-shop-button:hover {
-  background: #d6ff4d;
+  background: var(--earth-primary);
   transform: translateY(-2px);
 }
 
-/* Cart layout */
+/* ========================================
+   CART LAYOUT
+======================================== */
 
 .cart-layout {
   display: grid;
@@ -172,7 +195,9 @@
   gap: 40px;
 }
 
-/* Cart items */
+/* ========================================
+   CART ITEMS
+======================================== */
 
 .cart-items {
   min-width: 0;
@@ -190,16 +215,19 @@
   font-family: "Bebas Neue", sans-serif;
   font-size: 25px;
   letter-spacing: 1px;
+  color: var(--earth-green);
 }
 
 .cart-items-heading span {
-  color: #888;
+  color: var(--earth-muted);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
 }
 
-/* Individual cart item */
+/* ========================================
+   INDIVIDUAL CART ITEM
+======================================== */
 
 .cart-item {
   display: grid;
@@ -207,7 +235,7 @@
   align-items: center;
   gap: 22px;
   padding: 22px 0;
-  border-bottom: 1px solid #292929;
+  border-bottom: 1px solid var(--earth-border);
 }
 
 .cart-item-image {
@@ -215,7 +243,7 @@
   height: 160px;
   display: block;
   overflow: hidden;
-  background: #202020;
+  background: var(--earth-beige);
 }
 
 .cart-item-image img {
@@ -237,22 +265,24 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #202020;
+  background: var(--earth-light-olive);
 }
 
 .cart-item-no-image span {
-  color: #c6ff00;
+  color: var(--earth-green);
   font-family: "Bebas Neue", sans-serif;
   font-size: 40px;
 }
 
 .cart-item-no-image p {
-  color: #777;
+  color: var(--earth-muted);
   font-size: 9px;
   letter-spacing: 1px;
 }
 
-/* Product details */
+/* ========================================
+   PRODUCT DETAILS
+======================================== */
 
 .cart-item-details {
   min-width: 0;
@@ -260,7 +290,7 @@
 
 .cart-item-category {
   margin: 0 0 8px;
-  color: #c6ff00;
+  color: var(--earth-olive);
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 1.5px;
@@ -269,7 +299,7 @@
 
 .cart-item-name {
   display: inline-block;
-  color: #fff;
+  color: var(--earth-green);
   font-family: "Bebas Neue", sans-serif;
   font-size: 25px;
   letter-spacing: 0.5px;
@@ -278,35 +308,90 @@
 }
 
 .cart-item-name:hover {
-  color: #c6ff00;
+  color: var(--earth-olive);
 }
 
 .cart-item-unit-price {
   margin: 8px 0 15px;
-  color: #c6ff00;
+  color: var(--earth-primary);
   font-size: 13px;
   font-weight: 800;
 }
 
 .cart-item-unit-price span {
-  color: #777;
+  color: var(--earth-muted);
   font-size: 9px;
   font-weight: 600;
 }
 
-/* Stock warning */
+/* ========================================
+   PRODUCT CLASSIFICATION
+======================================== */
+
+.cart-product-level {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 0 0 10px;
+  padding: 6px 10px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.cart-product-level.affordable {
+  background: var(--earth-light-olive);
+  border: 1px solid #cbd5bd;
+  color: var(--earth-primary);
+}
+
+.cart-product-level.executive {
+  background: var(--earth-green);
+  border: 1px solid var(--earth-green);
+  color: var(--earth-white);
+}
+
+/* ========================================
+   PRODUCT SIZE
+======================================== */
+
+.cart-item-size {
+  margin: 10px 0;
+  color: var(--earth-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.cart-item-size strong {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 5px 9px;
+  background: var(--earth-light-olive);
+  border: 1px solid var(--earth-border);
+  color: var(--earth-green);
+  font-size: 11px;
+}
+
+/* ========================================
+   STOCK WARNING
+======================================== */
 
 .cart-stock-warning {
   display: flex;
   align-items: center;
   gap: 7px;
   margin: 0 0 12px;
-  color: #ff7777;
+  color: #b94b40;
   font-size: 10px;
   font-weight: 700;
 }
 
-/* Item actions */
+/* ========================================
+   ITEM ACTIONS
+======================================== */
 
 .cart-item-actions {
   display: flex;
@@ -319,7 +404,8 @@
   height: 34px;
   display: flex;
   align-items: center;
-  border: 1px solid #444;
+  border: 1px solid var(--earth-border);
+  background: var(--earth-white);
 }
 
 .cart-quantity button {
@@ -330,23 +416,23 @@
   justify-content: center;
   background: transparent;
   border: none;
-  color: #fff;
+  color: var(--earth-green);
   font-size: 10px;
   cursor: pointer;
 }
 
 .cart-quantity button:hover:not(:disabled) {
-  color: #c6ff00;
+  color: var(--earth-olive);
 }
 
 .cart-quantity button:disabled {
-  color: #555;
+  color: #c4bdaf;
   cursor: not-allowed;
 }
 
 .cart-quantity span {
   min-width: 30px;
-  color: #fff;
+  color: var(--earth-text);
   font-size: 12px;
   font-weight: 700;
   text-align: center;
@@ -359,7 +445,7 @@
   padding: 5px 0;
   background: transparent;
   border: none;
-  color: #888;
+  color: var(--earth-muted);
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 1px;
@@ -367,46 +453,54 @@
 }
 
 .cart-remove-button:hover {
-  color: #ff5555;
+  color: #b94b40;
 }
 
-/* Item total */
+/* ========================================
+   ITEM TOTAL
+======================================== */
 
 .cart-item-total {
   align-self: start;
   padding-top: 5px;
-  color: #fff;
+  color: var(--earth-green);
   font-size: 13px;
   font-weight: 800;
   white-space: nowrap;
 }
 
-/* Continue shopping */
+/* ========================================
+   CONTINUE SHOPPING
+======================================== */
 
 .cart-continue-link {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   margin-top: 30px;
-  color: #c6ff00;
+  color: var(--earth-primary);
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 1px;
   text-decoration: none;
+  transition: gap 0.2s ease;
 }
 
 .cart-continue-link:hover {
   gap: 15px;
+  color: var(--earth-green);
 }
 
-/* Order summary */
+/* ========================================
+   ORDER SUMMARY
+======================================== */
 
 .cart-summary {
   position: sticky;
   top: 25px;
   padding: 28px;
-  background: #171717;
-  border: 1px solid #333;
+  background: var(--earth-white);
+  border: 1px solid var(--earth-border);
 }
 
 .cart-summary h2 {
@@ -414,6 +508,7 @@
   font-family: "Bebas Neue", sans-serif;
   font-size: 34px;
   letter-spacing: 1px;
+  color: var(--earth-green);
 }
 
 .cart-summary-row {
@@ -422,7 +517,7 @@
   justify-content: space-between;
   gap: 15px;
   margin-bottom: 20px;
-  color: #999;
+  color: var(--earth-muted);
   font-size: 11px;
 }
 
@@ -432,47 +527,53 @@
 }
 
 .cart-summary-row span:last-child {
-  color: #fff;
+  color: var(--earth-text);
   font-weight: 700;
 }
 
 .cart-summary-total {
   margin-top: 25px;
   padding-top: 22px;
-  border-top: 1px solid #444;
+  border-top: 1px solid var(--earth-border);
 }
 
 .cart-summary-total span:first-child {
-  color: #fff;
+  color: var(--earth-green);
 }
 
 .cart-summary-total span:last-child {
-  color: #c6ff00;
+  color: var(--earth-primary);
   font-size: 20px;
 }
 
-/* Shipping note */
+/* ========================================
+   SHIPPING NOTE
+======================================== */
 
 .cart-shipping-note {
   margin: 0 0 22px;
-  color: #777;
+  color: var(--earth-muted);
   font-size: 11px;
   line-height: 1.7;
 }
 
-/* Checkout warning */
+/* ========================================
+   CHECKOUT WARNING
+======================================== */
 
 .cart-summary-warning {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   margin: 0 0 18px;
-  color: #ff7777;
+  color: #b94b40;
   font-size: 11px;
   line-height: 1.5;
 }
 
-/* Checkout button */
+/* ========================================
+   CHECKOUT BUTTON
+======================================== */
 
 .cart-checkout-button {
   width: 100%;
@@ -482,10 +583,10 @@
   justify-content: center;
   gap: 10px;
   padding: 12px;
-  background: #c6ff00;
+  background: var(--earth-green);
   border: none;
   border-radius: 3px;
-  color: #0b0b0b;
+  color: var(--earth-white);
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 1px;
@@ -494,7 +595,7 @@
 }
 
 .cart-checkout-button:hover:not(:disabled) {
-  background: #d6ff4d;
+  background: var(--earth-primary);
   transform: translateY(-2px);
 }
 
@@ -503,12 +604,14 @@
   cursor: not-allowed;
 }
 
-/* Summary continue link */
+/* ========================================
+   SUMMARY CONTINUE LINK
+======================================== */
 
 .cart-summary-continue {
   display: block;
   margin-top: 20px;
-  color: #999;
+  color: var(--earth-muted);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 1px;
@@ -517,10 +620,12 @@
 }
 
 .cart-summary-continue:hover {
-  color: #c6ff00;
+  color: var(--earth-primary);
 }
 
-/* Secure note */
+/* ========================================
+   SECURE NOTE
+======================================== */
 
 .cart-secure-note {
   display: flex;
@@ -529,17 +634,19 @@
   gap: 9px;
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid #333;
-  color: #777;
+  border-top: 1px solid var(--earth-border);
+  color: var(--earth-muted);
   font-size: 9px;
   letter-spacing: 0.7px;
 }
 
 .cart-secure-note svg {
-  color: #c6ff00;
+  color: var(--earth-primary);
 }
 
-/* Responsive */
+/* ========================================
+   RESPONSIVE - TABLET
+======================================== */
 
 @media (max-width: 1000px) {
   .cart-layout {
@@ -563,6 +670,10 @@
   }
 }
 
+/* ========================================
+   RESPONSIVE - SMALL TABLET
+======================================== */
+
 @media (max-width: 750px) {
   .cart-main {
     padding: 25px 20px 60px;
@@ -576,6 +687,10 @@
     position: static;
   }
 }
+
+/* ========================================
+   RESPONSIVE - MOBILE
+======================================== */
 
 @media (max-width: 500px) {
   .cart-main {
@@ -626,26 +741,19 @@
   .cart-summary {
     padding: 22px 18px;
   }
+
+  .cart-product-level {
+    font-size: 8px;
+    padding: 5px 8px;
+  }
 }
 
-/* =========================================
-   CART PRODUCT SIZE
-========================================= */
+/* ========================================
+   ACCESSIBILITY
+======================================== */
 
-.cart-item-size {
-  margin: 10px 0;
-  color: #999;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-.cart-item-size strong {
-  display: inline-block;
-  margin-left: 5px;
-  padding: 5px 9px;
-  background: #202020;
-  border: 1px solid #444;
-  color: #c6ff00;
-  font-size: 11px;
+.cart-page button:focus-visible,
+.cart-page a:focus-visible {
+  outline: 2px solid var(--earth-olive);
+  outline-offset: 4px;
 }

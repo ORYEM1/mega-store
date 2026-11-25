@@ -9,8 +9,8 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Illuminate\Support\Facades\Vite;
 use Filament\Support\Colors\Color;
+use Filament\Support\Assets\Css;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -18,9 +18,6 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Filament\Support\Assets\Css;
-use Filament\Support\Facades\FilamentAsset;
-
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -34,48 +31,53 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
 
             // Store branding
-            ->brandName('Adrian Store')
+            ->brandName('Living Earth')
 
-            // Dashboard theme
+            // Primary theme colour
             ->colors([
-                'primary' => Color::Teal,
+                'primary' => Color::hex('#263d19'),
             ])
 
+            // Custom stylesheets
             ->assets([
+                Css::make('admin-theme')
+                    ->relativePublicPath('css/filament/admin-theme.css'),
+
                 Css::make('order-details')
                     ->relativePublicPath('css/filament/orders/view-orders.css'),
             ])
 
-
-
-          
-
-            // Allow the sidebar to collapse on desktop
+            // Sidebar
             ->sidebarCollapsibleOnDesktop()
 
-            // Discover existing resources and pages
+            // Discover resources
             ->discoverResources(
                 in: app_path('Filament/Resources'),
                 for: 'App\\Filament\\Resources'
             )
+
+            // Discover pages
             ->discoverPages(
                 in: app_path('Filament/Pages'),
                 for: 'App\\Filament\\Pages'
             )
+
             ->pages([
                 Dashboard::class,
             ])
 
-            // Discover custom dashboard widgets
+            // Discover widgets
             ->discoverWidgets(
                 in: app_path('Filament/Widgets'),
                 for: 'App\\Filament\\Widgets'
             )
 
+            // Discover clusters
             ->discoverClusters(
                 in: app_path('Filament/Clusters'),
                 for: 'App\\Filament\\Clusters'
             )
+
             ->widgets([
                 AccountWidget::class,
             ])
@@ -92,10 +94,9 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+
             ->authMiddleware([
                 Authenticate::class,
             ]);
-
-            
     }
 }

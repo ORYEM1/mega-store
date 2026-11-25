@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class ChatController extends Controller
 {
@@ -155,4 +156,15 @@ class ChatController extends Controller
             'data' => $message,
         ], 201);
     }
+
+    /**
+ * Return the current customer support availability.
+ */
+public function supportStatus(): JsonResponse
+{
+    return response()->json([
+        'success' => true,
+        'online' => Cache::has('chat:support:online'),
+    ]);
+}
 }

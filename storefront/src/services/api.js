@@ -166,6 +166,12 @@ export const sendChatMessage = async (token, body) => {
   return response.data;
 };
 
+// Fetch current customer support availability.
+export const getChatSupportStatus = async () => {
+  const response = await api.get("/chat/support-status");
+  return response.data;
+};
+
 // Fetch reviews for a product.
 export const getProductReviews = async (productId, page = 1) => {
   const response = await api.get(

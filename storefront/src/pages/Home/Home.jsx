@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FaArrowRight, FaBolt, FaTimes } from "react-icons/fa";
+
+import {
+  FaArrowRight,
+  FaLeaf,
+  FaTruck,
+  FaShieldAlt,
+  FaHeart,
+} from "react-icons/fa";
 
 import {
   getCategories,
@@ -14,13 +21,73 @@ import ProductCard from "../../components/ProductCard/ProductCard";
 import "./Home.css";
 
 /* =====================================
+   COLLECTION CONFIGURATION
+===================================== */
+
+const COLLECTIONS = {
+  men: {
+    name: "Men",
+    title: "Living Earth Men",
+    heroTitle: "Style That Feels Natural",
+    heroDescription:
+      "Discover timeless men's fashion, premium shirts, trousers and everyday essentials at Living Earth.",
+    heroTagline: "Simple. Stylish. Timeless.",
+    slugs: [
+      "men-shirt",
+      "men-suite",
+      "jeans",
+      "shoes",
+      "watches",
+      "jacket",
+      "head-wear",
+      "under-wear",
+    ],
+  },
+
+  ladies: {
+    name: "Ladies",
+    title: "Living Earth Ladies",
+    heroTitle: "Elegance, Naturally",
+    heroDescription:
+      "Discover elegant dresses, beautiful suits and timeless ladies' fashion designed for every occasion.",
+    heroTagline: "Elegant. Confident. Timeless.",
+    slugs: [
+      "ladies-dress",
+      "ladies-suite",
+      "kitenge",
+    ],
+  },
+};
+
+/* =====================================
+   PRODUCT CLASSIFICATIONS
+===================================== */
+
+const EXECUTIVE_CATEGORIES = [
+  {
+    value: "premium",
+    label: "Premium",
+  },
+  {
+    value: "luxury",
+    label: "Luxury",
+  },
+  {
+    value: "designer",
+    label: "Designer",
+  },
+  {
+    value: "exclusive",
+    label: "Exclusive",
+  },
+];
+
+/* =====================================
    API RESPONSE HELPER
 ===================================== */
 
 function getResponseData(response) {
-  if (Array.isArray(response)) {
-    return response;
-  }
+  if (Array.isArray(response)) return response;
 
   if (Array.isArray(response?.data)) {
     return response.data;
@@ -40,16 +107,56 @@ function getResponseData(response) {
 function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const selectedCategoryId = searchParams.get("category");
+  /* =====================================
+     URL FILTERS
+  ===================================== */
+
+  const selectedCollection =
+    searchParams.get("collection") === "ladies"
+      ? "ladies"
+      : "men";
+
+  const selectedCollectionConfig =
+    COLLECTIONS[selectedCollection];
+
+  const selectedCategoryId =
+    searchParams.get("category");
+
+  const selectedProductLevel =
+    searchParams.get("level") || "all";
+
+  const selectedExecutiveCategory =
+    searchParams.get("executive_category") || "";
+
+  /* =====================================
+     STATE
+  ===================================== */
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [banners, setBanners] = useState([]);
 
   const [search, setSearch] = useState("");
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  /* =====================================
+     ENSURE COLLECTION EXISTS IN URL
+
+     Men is the default collection.
+  ===================================== */
+
+  useEffect(() => {
+    if (!searchParams.has("collection")) {
+      const nextParams = new URLSearchParams(searchParams);
+
+      nextParams.set("collection", "men");
+
+      setSearchParams(nextParams, {
+        replace: true,
+      });
+    }
+  }, [searchParams, setSearchParams]);
 
   /* =====================================
      FETCH STORE DATA
@@ -63,26 +170,24 @@ function Home() {
         setLoading(true);
         setError("");
 
-        const [productsResponse, categoriesResponse] =
-          await Promise.all([
-            getProducts(),
-            getCategories(),
-          ]);
-
-        const productsData = getResponseData(productsResponse);
-        const categoriesData = getResponseData(categoriesResponse);
+        const [
+          productsResponse,
+          categoriesResponse,
+        ] = await Promise.all([
+          getProducts(),
+          getCategories(),
+        ]);
 
         if (!isMounted) return;
 
-        setProducts(productsData);
-        setCategories(categoriesData);
-
+        setProducts(getResponseData(productsResponse));
+        setCategories(getResponseData(categoriesResponse));
       } catch (err) {
         console.error("Failed to load store data:", err);
 
         if (isMounted) {
           setError(
-            "We could not load the products. Please check your connection and try again."
+            "We could not load our collection. Please try again."
           );
         }
       } finally {
@@ -91,23 +196,14 @@ function Home() {
         }
       }
 
-      // Load banners separately.
-      // Banner failures should not affect product loading.
-
       try {
         const bannersResponse = await getBanners();
-        const bannersData = getResponseData(bannersResponse);
 
         if (isMounted) {
-          setBanners(bannersData);
+          setBanners(getResponseData(bannersResponse));
         }
-
       } catch (err) {
         console.error("Failed to load banners:", err);
-
-        if (isMounted) {
-          setBanners([]);
-        }
       }
     }
 
@@ -119,47 +215,9 @@ function Home() {
   }, []);
 
   /* =====================================
-     ACTIVE BANNERS
-  ===================================== */
-
-  const activeBanners = useMemo(() => {
-    return banners
-      .filter((banner) => {
-        return (
-          banner.is_active === true ||
-          banner.is_active === 1 ||
-          banner.is_active === "1"
-        );
-      })
-      .sort(
-        (a, b) =>
-          Number(a.sort_order || 0) -
-          Number(b.sort_order || 0)
-      );
-  }, [banners]);
-
-  /* =====================================
-     HERO BANNER
-  ===================================== */
-
-  const heroBanner = useMemo(() => {
-    return activeBanners.find(
-      (banner) => banner.position === "hero"
-    );
-  }, [activeBanners]);
-
-  /* =====================================
-     PROMOTIONAL BANNERS
-  ===================================== */
-
-  const promotionalBanners = useMemo(() => {
-    return activeBanners.filter(
-      (banner) => banner.position === "promo"
-    );
-  }, [activeBanners]);
-
-  /* =====================================
      FLATTEN CATEGORIES
+
+     Includes parent categories and children.
   ===================================== */
 
   const allCategories = useMemo(() => {
@@ -169,13 +227,9 @@ function Home() {
       flattened.push(category);
 
       if (Array.isArray(category.children)) {
-        category.children.forEach((child) => {
-          flattened.push(child);
-        });
+        flattened.push(...category.children);
       }
     });
-
-    // Remove duplicate category IDs.
 
     return [
       ...new Map(
@@ -188,89 +242,199 @@ function Home() {
   }, [categories]);
 
   /* =====================================
+     FILTER CATEGORIES BY COLLECTION
+  ===================================== */
+
+  const collectionCategories = useMemo(() => {
+    const allowedSlugs =
+      selectedCollectionConfig.slugs;
+
+    return allCategories.filter((category) =>
+      allowedSlugs.includes(
+        String(category.slug || "").toLowerCase()
+      )
+    );
+  }, [allCategories, selectedCollectionConfig]);
+
+  /* =====================================
+     FILTER PRODUCTS BY COLLECTION
+
+     Uses product.category.slug from Laravel.
+  ===================================== */
+
+  const collectionProducts = useMemo(() => {
+    const allowedSlugs =
+      selectedCollectionConfig.slugs;
+
+    const categorySlugsById = new Map(
+      allCategories.map((category) => [
+        Number(category.id),
+        String(category.slug || "").toLowerCase(),
+      ])
+    );
+
+    return products.filter((product) => {
+      const productCategorySlug = String(
+        product.category?.slug ||
+          categorySlugsById.get(
+            Number(
+              product.category?.id ??
+                product.category_id
+            )
+          ) ||
+          ""
+      ).toLowerCase();
+
+      return allowedSlugs.includes(productCategorySlug);
+    });
+  }, [
+    products,
+    allCategories,
+    selectedCollectionConfig,
+  ]);
+
+  /* =====================================
+     FILTER PRODUCTS BY CLASSIFICATION
+  ===================================== */
+
+  const classificationProducts = useMemo(() => {
+    let result = [...collectionProducts];
+
+    if (selectedProductLevel === "affordable") {
+      result = result.filter(
+        (product) =>
+          (product.product_level || "affordable") ===
+          "affordable"
+      );
+    }
+
+    if (selectedProductLevel === "executive") {
+      result = result.filter(
+        (product) =>
+          product.product_level === "executive"
+      );
+
+      if (selectedExecutiveCategory) {
+        result = result.filter(
+          (product) =>
+            product.executive_category ===
+            selectedExecutiveCategory
+        );
+      }
+    }
+
+    return result;
+  }, [
+    collectionProducts,
+    selectedProductLevel,
+    selectedExecutiveCategory,
+  ]);
+
+  /* =====================================
+     REMOVE INVALID CATEGORY FILTER
+  ===================================== */
+
+  useEffect(() => {
+    if (!selectedCategoryId || categories.length === 0) {
+      return;
+    }
+
+    const categoryExists = collectionCategories.some(
+      (category) =>
+        Number(category.id) ===
+        Number(selectedCategoryId)
+    );
+
+    if (!categoryExists) {
+      const nextParams = new URLSearchParams(searchParams);
+
+      nextParams.delete("category");
+
+      setSearchParams(nextParams, {
+        replace: true,
+      });
+    }
+  }, [
+    selectedCategoryId,
+    collectionCategories,
+    categories.length,
+    searchParams,
+    setSearchParams,
+  ]);
+
+  /* =====================================
      SELECTED CATEGORY
   ===================================== */
 
   const selectedCategory = useMemo(() => {
-    if (!selectedCategoryId) {
-      return null;
-    }
+    if (!selectedCategoryId) return null;
 
     return (
-      allCategories.find(
+      collectionCategories.find(
         (category) =>
-          Number(category.id) === Number(selectedCategoryId)
+          Number(category.id) ===
+          Number(selectedCategoryId)
       ) || null
     );
-  }, [allCategories, selectedCategoryId]);
-
+  }, [
+    collectionCategories,
+    selectedCategoryId,
+  ]);
 
   /* =====================================
-   HOMEPAGE SEO METADATA
-===================================== */
+     SEO
+  ===================================== */
 
-useEffect(() => {
-  const siteName = "Mega Store";
+  useEffect(() => {
+    const siteName =
+      selectedCollectionConfig.title;
 
-  const title = selectedCategory
-    ? `${selectedCategory.name} Collection | ${siteName}`
-    : `${siteName} | Fashion, Clothing & Accessories`;
+    document.title = selectedCategory
+      ? `${selectedCategory.name} | ${siteName}`
+      : `${siteName} | Grounded in Nature`;
 
-  const description = selectedCategory
-    ? `Explore the ${selectedCategory.name} collection at Mega Store. Discover quality fashion, clothing and accessories at great prices.`
-    : "Discover the latest fashion, clothing and accessories at Mega Store. Shop quality products at great prices.";
+    const description = selectedCategory
+      ? `Explore the ${selectedCategory.name} collection at ${siteName}.`
+      : selectedCollectionConfig.description;
 
-  document.title = title;
-
-  let metaDescription = document.querySelector(
-    'meta[name="description"]'
-  );
-
-  if (!metaDescription) {
-    metaDescription = document.createElement("meta");
-    metaDescription.name = "description";
-    document.head.appendChild(metaDescription);
-  }
-
-  metaDescription.setAttribute("content", description);
-
-  const robots = document.querySelector(
-    'meta[name="robots"]'
-  );
-
-  if (robots) {
-    robots.setAttribute(
-      "content",
-      search.trim() ? "noindex, follow" : "index, follow"
+    let meta = document.querySelector(
+      'meta[name="description"]'
     );
-  }
 
-}, [selectedCategory, search]);
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "description";
+      document.head.appendChild(meta);
+    }
+
+    meta.setAttribute("content", description);
+  }, [
+    selectedCategory,
+    selectedCollectionConfig,
+  ]);
 
   /* =====================================
-     FILTER PRODUCTS BY CATEGORY AND SEARCH
+     FILTER PRODUCTS
   ===================================== */
 
   const filteredProducts = useMemo(() => {
-    let result = [...products];
+    let result = [...classificationProducts];
 
-    // Category filtering.
-
-    if (selectedCategoryId) {
+    if (selectedCategoryId && selectedCategory) {
       result = result.filter((product) => {
-        const productCategoryId = Number(
-          product.category?.id ?? product.category_id
+        const categoryId = Number(
+          product.category?.id ??
+            product.category_id
         );
 
         return (
-          productCategoryId === Number(selectedCategoryId)
+          categoryId === Number(selectedCategoryId)
         );
       });
     }
 
-    // Search filtering.
-
-    const searchTerm = search.trim().toLowerCase();
+    const searchTerm =
+      search.trim().toLowerCase();
 
     if (searchTerm) {
       result = result.filter((product) => {
@@ -295,26 +459,51 @@ useEffect(() => {
     }
 
     return result;
-  }, [products, search, selectedCategoryId]);
+  }, [
+    classificationProducts,
+    search,
+    selectedCategoryId,
+    selectedCategory,
+  ]);
 
   /* =====================================
-     GROUP PRODUCTS BY CATEGORY
+     FEATURED PRODUCTS
+  ===================================== */
+
+  const featuredProducts = useMemo(() => {
+    const sorted = [...classificationProducts].sort(
+      (a, b) => {
+        const aFeatured =
+          a.is_best_seller || a.is_featured ? 1 : 0;
+
+        const bFeatured =
+          b.is_best_seller || b.is_featured ? 1 : 0;
+
+        return bFeatured - aFeatured;
+      }
+    );
+
+    return sorted.slice(0, 5);
+  }, [classificationProducts]);
+
+  /* =====================================
+     CATEGORY SECTIONS
   ===================================== */
 
   const categorySections = useMemo(() => {
-    return allCategories
+    return collectionCategories
       .map((category) => {
-        const categoryId = Number(category.id);
-
-        const categoryProducts = filteredProducts.filter(
-          (product) => {
-            const productCategoryId = Number(
-              product.category?.id ?? product.category_id
+        const categoryProducts =
+          filteredProducts.filter((product) => {
+            const categoryId = Number(
+              product.category?.id ??
+                product.category_id
             );
 
-            return productCategoryId === categoryId;
-          }
-        );
+            return (
+              categoryId === Number(category.id)
+            );
+          });
 
         return {
           ...category,
@@ -324,41 +513,144 @@ useEffect(() => {
       .filter(
         (category) => category.products.length > 0
       );
-  }, [allCategories, filteredProducts]);
-
-  /* =====================================
-     UNCATEGORIZED PRODUCTS
-  ===================================== */
-
-  const uncategorizedProducts = useMemo(() => {
-    // Don't show unrelated products when filtering a category.
-
-    if (selectedCategoryId) {
-      return [];
-    }
-
-    const knownCategoryIds = new Set(
-      allCategories.map((category) => Number(category.id))
-    );
-
-    return filteredProducts.filter((product) => {
-      const categoryId = Number(
-        product.category?.id ?? product.category_id
-      );
-
-      return (
-        (!product.category && !product.category_id) ||
-        !knownCategoryIds.has(categoryId)
-      );
-    });
   }, [
+    collectionCategories,
     filteredProducts,
-    allCategories,
-    selectedCategoryId,
   ]);
 
   /* =====================================
-     SCROLL TO PRODUCTS
+     BANNERS
+
+     Shared banners appear in both collections.
+     Collection-specific banners are prioritized.
+  ===================================== */
+
+  const activeBanners = useMemo(() => {
+    return banners
+      .filter((banner) => {
+        const isActive =
+          banner.is_active === true ||
+          banner.is_active === 1 ||
+          banner.is_active === "1";
+
+        if (!isActive) return false;
+
+        const target = String(
+          banner.collection ||
+            banner.gender ||
+            banner.target_collection ||
+            "all"
+        ).toLowerCase();
+
+        if (
+          !target ||
+          target === "all" ||
+          target === "both"
+        ) {
+          return true;
+        }
+
+        if (
+          selectedCollection === "men" &&
+          ["men", "male", "mens", "men's"].includes(target)
+        ) {
+          return true;
+        }
+
+        if (
+          selectedCollection === "ladies" &&
+          [
+            "ladies",
+            "lady",
+            "women",
+            "female",
+            "womens",
+            "women's",
+          ].includes(target)
+        ) {
+          return true;
+        }
+
+        return false;
+      })
+      .sort(
+        (a, b) =>
+          Number(a.sort_order || 0) -
+          Number(b.sort_order || 0)
+      );
+  }, [
+    banners,
+    selectedCollection,
+  ]);
+
+  /* =====================================
+     HERO BANNER
+
+     Priority:
+     1. Selected collection banner.
+     2. Shared banner.
+     3. Collection-specific fallback.
+  ===================================== */
+
+  const heroBanner = useMemo(() => {
+    const heroBanners = activeBanners.filter(
+      (banner) => banner.position === "hero"
+    );
+
+    const collectionBanner = heroBanners.find(
+      (banner) =>
+        String(banner.collection || "").toLowerCase() ===
+        selectedCollection
+    );
+
+    if (collectionBanner) {
+      return collectionBanner;
+    }
+
+    return (
+      heroBanners.find((banner) => {
+        const collection = String(
+          banner.collection || "all"
+        ).toLowerCase();
+
+        return (
+          !collection ||
+          collection === "all" ||
+          collection === "both"
+        );
+      }) || null
+    );
+  }, [
+    activeBanners,
+    selectedCollection,
+  ]);
+
+  /* =====================================
+     PROMOTIONAL BANNERS
+  ===================================== */
+
+  const promotionalBanners = useMemo(
+    () =>
+      activeBanners.filter(
+        (banner) => banner.position === "promo"
+      ),
+    [activeBanners]
+  );
+
+  /* =====================================
+     BANNER HELPERS
+  ===================================== */
+
+  const getBannerImage = (banner) =>
+    banner?.image_url || banner?.image || "";
+
+  const getMobileBannerImage = (banner) =>
+    banner?.mobile_image_url ||
+    banner?.mobile_image ||
+    getBannerImage(banner);
+
+  /* =====================================
+     SCROLL HELPERS
   ===================================== */
 
   const scrollToProducts = () => {
@@ -368,67 +660,26 @@ useEffect(() => {
     });
   };
 
-  /* =====================================
-     SCROLL WHEN CATEGORY CHANGES
-  ===================================== */
-
-  useEffect(() => {
-    if (!selectedCategoryId) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      document.getElementById("products")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 300);
-
-    return () => window.clearTimeout(timer);
-  }, [selectedCategoryId]);
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   /* =====================================
      CLEAR CATEGORY FILTER
   ===================================== */
 
   const clearCategoryFilter = () => {
-    setSearchParams({});
-  };
+    const nextParams = new URLSearchParams(searchParams);
 
-  /* =====================================
-     DEBUGGING
-  ===================================== */
+    nextParams.delete("category");
 
-  useEffect(() => {
-    console.log("TOTAL PRODUCTS:", products.length);
-    console.log("TOTAL CATEGORIES:", categories.length);
-    console.log("SELECTED CATEGORY:", selectedCategory);
-    console.log("FILTERED PRODUCTS:", filteredProducts);
-    console.log("CATEGORY SECTIONS:", categorySections);
-    console.log("UNCATEGORIZED PRODUCTS:", uncategorizedProducts);
-  }, [
-    products,
-    categories,
-    selectedCategory,
-    filteredProducts,
-    categorySections,
-    uncategorizedProducts,
-  ]);
+    setSearchParams(nextParams);
 
-  /* =====================================
-     BANNER IMAGES
-  ===================================== */
-
-  const getBannerImage = (banner) => {
-    return banner.image_url || banner.image || "";
-  };
-
-  const getMobileBannerImage = (banner) => {
-    return (
-      banner.mobile_image_url ||
-      banner.mobile_image ||
-      getBannerImage(banner)
-    );
+    setSearch("");
+    scrollToTop();
   };
 
   /* =====================================
@@ -436,31 +687,25 @@ useEffect(() => {
   ===================================== */
 
   const renderBannerButton = (banner, className) => {
-    if (!banner.button_text) {
-      return null;
-    }
+    if (!banner?.button_text) return null;
 
     const link = banner.button_link || "#products";
 
-    if (
-      link.startsWith("http://") ||
-      link.startsWith("https://")
-    ) {
-      return (
-        <a
-          href={link}
-          className={className}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {banner.button_text}
-          <FaArrowRight />
-        </a>
-      );
-    }
-
     return (
-      <a href={link} className={className}>
+      <a
+        href={link}
+        className={className}
+        target={
+          link.startsWith("http")
+            ? "_blank"
+            : undefined
+        }
+        rel={
+          link.startsWith("http")
+            ? "noopener noreferrer"
+            : undefined
+        }
+      >
         {banner.button_text}
         <FaArrowRight />
       </a>
@@ -468,16 +713,95 @@ useEffect(() => {
   };
 
   /* =====================================
+     CATEGORY NAVIGATION
+  ===================================== */
+
+  const selectCategory = (categoryId) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    nextParams.set("collection", selectedCollection);
+    nextParams.set("category", String(categoryId));
+
+    setSearchParams(nextParams);
+
+    setSearch("");
+    scrollToProducts();
+  };
+
+  /* =====================================
+     PRODUCT CLASSIFICATION NAVIGATION
+  ===================================== */
+
+  const selectProductLevel = (
+    level,
+    executiveCategory = ""
+  ) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    nextParams.set("collection", selectedCollection);
+    nextParams.set("level", level);
+
+    nextParams.delete("category");
+    nextParams.delete("executive_category");
+
+    if (
+      level === "executive" &&
+      executiveCategory
+    ) {
+      nextParams.set(
+        "executive_category",
+        executiveCategory
+      );
+    }
+
+    setSearchParams(nextParams);
+
+    setSearch("");
+    scrollToProducts();
+  };
+
+  /* =====================================
+     EXECUTIVE CATEGORY LABEL
+  ===================================== */
+
+  const selectedExecutiveCategoryLabel =
+    EXECUTIVE_CATEGORIES.find(
+      (category) =>
+        category.value === selectedExecutiveCategory
+    )?.label;
+
+  /* =====================================
      RENDER
   ===================================== */
 
   return (
-    <div className="store">
+    <div className="store living-earth">
 
-      {/* NAVBAR */}
+      {/* ANNOUNCEMENT BAR */}
+
+      <div className="earth-announcement">
+        <div className="earth-announcement-inner">
+          <div>
+            <span>Grounded in Nature</span>
+            <i></i>
+            <span>Timeless Style</span>
+            <i></i>
+            <span>Made for You</span>
+          </div>
+
+          <div className="earth-social-top">
+            <span>f</span>
+            <span>◎</span>
+            <span>♪</span>
+            <span>▶</span>
+          </div>
+        </div>
+      </div>
+
+      {/* NAVIGATION */}
 
       <Navbar
-        categories={categories}
+        categories={collectionCategories}
         search={search}
         setSearch={setSearch}
       />
@@ -485,152 +809,105 @@ useEffect(() => {
       <main>
 
         {/* =====================================
-            HERO BANNER
+            HERO SECTION
         ===================================== */}
 
-        {heroBanner ? (
-          <section className="dynamic-hero">
+        <section className="earth-hero">
 
-            <picture className="dynamic-hero-picture">
+          <div className="earth-hero-inner">
 
-              <source
-                media="(max-width: 768px)"
-                srcSet={getMobileBannerImage(heroBanner)}
-              />
+            {/* LEFT: HERO CONTENT */}
 
-              <img
-                src={getBannerImage(heroBanner)}
-                alt={heroBanner.title || "Mega Store"}
-              />
+            <div className="earth-hero-content">
 
-            </picture>
-
-            <div className="dynamic-hero-overlay"></div>
-
-            <div className="dynamic-hero-content">
-
-              <div className="street-hero-tag">
-                <FaBolt />
-                <span>MEGA STORE</span>
-              </div>
-
-              <h1>{heroBanner.title}</h1>
-
-              {heroBanner.subtitle && (
-                <p>{heroBanner.subtitle}</p>
-              )}
-
-              {renderBannerButton(
-                heroBanner,
-                "dynamic-hero-button"
-              )}
-
-            </div>
-
-          </section>
-
-        ) : (
-
-          <section className="street-hero">
-
-            <div className="street-hero-overlay"></div>
-
-            <div className="street-hero-content">
-
-              <div className="street-hero-tag">
-                <FaBolt />
-                <span>THE NEW STREET CULTURE</span>
-              </div>
+              <span className="earth-eyebrow">
+                {selectedCollectionConfig.title.toUpperCase()}
+              </span>
 
               <h1>
-                OWN
-                <br />
-                YOUR <span>STYLE.</span>
+                {heroBanner?.title ||
+                  selectedCollectionConfig.heroTitle}
               </h1>
 
               <p>
-                More than fashion. It's an attitude.
-                <br />
-                Discover pieces that define who you are.
+                {heroBanner?.subtitle ||
+                  selectedCollectionConfig.heroDescription}
               </p>
 
-              <button
-                type="button"
-                className="street-hero-button"
-                onClick={scrollToProducts}
-              >
-                EXPLORE COLLECTION
-                <FaArrowRight />
-              </button>
+              {heroBanner?.button_text ? (
+                renderBannerButton(
+                  heroBanner,
+                  "earth-button"
+                )
+              ) : (
+                <button
+                  type="button"
+                  className="earth-button"
+                  onClick={scrollToProducts}
+                >
+                  Explore {selectedCollectionConfig.name}
+                  <FaArrowRight />
+                </button>
+              )}
 
-              <div className="street-hero-bottom">
-                <span>MEGA STORE COLLECTIONS</span>
-                <span>EST. FOR THE BOLD</span>
+              <div className="earth-hero-tagline">
+                <FaLeaf />
+
+                <span>
+                  {selectedCollectionConfig.heroTagline}
+                </span>
               </div>
 
             </div>
 
-            <div className="street-hero-side-text">
-              STREETWEAR / EVERYDAY CULTURE
-            </div>
+            {/* RIGHT: HERO IMAGE */}
 
-          </section>
+            {heroBanner && getBannerImage(heroBanner) ? (
+              <picture className="earth-hero-image">
 
-        )}
+                <source
+                  media="(max-width: 768px)"
+                  srcSet={getMobileBannerImage(heroBanner)}
+                />
 
-        {/* =====================================
-            BRAND MARQUEE
-        ===================================== */}
+                <img
+                  src={getBannerImage(heroBanner)}
+                  alt={
+                    heroBanner.title ||
+                    selectedCollectionConfig.title
+                  }
+                  fetchPriority="high"
+                />
 
-        <section className="street-marquee">
+              </picture>
+            ) : (
+              <div className="earth-hero-image earth-hero-image-placeholder">
+                <div>
+                  <FaLeaf />
+                  <span>Living Earth</span>
+                </div>
+              </div>
+            )}
 
-          <div className="street-marquee-track">
-            <span>BE BOLD</span>
-            <span>✳</span>
-            <span>BE DIFFERENT</span>
-            <span>✳</span>
-            <span>OWN YOUR STYLE</span>
-            <span>✳</span>
-            <span>BE BOLD</span>
-            <span>✳</span>
-            <span>BE DIFFERENT</span>
-            <span>✳</span>
-            <span>OWN YOUR STYLE</span>
           </div>
 
         </section>
 
         {/* =====================================
-            PROMOTIONAL BANNERS
+            COLLECTION BANNERS
         ===================================== */}
 
-        {promotionalBanners.length > 0 && (
+        <section className="earth-collections">
 
-          <section className="home-promotional-banners">
+          <div className="earth-collection-grid">
 
-            <div className="promotional-banner-heading">
-
-              <p className="section-eyebrow">
-                DISCOVER MORE
-              </p>
-
-              <h2>
-                EXPLORE OUR <span>COLLECTIONS.</span>
-              </h2>
-
-            </div>
-
-            <div className="promotional-banner-grid">
-
-              {promotionalBanners.map((banner) => (
-
+            {promotionalBanners.length > 0 ? (
+              promotionalBanners.slice(0, 2).map((banner) => (
                 <article
-                  className="promotional-banner"
+                  className="earth-collection-card"
                   key={banner.id}
                 >
-
                   <picture>
-
                     <source
                       media="(max-width: 600px)"
                       srcSet={getMobileBannerImage(banner)}
@@ -638,342 +915,449 @@ useEffect(() => {
 
                     <img
                       src={getBannerImage(banner)}
-                      alt={banner.title || "Promotional collection"}
+                      alt={banner.title || "Collection"}
                       loading="lazy"
                     />
-
                   </picture>
 
-                  <div className="promotional-banner-overlay"></div>
-
-                  <div className="promotional-banner-content">
+                  <div className="earth-collection-content">
+                    <h2>{banner.title}</h2>
 
                     {banner.subtitle && (
                       <p>{banner.subtitle}</p>
                     )}
 
-                    <h3>{banner.title}</h3>
-
                     {renderBannerButton(
                       banner,
-                      "promotional-banner-button"
+                      "earth-button earth-button-small"
                     )}
-
                   </div>
+                </article>
+              ))
+            ) : (
+              <>
+                <article className="earth-collection-fallback affordable">
+                  <div>
+                    <span>EVERYDAY STYLE</span>
 
+                    <h2>Affordable Collection</h2>
+
+                    <p>
+                      Stylish and comfortable outfits
+                      for your everyday life.
+                    </p>
+
+                    <button
+                      className="earth-button earth-button-small"
+                      onClick={() =>
+                        selectProductLevel("affordable")
+                      }
+                    >
+                      Shop Affordable
+                      <FaArrowRight />
+                    </button>
+                  </div>
                 </article>
 
-              ))}
+                <article className="earth-collection-fallback executive">
+                  <div>
+                    <span>REFINED STYLE</span>
 
+                    <h2>Executive Collection</h2>
+
+                    <p>
+                      Sophisticated designs for a
+                      distinguished look.
+                    </p>
+
+                    <button
+                      className="earth-button earth-button-small"
+                      onClick={() =>
+                        selectProductLevel("executive")
+                      }
+                    >
+                      Shop Executive
+                      <FaArrowRight />
+                    </button>
+                  </div>
+                </article>
+              </>
+            )}
+
+          </div>
+
+        </section>
+
+        {/* =====================================
+            BEST SELLERS
+        ===================================== */}
+
+        {!selectedCategoryId && !search.trim() && (
+          <section className="earth-best-sellers">
+
+            <div className="earth-section-title">
+              <span></span>
+
+              <h2>
+                {selectedProductLevel === "affordable"
+                  ? "Affordable Best Sellers"
+                  : selectedProductLevel === "executive"
+                    ? "Executive Best Sellers"
+                    : selectedCollection === "ladies"
+                      ? "Ladies Best Sellers"
+                      : "Men's Best Sellers"}
+              </h2>
+
+              <span></span>
             </div>
 
-          </section>
+            {loading ? (
+              <div className="earth-loading">
+                Loading our collection...
+              </div>
+            ) : (
+              <div className="earth-best-grid">
+                {featuredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                  />
+                ))}
+              </div>
+            )}
 
+            <button
+              className="earth-text-button"
+              onClick={scrollToProducts}
+            >
+              Explore All Products
+              <FaArrowRight />
+            </button>
+
+          </section>
         )}
 
         {/* =====================================
-            PRODUCTS
+            SHOPPING BENEFITS
+        ===================================== */}
+
+        <section className="earth-benefits">
+
+          <div className="earth-benefit">
+            <FaLeaf />
+
+            <div>
+              <strong>Quality Fabrics</strong>
+              <span>Comfort & Style</span>
+            </div>
+          </div>
+
+          <div className="earth-benefit">
+            <FaTruck />
+
+            <div>
+              <strong>Fast & Reliable</strong>
+              <span>Delivery</span>
+            </div>
+          </div>
+
+          <div className="earth-benefit">
+            <FaShieldAlt />
+
+            <div>
+              <strong>Secure</strong>
+              <span>Payments</span>
+            </div>
+          </div>
+
+          <div className="earth-benefit">
+            <FaHeart />
+
+            <div>
+              <strong>Made for You</strong>
+              <span>Timeless Designs</span>
+            </div>
+          </div>
+
+        </section>
+
+        {/* =====================================
+            ALL PRODUCTS
         ===================================== */}
 
         <section
-          className="store-products"
+          className="earth-products"
           id="products"
         >
 
-          {/* PRODUCTS HEADING */}
+          <div className="earth-section-title">
+            <span></span>
 
-          <div className="products-heading">
+            <h2>
+              {search.trim()
+                ? "Search Results"
+                : selectedCategory
+                  ? `${selectedCategory.name} Collection`
+                  : selectedProductLevel === "affordable"
+                    ? "Affordable Collection"
+                    : selectedProductLevel === "executive"
+                      ? selectedExecutiveCategoryLabel
+                        ? `${selectedExecutiveCategoryLabel} Collection`
+                        : "Executive Collection"
+                      : selectedCollection === "ladies"
+                        ? "Explore Ladies' Collections"
+                        : "Explore Men's Collections"}
+            </h2>
 
-            <div>
-
-              <p className="section-eyebrow">
-
-                {search.trim()
-                  ? "SEARCH THE COLLECTION"
-                  : selectedCategory
-                    ? "EXPLORE THIS COLLECTION"
-                    : "CURATED FOR YOU"}
-
-              </p>
-
-              <h2>
-
-                {search.trim() ? (
-
-                  <>
-                    SEARCH <span>RESULTS</span>
-                  </>
-
-                ) : selectedCategory ? (
-
-                  <>
-                    {selectedCategory.name.toUpperCase()}{" "}
-                    <span>COLLECTION.</span>
-                  </>
-
-                ) : (
-
-                  <>
-                    THE <span>COLLECTION.</span>
-                  </>
-
-                )}
-
-              </h2>
-
-            </div>
-
-            {!search.trim() && (
-
-              <button
-                type="button"
-                className="view-all-button"
-                onClick={scrollToProducts}
-              >
-                EXPLORE ALL
-                <FaArrowRight />
-              </button>
-
-            )}
-
+            <span></span>
           </div>
 
           {/* ACTIVE CATEGORY FILTER */}
 
           {selectedCategoryId && (
-
-            <div className="active-category-filter">
-
+            <div className="earth-active-filter">
               <span>
-                CATEGORY:{" "}
                 {selectedCategory?.name || "Selected category"}
               </span>
 
-              <button
-                type="button"
-                onClick={clearCategoryFilter}
-                className="clear-category-filter"
-              >
-                VIEW ALL PRODUCTS
-                <FaTimes />
+              <button onClick={clearCategoryFilter}>
+                View All Products
               </button>
-
             </div>
-
           )}
 
-          {/* LOADING */}
+          {/* =====================================
+              PRODUCT CLASSIFICATIONS
+          ===================================== */}
 
-          {loading ? (
+          {!search.trim() && (
+            <div className="earth-classification-wrapper">
 
-            <div className="store-message">
+              <div className="earth-classification-heading">
+                <span>SHOP BY STYLE</span>
 
-              <div className="street-loader"></div>
+                <h3>Find Your Collection</h3>
 
-              <p>LOADING THE COLLECTION...</p>
+                <p>
+                  Discover everyday essentials or explore
+                  our refined executive collections.
+                </p>
+              </div>
+
+              <div className="earth-classification-tabs">
+
+                <button
+                  type="button"
+                  className={
+                    selectedProductLevel === "all"
+                      ? "active"
+                      : ""
+                  }
+                  onClick={() =>
+                    selectProductLevel("all")
+                  }
+                >
+                  All Products
+                </button>
+
+                <button
+                  type="button"
+                  className={
+                    selectedProductLevel === "affordable"
+                      ? "active"
+                      : ""
+                  }
+                  onClick={() =>
+                    selectProductLevel("affordable")
+                  }
+                >
+                  Affordable
+                </button>
+
+                <button
+                  type="button"
+                  className={
+                    selectedProductLevel === "executive"
+                      ? "active"
+                      : ""
+                  }
+                  onClick={() =>
+                    selectProductLevel("executive")
+                  }
+                >
+                  Executive
+                </button>
+
+              </div>
+
+              {/* EXECUTIVE SUBCATEGORIES */}
+
+              {selectedProductLevel === "executive" && (
+                <div className="earth-executive-categories">
+
+                  <button
+                    type="button"
+                    className={
+                      !selectedExecutiveCategory
+                        ? "active"
+                        : ""
+                    }
+                    onClick={() =>
+                      selectProductLevel("executive")
+                    }
+                  >
+                    All Executive
+                  </button>
+
+                  {EXECUTIVE_CATEGORIES.map((category) => (
+                    <button
+                      type="button"
+                      key={category.value}
+                      className={
+                        selectedExecutiveCategory ===
+                        category.value
+                          ? "active"
+                          : ""
+                      }
+                      onClick={() =>
+                        selectProductLevel(
+                          "executive",
+                          category.value
+                        )
+                      }
+                    >
+                      {category.label}
+                    </button>
+                  ))}
+
+                </div>
+              )}
 
             </div>
+          )}
 
+          {/* =====================================
+              CATEGORY FILTER LINKS
+          ===================================== */}
+
+          {!selectedCategoryId && !search.trim() && (
+            <div className="earth-category-links">
+              {collectionCategories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() =>
+                    selectCategory(category.id)
+                  }
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* =====================================
+              PRODUCT RESULTS
+          ===================================== */}
+
+          {loading ? (
+            <div className="earth-loading">
+              Loading our collection...
+            </div>
           ) : error ? (
-
-            /* ERROR */
-
-            <div className="store-error">
-
-              <h3>SOMETHING WENT WRONG</h3>
+            <div className="earth-message">
+              <h3>Unable to load products</h3>
 
               <p>{error}</p>
 
               <button
-                type="button"
                 onClick={() => window.location.reload()}
-                className="retry-button"
               >
-                TRY AGAIN
+                Try Again
               </button>
-
             </div>
-
           ) : filteredProducts.length === 0 ? (
-
-            /* EMPTY RESULTS */
-
-            <div className="store-empty">
-
-              <h3>NOTHING FOUND.</h3>
+            <div className="earth-message">
+              <h3>No Products Found</h3>
 
               <p>
-
-                {selectedCategoryId
-                  ? "There are currently no products in this category."
-                  : search.trim()
-                    ? "Try another search term."
-                    : "Our collection is being updated. Check back soon."}
-
+                {search.trim()
+                  ? "Try another search term."
+                  : selectedExecutiveCategoryLabel
+                    ? `There are currently no ${selectedExecutiveCategoryLabel.toLowerCase()} products in this collection.`
+                    : selectedProductLevel === "affordable"
+                      ? "There are currently no affordable products in this collection."
+                      : selectedProductLevel === "executive"
+                        ? "There are currently no executive products in this collection."
+                        : `There are currently no products in the ${selectedCollectionConfig.name.toLowerCase()}'s collection.`}
               </p>
 
-              {selectedCategoryId && (
-
-                <button
-                  type="button"
-                  onClick={clearCategoryFilter}
-                  className="clear-category-filter"
-                >
-                  VIEW ALL PRODUCTS
-                </button>
-
-              )}
-
+              <button
+                onClick={clearCategoryFilter}
+              >
+                View All Products
+              </button>
             </div>
-
           ) : (
-
-            /* CATEGORY SECTIONS */
-
-            <div className="category-sections">
+            <div className="earth-category-sections">
 
               {categorySections.map((category) => (
-
                 <section
                   key={category.id}
-                  id={`category-${category.id}`}
-                  className="category-section"
+                  className="earth-category-section"
                 >
+                  <div className="earth-category-heading">
+                    <h3>{category.name}</h3>
 
-                  <div className="category-section-heading">
-
-                    <div>
-
-                      <p className="section-eyebrow">
-                        EXPLORE THE COLLECTION
-                      </p>
-
-                      <h2>
-                        {category.name}.
-                      </h2>
-
-                    </div>
-
-                    <span className="category-product-count">
-
-                      {String(
-                        category.products.length
-                      ).padStart(2, "0")}{" "}
-
-                      PRODUCTS
-
+                    <span>
+                      {category.products.length} Products
                     </span>
-
                   </div>
 
-                  <div className="product-grid">
-
+                  <div className="earth-product-grid">
                     {category.products.map((product) => (
-
                       <ProductCard
                         key={product.id}
                         product={product}
                       />
-
                     ))}
-
                   </div>
-
                 </section>
-
               ))}
 
-              {/* OTHER PRODUCTS */}
-
-              {uncategorizedProducts.length > 0 && (
-
-                <section className="category-section">
-
-                  <div className="category-section-heading">
-
-                    <div>
-
-                      <p className="section-eyebrow">
-                        MORE TO EXPLORE
-                      </p>
-
-                      <h2>
-                        OTHER PRODUCTS.
-                      </h2>
-
-                    </div>
-
-                  </div>
-
-                  <div className="product-grid">
-
-                    {uncategorizedProducts.map((product) => (
-
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                      />
-
-                    ))}
-
-                  </div>
-
-                </section>
-
-              )}
-
-              {/* NO CATEGORY MATCHES */}
-
-              {categorySections.length === 0 &&
-                uncategorizedProducts.length === 0 && (
-
-                  <div className="store-empty">
-
-                    <h3>NO MATCHES FOUND.</h3>
-
-                    <p>
-                      Try another search term.
-                    </p>
-
-                  </div>
-
-                )}
-
             </div>
-
           )}
 
         </section>
 
         {/* =====================================
-            CALL TO ACTION
+            COMMUNITY
         ===================================== */}
 
-        <section className="street-cta">
-
+        <section className="earth-community">
           <div>
-
-            <p className="section-eyebrow">
-              YOUR STYLE. YOUR RULES.
-            </p>
+            <span>
+              LIVE NATURALLY. DRESS TIMELESSLY.
+            </span>
 
             <h2>
-              DON'T FOLLOW.
+              Made for You.
               <br />
-              <span>SET THE TREND.</span>
+              Grounded in Nature.
             </h2>
 
+            <p>
+              Discover timeless designs and everyday
+              essentials from Living Earth.
+            </p>
           </div>
 
           <button
-            type="button"
-            className="street-cta-button"
             onClick={scrollToProducts}
+            className="earth-button"
           >
-            SHOP THE COLLECTION
+            Shop Living Earth
             <FaArrowRight />
           </button>
-
         </section>
 
       </main>
@@ -982,21 +1366,57 @@ useEffect(() => {
           FOOTER
       ===================================== */}
 
-      <footer className="store-footer">
+      <footer className="earth-footer">
 
-        <div className="footer-brand">
-          MEGA<span>.</span>
-          <small>STORE</small>
+        <div className="earth-footer-main">
+
+          <div className="earth-footer-brand">
+            <div className="earth-footer-logo">
+              <FaLeaf />
+
+              <div>
+                <h2>LIVING EARTH</h2>
+
+                <span>
+                  {selectedCollection.toUpperCase()}
+                </span>
+              </div>
+            </div>
+
+            <p>Grounded in Nature</p>
+          </div>
+
+          <nav className="earth-footer-links">
+            <button onClick={scrollToTop}>
+              Home
+            </button>
+
+            <button onClick={scrollToProducts}>
+              Collections
+            </button>
+
+            <a href="/about">About Us</a>
+            <a href="/size-guide">Size Guide</a>
+            <a href="/contact">Contact</a>
+          </nav>
+
+          <div className="earth-footer-social">
+            <span>f</span>
+            <span>◎</span>
+            <span>♪</span>
+            <span>▶</span>
+          </div>
+
         </div>
 
-        <p>
-          MORE THAN FASHION. IT'S AN ATTITUDE.
-        </p>
+        <div className="earth-footer-bottom">
+          <span>Grounded in Nature</span>
 
-        <span>
-          © {new Date().getFullYear()} MEGA STORE COLLECTIONS.
-          All rights reserved.
-        </span>
+          <span>
+            © {new Date().getFullYear()} Living Earth.
+            All rights reserved.
+          </span>
+        </div>
 
       </footer>
 

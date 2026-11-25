@@ -14,6 +14,7 @@ class Banner extends Model
         'button_text',
         'button_link',
         'position',
+        'collection',
         'sort_order',
         'is_active',
         'starts_at',

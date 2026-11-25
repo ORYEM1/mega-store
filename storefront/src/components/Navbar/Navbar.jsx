@@ -1,5 +1,11 @@
+
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
 
 import {
   FaSearch,
@@ -32,6 +38,13 @@ function Navbar({
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const selectedCollection =
+    searchParams.get("collection") === "ladies"
+      ? "ladies"
+      : "men";
+
   const customer = useAuthStore((state) => state.customer);
 
   const isAuthenticated = useAuthStore(
@@ -42,7 +55,8 @@ function Navbar({
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [bottomCategoriesOpen, setBottomCategoriesOpen] = useState(false);
+  const [bottomCategoriesOpen, setBottomCategoriesOpen] =
+    useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState("");
 
@@ -83,21 +97,62 @@ function Navbar({
     setBottomCategoriesOpen(false);
   };
 
+  // Build homepage URL while preserving collection.
+  const getCollectionUrl = (extraParams = {}) => {
+    const params = new URLSearchParams();
+
+    params.set("collection", selectedCollection);
+
+    Object.entries(extraParams).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        params.set(key, String(value));
+      }
+    });
+
+    return `/?${params.toString()}`;
+  };
+
+  // Switch between Men and Ladies.
+  const changeCollection = (collection) => {
+    if (!["men", "ladies"].includes(collection)) return;
+
+    const params = new URLSearchParams(searchParams);
+
+    params.set("collection", collection);
+
+    // A category from the previous collection must not remain selected.
+    params.delete("category");
+
+    closeMenus();
+    setSearch("");
+
+    if (location.pathname !== "/") {
+      navigate(`/?${params.toString()}`);
+    } else {
+      setSearchParams(params);
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
   // Navigate to the products section.
   const goToProducts = (event) => {
     event?.preventDefault();
 
     closeMenus();
 
-    if (window.location.pathname !== "/") {
-      navigate("/");
+    if (location.pathname !== "/") {
+      navigate(getCollectionUrl());
 
       window.setTimeout(() => {
         document.getElementById("products")?.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
-      }, 200);
+      }, 250);
 
       return;
     }
@@ -112,7 +167,11 @@ function Navbar({
   const goToCategory = (categoryId) => {
     closeMenus();
 
-    navigate(`/?category=${categoryId}`);
+    navigate(
+      getCollectionUrl({
+        category: categoryId,
+      })
+    );
 
     window.setTimeout(() => {
       document.getElementById("products")?.scrollIntoView({
@@ -122,10 +181,11 @@ function Navbar({
     }, 300);
   };
 
-  // Navigate to all products.
+  // Navigate to all products in the selected collection.
   const goToAllProducts = () => {
     closeMenus();
-    navigate("/");
+
+    navigate(getCollectionUrl());
 
     window.setTimeout(() => {
       document.getElementById("products")?.scrollIntoView({
@@ -163,7 +223,9 @@ function Navbar({
 
       closeMenus();
 
-      navigate("/", { replace: true });
+      navigate(getCollectionUrl(), {
+        replace: true,
+      });
     } catch (error) {
       console.error("Logout request failed:", error);
 
@@ -173,7 +235,9 @@ function Navbar({
 
       closeMenus();
 
-      navigate("/", { replace: true });
+      navigate(getCollectionUrl(), {
+        replace: true,
+      });
     } finally {
       setLoggingOut(false);
     }
@@ -196,34 +260,92 @@ function Navbar({
     }
   };
 
+  // Reusable collection switcher.
+  const renderCollectionSwitcher = (className = "") => (
+    <div className={`navbar-collection-switch ${className}`}>
+      <button
+        type="button"
+        className={
+          selectedCollection === "men"
+            ? "active"
+            : ""
+        }
+        onClick={() => changeCollection("men")}
+        aria-pressed={selectedCollection === "men"}
+      >
+        MEN
+      </button>
+
+      <button
+        type="button"
+        className={
+          selectedCollection === "ladies"
+            ? "active"
+            : ""
+        }
+        onClick={() => changeCollection("ladies")}
+        aria-pressed={selectedCollection === "ladies"}
+      >
+        LADIES
+      </button>
+    </div>
+  );
+
   return (
     <header className="navbar">
 
       {/* Promotional announcement */}
+
       <div className="navbar-announcement">
         <p>
-          NEW SEASON. NEW ENERGY.
-          <span> DISCOVER YOUR STYLE.</span>
+          GROUNDED IN NATURE.
+          <span> TIMELESS STYLE. MADE FOR YOU.</span>
         </p>
       </div>
 
       {/* Main navigation */}
+
       <div className="navbar-main">
 
         <div className="navbar-container">
 
+          {/* Mobile menu toggle */}
+
+          <button
+            type="button"
+            className="navbar-mobile-toggle"
+            onClick={() =>
+              setMobileMenuOpen((previous) => !previous)
+            }
+            aria-label={
+              mobileMenuOpen
+                ? "Close navigation menu"
+                : "Open navigation menu"
+            }
+            aria-expanded={mobileMenuOpen}
+            aria-controls="navbar-mobile-menu"
+          >
+            {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+          </button>
+
           {/* Brand */}
+
           <Link
-            to="/"
+            to={getCollectionUrl()}
             className="navbar-logo"
             onClick={closeMenus}
-            aria-label="Mega Store home"
+            aria-label="Living Earth home"
           >
-            MEGA<span>.</span>
-            <small>STORE</small>
+            <span className="navbar-logo-main">
+              LIVING
+              <span> EARTH</span>
+            </span>
+
+            <small>GROUNDED IN NATURE</small>
           </Link>
 
           {/* Desktop navigation */}
+
           <nav className="navbar-desktop-links">
 
             <a href="#products" onClick={goToProducts}>
@@ -258,7 +380,7 @@ function Navbar({
                     type="button"
                     onClick={goToAllProducts}
                   >
-                    ALL PRODUCTS
+                    ALL {selectedCollection.toUpperCase()} PRODUCTS
                   </button>
 
                   {allCategories.map((category) => (
@@ -278,7 +400,12 @@ function Navbar({
 
           </nav>
 
+          {/* Desktop collection switcher */}
+
+          {renderCollectionSwitcher("navbar-collection-desktop")}
+
           {/* Desktop search */}
+
           <form
             className="navbar-search navbar-search-desktop"
             onSubmit={handleSearchSubmit}
@@ -296,9 +423,11 @@ function Navbar({
           </form>
 
           {/* Desktop actions */}
+
           <div className="navbar-actions">
 
             {/* Theme toggle */}
+
             <button
               type="button"
               className="navbar-theme-toggle"
@@ -314,6 +443,7 @@ function Navbar({
             </button>
 
             {/* Shopping cart */}
+
             <Link
               to="/cart"
               className="navbar-cart-link"
@@ -333,6 +463,7 @@ function Navbar({
             </Link>
 
             {/* Authentication */}
+
             {isAuthenticated && customer ? (
 
               <div className="navbar-user">
@@ -381,6 +512,7 @@ function Navbar({
           </div>
 
           {/* Mobile theme toggle */}
+
           <button
             type="button"
             className="mobile-theme-toggle"
@@ -394,6 +526,7 @@ function Navbar({
         </div>
 
         {/* Mobile search */}
+
         <form
           className="navbar-search navbar-search-mobile"
           onSubmit={handleSearchSubmit}
@@ -411,6 +544,7 @@ function Navbar({
         </form>
 
         {/* Mobile expandable navigation */}
+
         <nav
           id="navbar-mobile-menu"
           className={`navbar-mobile-menu ${
@@ -421,6 +555,12 @@ function Navbar({
           inert={!mobileMenuOpen}
         >
 
+          <div className="mobile-collection-section">
+            <span>SHOP COLLECTION</span>
+
+            {renderCollectionSwitcher("navbar-collection-mobile")}
+          </div>
+
           <a href="#products" onClick={goToProducts}>
             SHOP
           </a>
@@ -430,6 +570,7 @@ function Navbar({
           </a>
 
           {/* Categories */}
+
           <button
             type="button"
             className="mobile-category-toggle"
@@ -469,6 +610,7 @@ function Navbar({
           )}
 
           {/* Shopping bag */}
+
           <Link
             to="/cart"
             onClick={closeMenus}
@@ -479,6 +621,7 @@ function Navbar({
           </Link>
 
           {/* Mobile account section */}
+
           <div className="mobile-account-section">
 
             {isAuthenticated && customer ? (
@@ -533,9 +676,11 @@ function Navbar({
       </div>
 
       {/* Mobile bottom navigation and category popup */}
+
       <div className="mobile-bottom-wrapper">
 
         {/* Categories popup */}
+
         {bottomCategoriesOpen && (
           <div
             className="bottom-categories-popup"
@@ -543,7 +688,9 @@ function Navbar({
           >
 
             <div className="bottom-categories-header">
-              <h3>SHOP BY CATEGORY</h3>
+              <h3>
+                SHOP {selectedCollection.toUpperCase()} BY CATEGORY
+              </h3>
 
               <button
                 type="button"
@@ -591,18 +738,18 @@ function Navbar({
         )}
 
         {/* Bottom navigation */}
+
         <nav
           className="mobile-bottom-nav"
           aria-label="Mobile bottom navigation"
         >
 
-          {/* Home */}
           <Link
-            to="/"
+            to={getCollectionUrl()}
             onClick={closeMenus}
             className={`bottom-nav-item ${
               location.pathname === "/" &&
-              !location.search
+              !location.search.includes("category=")
                 ? "active"
                 : ""
             }`}
@@ -611,7 +758,6 @@ function Navbar({
             <span>Home</span>
           </Link>
 
-          {/* Categories */}
           <button
             type="button"
             className={`bottom-nav-item ${
@@ -627,7 +773,6 @@ function Navbar({
             <span>Categories</span>
           </button>
 
-          {/* Explore */}
           <button
             type="button"
             className="bottom-nav-item"
@@ -637,7 +782,6 @@ function Navbar({
             <span>Explore</span>
           </button>
 
-          {/* Shopping bag */}
           <Link
             to="/cart"
             onClick={closeMenus}
@@ -658,7 +802,6 @@ function Navbar({
             <span>Cart</span>
           </Link>
 
-          {/* Account */}
           <button
             type="button"
             className={`bottom-nav-item ${
@@ -679,6 +822,7 @@ function Navbar({
       </div>
 
       {/* Logout error */}
+
       {logoutError && (
         <p
           className="navbar-error-message"

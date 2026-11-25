@@ -6,13 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Seller;
+use App\Models\SellerStaff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use App\Models\SellerStaff;
-
 
 class SellerProductController extends Controller
 {
@@ -61,18 +60,61 @@ class SellerProductController extends Controller
     }
 
     /**
+     * Return available product classifications.
+     */
+    public function classifications(): JsonResponse
+    {
+        return response()->json([
+            'product_levels' => [
+                Product::LEVEL_AFFORDABLE => 'Affordable',
+                Product::LEVEL_EXECUTIVE => 'Executive',
+            ],
+
+            'executive_categories' => Product::EXECUTIVE_CATEGORIES,
+        ]);
+    }
+
+    /**
      * Create a new product.
      *
      * Products created by sellers require admin approval.
      */
     public function store(Request $request): JsonResponse
     {
+        // Affordable is the default collection.
+        $request->merge([
+            'product_level' => $request->input(
+                'product_level',
+                Product::LEVEL_AFFORDABLE
+            ),
+        ]);
+
+        $productLevel = $request->input('product_level');
+
         $validated = $request->validate([
+
             'category_id' => [
                 'nullable',
                 'integer',
                 Rule::exists('categories', 'id')
                     ->where('is_active', true),
+            ],
+
+            'product_level' => [
+                'required',
+                Rule::in([
+                    Product::LEVEL_AFFORDABLE,
+                    Product::LEVEL_EXECUTIVE,
+                ]),
+            ],
+
+            'executive_category' => [
+                Rule::requiredIf(
+                    $productLevel === Product::LEVEL_EXECUTIVE
+                ),
+                'nullable',
+                'prohibited_unless:product_level,executive',
+                Rule::in(array_keys(Product::EXECUTIVE_CATEGORIES)),
             ],
 
             'name' => ['required', 'string', 'max:255'],
@@ -131,7 +173,7 @@ class SellerProductController extends Controller
 
         $sizes = $validated['sizes'] ?? [];
 
-        $totalStock = ! empty($sizes)
+        $totalStock = !empty($sizes)
             ? collect($sizes)->sum('stock_quantity')
             : ($validated['stock_quantity'] ?? 0);
 
@@ -145,14 +187,31 @@ class SellerProductController extends Controller
             ) {
                 $product = Product::create([
                     'seller_id' => $sellerId,
+
                     'category_id' => $validated['category_id'] ?? null,
+
+                    'product_level' => $validated['product_level'],
+
+                    'executive_category' =>
+                        $validated['product_level'] === Product::LEVEL_EXECUTIVE
+                            ? $validated['executive_category']
+                            : null,
+
                     'name' => $validated['name'],
+
                     'description' => $validated['description'] ?? null,
+
                     'price' => $validated['price'],
-                    'compare_at_price' => $validated['compare_at_price'] ?? null,
+
+                    'compare_at_price' =>
+                        $validated['compare_at_price'] ?? null,
+
                     'color' => $validated['color'] ?? null,
+
                     'size' => $validated['size'] ?? null,
+
                     'stock_quantity' => $totalStock,
+
                     'photo' => $photoPath,
 
                     // Admin must approve the product.
@@ -178,7 +237,11 @@ class SellerProductController extends Controller
 
         return response()->json([
             'message' => 'Product created successfully. It is awaiting admin approval.',
-            'product' => $product->load(['category', 'sizes']),
+
+            'product' => $product->load([
+                'category',
+                'sizes',
+            ]),
         ], 201);
     }
 
@@ -189,7 +252,10 @@ class SellerProductController extends Controller
     {
         $product = Product::query()
             ->where('seller_id', $this->getSellerId($request))
-            ->with(['category', 'sizes'])
+            ->with([
+                'category',
+                'sizes',
+            ])
             ->findOrFail($id);
 
         return response()->json([
@@ -206,13 +272,59 @@ class SellerProductController extends Controller
             ->where('seller_id', $this->getSellerId($request))
             ->findOrFail($id);
 
+        $levelWasProvided = $request->exists('product_level');
+
+        $effectiveProductLevel = $request->input(
+            'product_level',
+            $product->product_level ?? Product::LEVEL_AFFORDABLE
+        );
+
+        $executiveCategoryWasProvided = $request->exists(
+            'executive_category'
+        );
+
+        // Use the effective level when validating partial updates.
+        $request->merge([
+            'product_level' => $effectiveProductLevel,
+        ]);
+
+        $requiresExecutiveCategory =
+            $effectiveProductLevel === Product::LEVEL_EXECUTIVE
+            && (
+                blank($product->executive_category)
+                || (
+                    $levelWasProvided
+                    && $product->product_level !== Product::LEVEL_EXECUTIVE
+                )
+                || (
+                    $executiveCategoryWasProvided
+                    && blank($request->input('executive_category'))
+                )
+            );
+
         $validated = $request->validate([
+
             'category_id' => [
                 'sometimes',
                 'nullable',
                 'integer',
                 Rule::exists('categories', 'id')
                     ->where('is_active', true),
+            ],
+
+            'product_level' => [
+                'required',
+                Rule::in([
+                    Product::LEVEL_AFFORDABLE,
+                    Product::LEVEL_EXECUTIVE,
+                ]),
+            ],
+
+            'executive_category' => [
+                Rule::requiredIf($requiresExecutiveCategory),
+                'nullable',
+                'prohibited_unless:product_level,executive',
+                Rule::in(array_keys(Product::EXECUTIVE_CATEGORIES)),
             ],
 
             'name' => ['sometimes', 'required', 'string', 'max:255'],
@@ -261,6 +373,11 @@ class SellerProductController extends Controller
             ],
         ]);
 
+        // Never retain an Executive subcategory for Affordable products.
+        if ($effectiveProductLevel === Product::LEVEL_AFFORDABLE) {
+            $validated['executive_category'] = null;
+        }
+
         $oldPhoto = $product->photo;
         $newPhoto = null;
 
@@ -272,13 +389,15 @@ class SellerProductController extends Controller
         }
 
         // Sellers cannot publish products through this endpoint.
-        unset($validated['is_published'], $validated['seller_id']);
+        unset(
+            $validated['is_published'],
+            $validated['seller_id']
+        );
 
         try {
             DB::transaction(function () use (
                 $product,
-                $validated,
-                $request
+                $validated
             ) {
                 $productData = collect($validated)
                     ->except(['sizes'])
@@ -286,7 +405,7 @@ class SellerProductController extends Controller
 
                 $product->fill($productData);
 
-                if ($request->has('sizes')) {
+                if (array_key_exists('sizes', $validated)) {
                     $sizes = $validated['sizes'];
 
                     $product->stock_quantity = collect($sizes)
@@ -319,8 +438,12 @@ class SellerProductController extends Controller
 
         return response()->json([
             'message' => 'Product updated successfully.',
+
             'product' => $product->fresh()
-                ->load(['category', 'sizes']),
+                ->load([
+                    'category',
+                    'sizes',
+                ]),
         ]);
     }
 
@@ -330,7 +453,7 @@ class SellerProductController extends Controller
     public function destroy(Request $request, int $id): JsonResponse
     {
         $product = Product::query()
-          ->where('seller_id', $this->getSellerId($request))
+            ->where('seller_id', $this->getSellerId($request))
             ->findOrFail($id);
 
         if ($product->photo) {
@@ -345,11 +468,11 @@ class SellerProductController extends Controller
     }
 
     /**
- * Resolve the business owner's ID.
- *
- * A seller uses their own ID.
- * A staff member uses their associated seller_id.
- */
+     * Resolve the business owner's ID.
+     *
+     * A seller uses their own ID.
+     * A staff member uses their associated seller_id.
+     */
     private function getSellerId(Request $request): int
     {
         $user = $request->user();

@@ -67,8 +67,13 @@ Route::prefix('seller')->group(function () {
             'destroy'
         ]);
 
-        // Seller products
+               // Seller products
         Route::get('/categories', [SellerProductController::class, 'categories']);
+
+        Route::get('/products/classifications', [
+            SellerProductController::class,
+            'classifications'
+        ]);
 
         Route::get('/products', [SellerProductController::class, 'index']);
         Route::post('/products', [SellerProductController::class, 'store']);
@@ -129,5 +134,10 @@ Route::prefix('chat')->group(function () {
         ChatController::class,
         'sendMessage'
     ])->middleware('throttle:30,1');
+
+    Route::get('/support-status', [
+    ChatController::class,
+    'supportStatus'
+]);
 
 });

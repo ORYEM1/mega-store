@@ -4,9 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductShareController;
 use App\Http\Controllers\SitemapController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::redirect('/', '/admin/login');
 
 Route::get('/share/products/{id}', [
     ProductShareController::class,

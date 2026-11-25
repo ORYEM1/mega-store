@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
 
 class BannerController extends Controller
 {
@@ -45,6 +44,8 @@ class BannerController extends Controller
                 'button_link' => $banner->button_link,
 
                 'position' => $banner->position,
+                'collection' => $banner->collection ?? 'all',
+
                 'sort_order' => $banner->sort_order,
                 'is_active' => $banner->is_active,
             ];
