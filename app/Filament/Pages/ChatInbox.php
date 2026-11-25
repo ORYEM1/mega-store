@@ -4,8 +4,10 @@ namespace App\Filament\Pages;
 
 use App\Events\ChatMessageSent;
 use App\Models\ChatConversation;
-use Illuminate\Support\Facades\Auth;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Url;
 
 class ChatInbox extends Page
 {
@@ -20,16 +22,53 @@ class ChatInbox extends Page
 
     protected static ?int $navigationSort = 5;
 
+    /**
+     * Shared support presence cache key.
+     */
+    private const PRESENCE_CACHE_KEY = 'chat:support:online';
+
+    /**
+     * How long support remains online without a heartbeat.
+     */
+    private const PRESENCE_TTL_SECONDS = 20;
+
+    #[Url(as: 'conversation', history: true)]
     public ?int $selectedConversationId = null;
 
     public string $reply = '';
 
+    public function mount(): void
+    {
+        $this->updateSupportPresence();
+
+        if ($this->selectedConversationId) {
+            $this->markMessagesAsRead($this->selectedConversationId);
+        }
+    }
+
+    /**
+     * Mark support as online while this inbox is open.
+     */
+    private function updateSupportPresence(): void
+    {
+        Cache::put(
+            self::PRESENCE_CACHE_KEY,
+            [
+                'admin_id' => Auth::id(),
+                'last_seen' => now()->toISOString(),
+            ],
+            now()->addSeconds(self::PRESENCE_TTL_SECONDS)
+        );
+    }
+
     public function getConversations()
     {
         return ChatConversation::query()
-            ->with(['messages' => function ($query) {
-                $query->latest()->limit(1);
-            }])
+            ->with([
+                'messages' => function ($query) {
+                    $query->latest()->limit(1);
+                },
+            ])
             ->withCount([
                 'messages as unread_messages_count' => function ($query) {
                     $query->whereNull('read_at')
@@ -49,18 +88,26 @@ class ChatInbox extends Page
         return ChatConversation::with([
             'messages' => function ($query) {
                 $query->oldest();
-            }
+            },
         ])->find($this->selectedConversationId);
     }
 
     public function selectConversation(int $id): void
     {
-        $this->selectedConversationId = $id;
+        $conversation = ChatConversation::findOrFail($id);
+
+        $this->selectedConversationId = $conversation->id;
 
         $this->reply = '';
 
-        // Mark customer messages as read.
-        ChatConversation::findOrFail($id)
+        $this->resetValidation();
+
+        $this->markMessagesAsRead($conversation->id);
+    }
+
+    private function markMessagesAsRead(int $conversationId): void
+    {
+        ChatConversation::findOrFail($conversationId)
             ->messages()
             ->where('sender_type', 'customer')
             ->whereNull('read_at')
@@ -69,10 +116,12 @@ class ChatInbox extends Page
             ]);
     }
 
+    /**
+     * Refresh inbox and renew the support heartbeat.
+     */
     public function refreshInbox(): void
     {
-        // Refresh the selected conversation when polling.
-        // Do not reset the selected conversation or reply text.
+        $this->updateSupportPresence();
     }
 
     public function sendReply(): void

@@ -17,7 +17,7 @@ use Filament\Tables\Table;
 
 class CategoryResource extends Resource
 {
-    protected static ? string $cluster = CatalogCluster::class;
+    //protected static ? string $cluster = CatalogCluster::class;
     protected static ?string $model = Category::class;
 
     protected static string|BackedEnum|null $navigationIcon =  'heroicon-o-rectangle-stack';

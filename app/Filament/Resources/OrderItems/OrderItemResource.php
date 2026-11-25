@@ -7,6 +7,7 @@ use App\Filament\Resources\OrderItems\Pages\EditOrderItem;
 use App\Filament\Resources\OrderItems\Pages\ListOrderItems;
 use App\Filament\Resources\OrderItems\Schemas\OrderItemForm;
 use App\Filament\Resources\OrderItems\Tables\OrderItemsTable;
+use App\Filament\Clusters\Sales\SalesCluster;
 use App\Models\OrderItem;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -21,6 +22,8 @@ class OrderItemResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     protected static ?string $recordTitleAttribute = 'OrderItem';
+
+    //protected static ?string $cluster = SalesCluster::class;
 
     public static function form(Schema $schema): Schema
     {

@@ -22,10 +22,7 @@ import {
 } from "react-icons/fa";
 
 import Navbar from "../../components/Navbar/Navbar";
-import {
-  createOrder,
-  checkPaymentStatus,
-} from "../../services/api";
+import { createOrder } from "../../services/api";
 import { useCartStore } from "../../store/cartStore";
 import { useAuthStore } from "../../store/authStore";
 
@@ -53,6 +50,23 @@ function formatPrice(price) {
   }).format(Number(price) || 0);
 }
 
+
+// Get the product image URL.
+function getProductImage(item) {
+  const image = item.photo || item.image || item.product?.photo;
+
+  if (!image) return "/images/product-placeholder.png";
+
+  if (image.startsWith("http://") || image.startsWith("https://")) {
+    return image;
+  }
+
+  if (image.startsWith("/")) {
+    return `http://192.168.10.246:8000${image}`;
+  }
+
+  return `http://192.168.10.246:8000/storage/${image}`;
+}
 // Normalize Ugandan phone numbers to 2567XXXXXXXX.
 function normalizeUgandanPhone(phone) {
   const cleaned = phone.replace(/[\s-]/g, "");
@@ -149,7 +163,6 @@ function Checkout() {
   // Submission state.
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [paymentMessage, setPaymentMessage] = useState("");
 
   // Calculate subtotal.
   const subtotal = cart.reduce(
@@ -351,64 +364,11 @@ function Checkout() {
     selectLocation(lat, lng);
   }
 
-  // Wait for MTN to confirm the payment.
-  async function waitForPayment(referenceId) {
-    const maxAttempts = 40;
-    const interval = 3000;
-
-    setPaymentMessage(
-      "Payment request sent. Please check your phone and approve the MTN MoMo prompt."
-    );
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        const result = await checkPaymentStatus(referenceId);
-
-        if (result.payment_status === "paid") {
-          return result;
-        }
-
-        if (result.payment_status === "failed") {
-          throw new Error(
-            result.message || "Your payment was unsuccessful."
-          );
-        }
-
-        setPaymentMessage(
-          `Waiting for payment confirmation... (${attempt}/${maxAttempts})`
-        );
-      } catch (err) {
-        if (err.response) {
-          // Do not treat server/network errors as payment failures.
-          throw new Error(
-            err.response.data?.message ||
-            "Unable to verify payment. Please try again."
-          );
-        }
-
-        throw err;
-      }
-
-      if (attempt < maxAttempts) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, interval)
-        );
-      }
-    }
-
-    return {
-      payment_status: "pending",
-      message:
-        "Payment confirmation is taking longer than expected. Check your payment status again.",
-    };
-  }
-
-// Submit order.
+  // Submit order.
   async function handleSubmit(event) {
     event.preventDefault();
 
     setError("");
-    setPaymentMessage("");
 
     if (!token) {
       navigate("/login", {
@@ -445,6 +405,7 @@ function Checkout() {
     let normalizedPhone = null;
 
     if (form.payment_method === "mobile_money") {
+      // Ensure a payment provider is selected.
       if (
         !["mtn_momo", "airtel_money"].includes(
           form.mobile_money_provider
@@ -454,14 +415,15 @@ function Checkout() {
         return;
       }
 
-      // Airtel integration is not yet implemented.
+      // Airtel Money integration is not available yet.
       if (form.mobile_money_provider === "airtel_money") {
         setError(
-          "Airtel Money is not available yet. Please select MTN MoMo."
+          "Airtel Money is coming soon. Please select MTN MoMo."
         );
         return;
       }
 
+      // Normalize and validate the phone number.
       normalizedPhone = normalizeUgandanPhone(
         form.mobile_money_phone
       );
@@ -474,126 +436,105 @@ function Checkout() {
       }
     }
 
-  // Prepare cart items.
-  const items = cart.map((item) => ({
-    product_id: item.id,
-    quantity: Number(item.quantity),
-  }));
+   // Prepare cart items, including selected sizes.
+    const items = cart.map((item) => ({
+      product_id: item.id,
+      size: item.selected_size || null,
+      quantity: Number(item.quantity),
+    }));
 
-  // Prepare order data.
-  const orderData = {
-    items,
+    // Prepare order data.
+    const orderData = {
+      items,
 
-    shipping_address: form.shipping_address.trim(),
+      shipping_address: form.shipping_address.trim(),
 
-    payment_method: form.payment_method,
+      payment_method: form.payment_method,
 
-    mobile_money_provider:
-      form.payment_method === "mobile_money"
-        ? form.mobile_money_provider
-        : null,
+      mobile_money_provider:
+        form.payment_method === "mobile_money"
+          ? form.mobile_money_provider
+          : null,
 
-    mobile_money_phone: normalizedPhone,
+      mobile_money_phone: normalizedPhone,
 
-    notes: form.notes.trim() || null,
+      notes: form.notes.trim() || null,
 
-    latitude: location?.lat ?? null,
-    longitude: location?.lng ?? null,
-  };
+      latitude: location?.lat ?? null,
+      longitude: location?.lng ?? null,
+    };
 
-  try {
-    setSubmitting(true);
+    try {
+      setSubmitting(true);
 
-    const response = await createOrder(orderData);
+      const response = await createOrder(orderData);
 
-    // MOBILE MONEY PAYMENT
-    if (form.payment_method === "mobile_money") {
-      const referenceId = response.payment?.reference_id;
+      // MOBILE MONEY PAYMENT.
+      if (form.payment_method === "mobile_money") {
+        const referenceId = response.payment?.reference_id;
 
-      // Save the pending order.
-      sessionStorage.setItem(
-        "pending_payment_order",
-        JSON.stringify(response)
-      );
-
-      if (!referenceId) {
-        setError(
-          "Your order was created, but no payment reference was returned. Please contact support."
-        );
-        return;
-      }
-
-      // Wait for MTN payment confirmation.
-      const paymentResult = await waitForPayment(referenceId);
-
-      if (paymentResult.payment_status === "paid") {
-        // Clear cart only after confirmed payment.
-        clearCart();
-
-        const successfulOrder = {
-          ...response,
-          payment_status: "paid",
-        };
-
+        // Save the pending order in both browser storages.
         sessionStorage.setItem(
-          "last_order",
-          JSON.stringify(successfulOrder)
+          "pending_payment_order",
+          JSON.stringify(response)
         );
 
-        sessionStorage.removeItem("pending_payment_order");
+        localStorage.setItem(
+          "pending_payment_order",
+          JSON.stringify(response)
+        );
 
-        navigate("/order-success", {
+        if (!referenceId) {
+          setError(
+            "Your order was created, but no payment reference was returned. Please contact support."
+          );
+          return;
+        }
+
+        // The PaymentPending page will monitor payment status.
+        navigate("/payment-pending", {
           replace: true,
         });
 
         return;
       }
 
-      // Payment is still pending.
-      setPaymentMessage(
-        paymentResult.message ||
-          "Your payment is still pending. Please check again shortly."
+      // CASH AND OTHER EXISTING PAYMENT METHODS.
+      clearCart();
+
+      sessionStorage.setItem(
+        "last_order",
+        JSON.stringify(response)
       );
 
-      return;
+      navigate("/order-success", {
+        replace: true,
+      });
+    } catch (err) {
+      console.error("Order submission failed:", err);
+
+      const responseData = err.response?.data;
+
+      if (responseData?.errors) {
+        const validationMessages = Object.values(
+          responseData.errors
+        ).flat();
+
+        setError(
+          validationMessages.join(" ") ||
+            "Please check your order details."
+        );
+      } else {
+        setError(
+          responseData?.message ||
+            err.message ||
+            "We could not place your order. Please check your connection and try again."
+        );
+      }
+    } finally {
+      setSubmitting(false);
     }
-
-    // CASH AND OTHER EXISTING PAYMENT METHODS.
-    clearCart();
-
-    sessionStorage.setItem(
-      "last_order",
-      JSON.stringify(response)
-    );
-
-    navigate("/order-success", {
-      replace: true,
-    });
-  } catch (err) {
-    console.error("Order submission failed:", err);
-
-    const responseData = err.response?.data;
-
-    if (responseData?.errors) {
-      const validationMessages = Object.values(
-        responseData.errors
-      ).flat();
-
-      setError(
-        validationMessages.join(" ") ||
-          "Please check your order details."
-      );
-    } else {
-      setError(
-        responseData?.message ||
-          err.message ||
-          "We could not place your order. Please check your connection and try again."
-      );
-    }
-  } finally {
-    setSubmitting(false);
   }
-}
 
   // Redirecting state.
   if (!token) {
@@ -985,118 +926,145 @@ function Checkout() {
                   <span>{error}</span>
                 </div>
               )}
-
-              {paymentMessage && (
-                <div
-                  className="checkout-mobile-money-notice"
-                  role="status"
-                >
-                  <FaMobileAlt />
-                  <span>{paymentMessage}</span>
-                </div>
-              )}
             </section>
 
-            {/* Order summary */}
+            {/* Right section - Order Summary */}
             <aside className="checkout-summary">
-              <p className="checkout-eyebrow">FINAL STEP</p>
 
-              <h2>YOUR ORDER.</h2>
+              <div className="checkout-summary-heading">
+                <FaShoppingBag />
+                <h2>YOUR ORDER</h2>
+              </div>
 
+              {/* Products */}
               <div className="checkout-summary-items">
-                {cart.map((item) => (
-                  <div
-                    className="checkout-summary-item"
-                    key={item.id}
-                  >
-                    <div className="checkout-summary-product">
-                      <span className="checkout-summary-quantity">
-                        {item.quantity}
-                      </span>
+                {cart.map((item) => {
+                  const itemPrice = Number(item.price || 0);
+                  const quantity = Number(item.quantity || 0);
+                  const lineTotal = itemPrice * quantity;
+                
+                  return (
+                    <div
+                      className="checkout-summary-product-card"
+                      key={
+                        item.cart_key ||
+                        `${item.id}::${item.selected_size || ""}`
+                      }
+                    >
+                      <div className="checkout-summary-image">
+                        <img
+                          src={getProductImage(item)}
+                          alt={item.name}
+                          onError={(event) => {
+                            event.currentTarget.src =
+                              "/images/product-placeholder.png";
+                          }}
+                        />
+                      </div>
 
-                      <span className="checkout-summary-name">
-                        {item.name}
-                      </span>
+
+                      <span
+                          className={`checkout-summary-product-level ${
+                            item.product_level === "executive"
+                              ? "executive"
+                              : "affordable"
+                          }`}
+                        >
+                          {item.product_level === "executive"
+                            ? `Executive ${(item.executive_category || "").toUpperCase()}`
+                            : "Affordable"}
+                        </span>
+                        
+                      <div className="checkout-summary-product-info">
+                        <h3>{item.name}</h3>
+                        
+                        {item.selected_size && (
+                          <p className="checkout-summary-size">
+                            Size: <strong>{item.selected_size}</strong>
+                          </p>
+                        )}
+
+                        {item.color && (
+                          <p className="checkout-summary-detail">
+                            Color: {item.color}
+                          </p>
+                        )}
+
+                        <p className="checkout-summary-detail">
+                          Quantity: {quantity}
+                        </p>
+                      
+                        <p className="checkout-summary-unit-price">
+                          Unit price: {formatPrice(itemPrice)}
+                        </p>
+                      
+                        <strong className="checkout-summary-line-total">
+                          {formatPrice(lineTotal)}
+                        </strong>
+                      </div>
                     </div>
-
-                    <strong>
-                      {formatPrice(
-                        Number(item.price || 0) *
-                          Number(item.quantity || 0)
-                      )}
-                    </strong>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-
-              <div className="checkout-summary-row">
-                <span>ITEMS</span>
-
-                <span>
-                  {cart.reduce(
-                    (total, item) =>
-                      total + Number(item.quantity || 0),
-                    0
-                  )}
-                </span>
+              
+              {/* Totals */}
+              <div className="checkout-summary-totals">
+              
+                <div className="checkout-total-row">
+                  <span>Subtotal</span>
+                  <strong>{formatPrice(subtotal)}</strong>
+                </div>
+              
+                <div className="checkout-total-row">
+                  <span>Delivery</span>
+                  <strong>To be confirmed</strong>
+                </div>
+              
+                <div className="checkout-grand-total">
+                  <span>TOTAL</span>
+                  <strong>{formatPrice(subtotal)}</strong>
+                </div>
+              
               </div>
-
-              <div className="checkout-summary-row">
-                <span>SUBTOTAL</span>
-                <span>{formatPrice(subtotal)}</span>
-              </div>
-
-              <div className="checkout-summary-row checkout-summary-total">
-                <span>TOTAL</span>
-                <span>{formatPrice(subtotal)}</span>
-              </div>
-
-              <p className="checkout-summary-note">
-                The final order total will be calculated and
-                validated by the server. Delivery charges, if
-                applicable, may be confirmed separately.
-              </p>
-
+              
+              {/* Stock warning */}
               {hasStockIssue && (
-                <div className="checkout-stock-warning">
+                <div className="checkout-error">
                   <FaExclamationCircle />
-
                   <span>
-                    Please review your cart. Some products have
-                    insufficient stock.
+                    Some products have insufficient stock. Please review your cart.
                   </span>
                 </div>
               )}
 
+              {/* Place Order Button */}
               <button
                 type="submit"
-                className="checkout-submit-button"
-                disabled={submitting || hasStockIssue}
+                className="checkout-place-order-button"
+                disabled={submitting || hasStockIssue || cart.length === 0}
               >
                 {submitting ? (
-                  "PLACING ORDER..."
+                  "PROCESSING YOUR ORDER..."
                 ) : (
                   <>
-                    PLACE ORDER <FaArrowRight />
+                    PLACE ORDER
+                    <FaArrowRight />
                   </>
                 )}
               </button>
-
-              <Link
-                to="/cart"
-                className="checkout-back-link"
-              >
+              
+              <p className="checkout-secure-message">
+                Please confirm your delivery and payment details before placing your order.
+              </p>
+              
+              <Link to="/cart" className="checkout-back-to-cart">
                 <FaArrowLeft />
-                RETURN TO SHOPPING BAG
+                BACK TO SHOPPING BAG
               </Link>
-
-              <div className="checkout-secure-note">
-                <FaShoppingBag />
-                <span>THANK YOU FOR SHOPPING WITH ADRIAN.</span>
-              </div>
+              
             </aside>
-          </form>
-        )}
+            </form>
+         )}
       </main>
     </div>
   );

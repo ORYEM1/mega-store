@@ -1,535 +1,953 @@
-/* =====================================
-   GLOBAL STORE
-===================================== */
 
-.store {
+/* =====================================================
+
+   LIVING EARTH
+
+   BOTANICAL ECOMMERCE DESIGN SYSTEM
+
+===================================================== */
+
+.living-earth {
+    --earth-green: #263d19;
+    --earth-dark: #1e3015;
+    --earth-olive: #667746;
+    --earth-light-olive: #e2e3c9;
+    --earth-cream: #fbf3e7;
+    --earth-beige: #ead7bf;
+    --earth-text: #29271f;
+    --earth-muted: #777366;
+    --earth-border: #d8cbb7;
+    --earth-white: #ffffff;
+
     min-height: 100vh;
     overflow: hidden;
-    background: #0b0b0b;
-    color: #ffffff;
-    font-family: "Inter", Arial, sans-serif;
+    background: var(--earth-cream);
+    color: var(--earth-text);
+    font-family: Georgia, "Times New Roman", serif;
 }
 
-.store * {
+.living-earth *,
+.living-earth *::before,
+.living-earth *::after {
     box-sizing: border-box;
 }
 
-.store button {
+.living-earth button,
+.living-earth input {
     font-family: inherit;
 }
 
-.store main {
+.living-earth button {
+    cursor: pointer;
+}
+
+.living-earth main {
     width: 100%;
 }
 
-/* =====================================
-   HERO SECTION
-===================================== */
+/* =====================================================
+   ANNOUNCEMENT BAR
+===================================================== */
 
-.street-hero {
-    position: relative;
-    min-height: 620px;
+.earth-announcement {
+    width: 100%;
+    min-height: 34px;
+    background: var(--earth-green);
+    color: var(--earth-cream);
+}
+
+.earth-announcement-inner {
+    width: min(1400px, 94%);
+    min-height: 34px;
+    margin: auto;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.earth-announcement-inner > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.earth-announcement span {
+    font-size: 12px;
+    letter-spacing: .3px;
+}
+
+.earth-announcement i {
+    width: 1px;
+    height: 13px;
+    background: rgba(255,255,255,.55);
+}
+
+.earth-social-top,
+.earth-footer-social {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.earth-social-top span {
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+/* =====================================================
+   HERO SECTION
+   DESKTOP: TEXT LEFT, IMAGE RIGHT
+===================================================== */
+
+.earth-hero {
+    position: relative;
+    min-height: 460px;
     overflow: hidden;
     isolation: isolate;
-    background:
-        radial-gradient(
-            ellipse at 78% 42%,
-            rgba(198, 255, 0, 0.14),
-            transparent 32%
-        ),
-        radial-gradient(
-            ellipse at 90% 85%,
-            rgba(198, 255, 0, 0.08),
-            transparent 35%
-        ),
-        linear-gradient(115deg, #101010 0%, #080808 65%, #171717 100%);
+    background: var(--earth-cream);
 }
 
-.street-hero::before {
-    content: "AC";
+.earth-hero-image {
     position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 58%;
     z-index: -1;
-    right: 5%;
-    top: 50%;
-    transform: translateY(-50%);
-    color: rgba(255, 255, 255, 0.025);
-    font-size: clamp(250px, 38vw, 560px);
-    font-weight: 1000;
-    letter-spacing: -35px;
-    line-height: 1;
-    pointer-events: none;
+    overflow: hidden;
 }
 
-.street-hero::after {
+.earth-hero-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center;
+}
+
+.earth-hero::after {
     content: "";
     position: absolute;
+    top: 0;
+    left: 38%;
+    right: 0;
+    bottom: 0;
     z-index: -1;
-    right: 13%;
-    top: 12%;
-    width: 390px;
-    height: 390px;
-    border: 1px solid rgba(198, 255, 0, 0.16);
-    transform: rotate(35deg);
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        var(--earth-cream) 0%,
+        rgba(251,243,231,.75) 12%,
+        rgba(251,243,231,.12) 38%,
+        transparent 65%
+    );
+}
+
+.earth-hero-content {
+    position: relative;
+    z-index: 2;
+    width: min(1400px, 90%);
+    min-height: 460px;
+    margin: auto;
+    padding: 65px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    animation: earthReveal .8s ease both;
+}
+
+.earth-hero-content > * {
+    max-width: 43%;
+}
+
+.earth-eyebrow {
+    margin-bottom: 14px;
+    color: var(--earth-green);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 5px;
+}
+
+.earth-hero h1 {
+    max-width: 600px;
+    margin: 0;
+    color: #252319;
+    font-size: clamp(58px, 7vw, 100px);
+    font-weight: 700;
+    line-height: .9;
+    letter-spacing: -4px;
+}
+
+.earth-hero-content > p {
+    margin: 22px 0 28px;
+    color: #39362d;
+    font-size: clamp(16px, 1.7vw, 21px);
+    line-height: 1.6;
+}
+
+.earth-button {
+    min-height: 43px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 0 23px;
+    border: 1px solid var(--earth-green);
+    border-radius: 30px;
+    background: var(--earth-green);
+    color: var(--earth-cream);
+    font-size: 13px;
+    text-decoration: none;
+    transition: .25s ease;
+}
+
+.earth-button:hover {
+    background: var(--earth-olive);
+    border-color: var(--earth-olive);
+    transform: translateY(-2px);
+}
+
+.earth-button svg {
+    font-size: 12px;
+}
+
+/* =====================================================
+   FALLBACK HERO
+===================================================== */
+
+.earth-hero-fallback {
+    min-height: 460px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(
+            circle at 85% 40%,
+            rgba(102,119,70,.18),
+            transparent 35%
+        ),
+        linear-gradient(
+            110deg,
+            var(--earth-cream),
+            var(--earth-beige)
+        );
+}
+
+.earth-hero-fallback::after {
+    content: "❧";
+    position: absolute;
+    right: 5%;
+    top: -50px;
+    color: rgba(38,61,25,.09);
+    font-size: 400px;
+    transform: rotate(-30deg);
     pointer-events: none;
 }
 
-.street-hero-overlay {
+.earth-hero-fallback .earth-hero-content {
+    position: relative;
+    z-index: 2;
+    min-height: 460px;
+}
+
+/* =====================================================
+   COLLECTION BANNERS
+===================================================== */
+
+.earth-collections {
+    width: 100%;
+    padding: 10px 1.5%;
+    background: var(--earth-cream);
+}
+
+.earth-collection-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.earth-collection-card {
+    position: relative;
+    min-height: 260px;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 15px;
+    background: var(--earth-light-olive);
+}
+
+.earth-collection-card picture {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+}
+
+.earth-collection-card picture img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .5s ease;
+}
+
+.earth-collection-card:hover picture img {
+    transform: scale(1.04);
+}
+
+.earth-collection-card::after {
+    content: "";
     position: absolute;
     inset: 0;
     z-index: -1;
-    background:
-        linear-gradient(
-            90deg,
-            rgba(0, 0, 0, 0.5),
-            transparent 75%
-        ),
-        repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 3px,
-            rgba(255, 255, 255, 0.012) 4px
-        );
-    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        rgba(234,225,204,.95) 0%,
+        rgba(234,225,204,.85) 36%,
+        rgba(234,225,204,.08) 75%
+    );
 }
 
-.street-hero-content {
-    position: relative;
-    width: min(1400px, 90%);
-    margin: 0 auto;
-    padding: 85px 0 100px;
-    animation: heroReveal 0.8s ease both;
-}
-
-.street-hero-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 24px;
-    color: #c6ff00;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 3px;
-}
-
-.street-hero-tag svg {
-    font-size: 15px;
-}
-
-.street-hero h1 {
-    max-width: 850px;
-    margin: 0;
-    color: #ffffff;
-    font-family: "Bebas Neue", Impact, sans-serif;
-    font-size: clamp(90px, 13vw, 175px);
-    font-weight: 900;
-    letter-spacing: -3px;
-    line-height: 0.78;
-    text-transform: uppercase;
-}
-
-.street-hero h1 span {
-    color: #c6ff00;
-}
-
-.street-hero-content > p {
-    margin: 32px 0;
-    color: #b9b9b9;
-    font-size: 15px;
-    line-height: 1.9;
-}
-
-.street-hero-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 25px;
-    min-height: 54px;
-    padding: 0 25px;
-    border: 1px solid #c6ff00;
-    background: #c6ff00;
-    color: #080808;
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 1.3px;
-    cursor: pointer;
-    transition: 0.25s ease;
-}
-
-.street-hero-button:hover {
-    background: transparent;
-    color: #c6ff00;
-    transform: translateY(-3px);
-}
-
-.street-hero-button svg {
-    transition: transform 0.25s ease;
-}
-
-.street-hero-button:hover svg {
-    transform: translateX(5px);
-}
-
-.street-hero-bottom {
-    position: absolute;
-    bottom: 27px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-between;
-    color: #777777;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 2px;
-}
-
-.street-hero-side-text {
-    position: absolute;
-    top: 50%;
-    right: 25px;
-    transform: translateY(-50%) rotate(90deg);
-    transform-origin: center;
-    color: #777777;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    white-space: nowrap;
-}
-
-/* =====================================
-   MOVING BRAND STRIP
-===================================== */
-
-.street-marquee {
-    overflow: hidden;
-    padding: 19px 0;
-    background: #c6ff00;
-    color: #080808;
-}
-
-.street-marquee-track {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    gap: 35px;
-    min-width: max-content;
-    animation: marqueeMove 25s linear infinite;
-}
-
-.street-marquee-track span {
-    font-size: 18px;
-    font-weight: 1000;
-    letter-spacing: 2px;
-}
-
-.street-marquee-track span:nth-child(even) {
-    font-size: 15px;
-}
-
-/* =====================================
-   PRODUCT COLLECTION
-===================================== */
-
-.store-products {
-    width: min(1400px, 90%);
-    margin: 0 auto;
-    padding: 105px 0;
-    scroll-margin-top: 120px;
-}
-
-.products-heading {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 65px;
-}
-
-.section-eyebrow {
-    margin: 0 0 13px;
-    color: #c6ff00;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-}
-
-.products-heading h2,
-.category-section-heading h2 {
-    margin: 0;
-    color: #ffffff;
-    font-family: "Bebas Neue", Impact, sans-serif;
-    font-size: clamp(38px, 5vw, 65px);
-    font-weight: 900;
-    line-height: 1;
-    text-transform: uppercase;
-}
-
-.products-heading h2 span {
-    color: #c6ff00;
-}
-
-.view-all-button {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 13px 0;
-    border: none;
-    border-bottom: 1px solid #c6ff00;
-    background: transparent;
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    cursor: pointer;
-    transition: 0.2s ease;
-}
-
-.view-all-button:hover {
-    color: #c6ff00;
-}
-
-.view-all-button svg {
-    color: #c6ff00;
-}
-
-/* =====================================
-   CATEGORY SECTIONS
-===================================== */
-
-.category-sections {
+.earth-collection-content {
+    width: 55%;
+    min-height: 260px;
+    padding: 35px;
     display: flex;
     flex-direction: column;
-    gap: 85px;
+    align-items: flex-start;
+    justify-content: center;
 }
 
-.category-section {
-    scroll-margin-top: 120px;
+.earth-collection-content h2 {
+    max-width: 300px;
+    margin: 0 0 8px;
+    color: #252319;
+    font-size: clamp(28px, 3vw, 42px);
+    font-weight: 500;
+    line-height: .98;
 }
 
-.category-section-heading {
+.earth-collection-content > p {
+    margin: 0 0 18px;
+    color: #514b3e;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.earth-button-small {
+    min-height: 36px;
+    padding: 0 18px;
+    font-size: 12px;
+}
+
+/* =====================================================
+   FALLBACK COLLECTION CARDS
+===================================================== */
+
+.earth-collection-fallback {
+    min-height: 260px;
+    padding: 35px;
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #303030;
+    align-items: center;
+    border-radius: 15px;
 }
 
-.category-section-heading h2 {
-    font-size: clamp(35px, 4vw, 48px);
+.earth-collection-fallback > div {
+    max-width: 330px;
 }
 
-.category-product-count {
-    padding: 8px 12px;
-    border: 1px solid #3a3a3a;
-    color: #c6ff00;
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 1px;
+.earth-collection-fallback.affordable {
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(255,255,255,.45),
+            transparent 35%
+        ),
+        #e2e3c9;
+}
+
+.earth-collection-fallback.executive {
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(255,255,255,.35),
+            transparent 35%
+        ),
+        #ead1b3;
+}
+
+.earth-collection-fallback span {
+    color: var(--earth-green);
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+.earth-collection-fallback h2 {
+    margin: 10px 0;
+    color: #27251d;
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 1;
+}
+
+.earth-collection-fallback p {
+    max-width: 270px;
+    margin-bottom: 18px;
+    color: #555044;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* =====================================================
+   SECTION TITLES
+===================================================== */
+
+.earth-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 0 0 24px;
+    text-align: center;
+}
+
+.earth-section-title > span {
+    flex: 1;
+    height: 1px;
+    background: var(--earth-border);
+}
+
+.earth-section-title h2 {
+    margin: 0;
+    color: var(--earth-green);
+    font-size: clamp(25px, 3vw, 34px);
+    font-weight: 600;
     white-space: nowrap;
 }
 
-/* =====================================
-   PRODUCT GRID
-===================================== */
+/* =====================================================
+   BEST SELLERS
+===================================================== */
 
-.product-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 25px;
+.earth-best-sellers {
+    width: min(1400px, 96%);
+    margin: auto;
+    padding: 8px 0 35px;
 }
 
-/*
-   ProductCard is an existing component.
-   These rules provide general visual support.
-   We can refine its individual elements after
-   reviewing ProductCard.jsx and ProductCard.css.
-*/
+.earth-best-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+}
 
-.product-grid > * {
+.earth-best-grid > *,
+.earth-product-grid > * {
     min-width: 0;
 }
 
-/* =====================================
-   LOADING, ERROR AND EMPTY STATES
-===================================== */
-
-.store-message,
-.store-empty,
-.store-error {
-    min-height: 230px;
+.earth-text-button {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 35px 20px;
-    text-align: center;
-    background: #151515;
-    border: 1px solid #292929;
+    gap: 10px;
+    margin: 25px auto 0;
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    color: var(--earth-green);
+    font-size: 13px;
+    font-weight: 600;
 }
 
-.store-message p,
-.store-empty p,
-.store-error p {
-    color: #999999;
+.earth-text-button:hover {
+    color: var(--earth-olive);
+}
+
+/* =====================================================
+   BENEFITS SECTION
+===================================================== */
+
+.earth-benefits {
+    width: 100%;
+    padding: 28px 4%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+    background: var(--earth-light-olive);
+}
+
+.earth-benefit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 13px;
+    color: var(--earth-green);
+}
+
+.earth-benefit > svg {
+    flex-shrink: 0;
+    font-size: 28px;
+}
+
+.earth-benefit div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.earth-benefit strong {
+    color: var(--earth-green);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.earth-benefit span {
+    color: var(--earth-muted);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+}
+
+/* =====================================================
+   PRODUCTS SECTION
+===================================================== */
+
+.earth-products {
+    width: min(1400px, 94%);
+    margin: auto;
+    padding: 65px 0;
+}
+
+.earth-products-header {
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.earth-products-header > span {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--earth-olive);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.earth-products-header h2 {
+    margin: 0;
+    color: var(--earth-green);
+    font-size: clamp(30px, 4vw, 43px);
+    font-weight: 500;
+}
+
+.earth-products-header p {
+    max-width: 550px;
+    margin: 12px auto 0;
+    color: var(--earth-muted);
+    font-family: Arial, sans-serif;
     font-size: 13px;
     line-height: 1.7;
 }
 
-.store-empty h3,
-.store-error h3 {
-    margin: 0;
-    color: #ffffff;
-    font-family: "Bebas Neue", Impact, sans-serif;
-    font-size: 35px;
-    letter-spacing: 1px;
+.earth-product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
 }
 
-.street-loader {
-    width: 38px;
-    height: 38px;
-    margin-bottom: 15px;
-    border: 3px solid #303030;
-    border-top-color: #c6ff00;
-    border-radius: 50%;
-    animation: spinLoader 0.8s linear infinite;
+.earth-loading,
+.earth-empty {
+    padding: 45px 15px;
+    color: var(--earth-muted);
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
 }
 
-.retry-button {
-    margin-top: 15px;
-    padding: 13px 22px;
-    border: none;
-    background: #c6ff00;
-    color: #080808;
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 1px;
-    cursor: pointer;
+/* =====================================================
+   CATEGORY SECTIONS
+===================================================== */
+
+.earth-category-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 55px;
 }
 
-.retry-button:hover {
-    background: #ffffff;
+.earth-category-section {
+    min-width: 0;
 }
 
-/* =====================================
-   CALL TO ACTION
-===================================== */
-
-.street-cta {
+.earth-category-heading {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 35px;
-    width: 100%;
-    padding: 85px max(5%, calc((100% - 1400px) / 2));
-    background:
-        radial-gradient(
-            ellipse at 90% 50%,
-            rgba(198, 255, 0, 0.11),
-            transparent 40%
-        ),
-        #171717;
-    border-top: 1px solid #292929;
-    border-bottom: 1px solid #292929;
+    gap: 15px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--earth-border);
 }
 
-.street-cta h2 {
+.earth-category-heading h3 {
     margin: 0;
-    color: #ffffff;
-    font-family: "Bebas Neue", Impact, sans-serif;
-    font-size: clamp(48px, 7vw, 90px);
-    font-weight: 900;
-    line-height: 0.9;
+    color: var(--earth-green);
+    font-size: 27px;
+    font-weight: 500;
 }
 
-.street-cta h2 span {
-    color: #c6ff00;
+.earth-category-heading > span {
+    color: var(--earth-muted);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
 }
 
-.street-cta-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    min-height: 54px;
-    padding: 0 24px;
-    border: 1px solid #c6ff00;
-    background: #c6ff00;
-    color: #080808;
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 1px;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: 0.25s ease;
-}
-
-.street-cta-button:hover {
-    background: transparent;
-    color: #c6ff00;
-}
-
-/* =====================================
-   FOOTER
-===================================== */
-
-.store-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-    padding: 65px 20px 35px;
-    background: #080808;
-    text-align: center;
-}
-
-.footer-brand {
+.earth-category-links {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    justify-content: center;
-    color: #ffffff;
-    font-size: 36px;
-    font-weight: 1000;
-    letter-spacing: -2px;
+    gap: 10px;
+    margin-bottom: 22px;
 }
 
-.footer-brand span {
-    color: #c6ff00;
+.earth-category-links button {
+    padding: 8px 15px;
+    border: 1px solid var(--earth-border);
+    border-radius: 30px;
+    background: transparent;
+    color: var(--earth-text);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    transition: .2s ease;
 }
 
-.footer-brand small {
-    width: 100%;
-    margin-top: 3px;
-    color: #777777;
-    font-size: 8px;
-    letter-spacing: 5px;
+.earth-category-links button:hover,
+.earth-category-links button.active {
+    border-color: var(--earth-green);
+    background: var(--earth-green);
+    color: #fff;
 }
 
-.store-footer > p {
-    margin: 0;
-    color: #999999;
-    font-size: 9px;
+.earth-active-filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 12px 15px;
+    border: 1px solid var(--earth-border);
+    background: rgba(226,227,201,.35);
+    color: var(--earth-text);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+.earth-active-filter button {
+    border: none;
+    background: transparent;
+    color: var(--earth-green);
+    font-size: 12px;
     font-weight: 700;
-    letter-spacing: 2px;
 }
 
-.store-footer > span {
-    margin-top: 20px;
-    color: #666666;
-    font-size: 10px;
+/* =====================================================
+   CLASSIFICATION FILTERS
+===================================================== */
+
+.earth-classification-wrapper {
+    margin-bottom: 35px;
+    padding: 35px;
+    border: 1px solid var(--earth-border);
+    border-radius: 14px;
+    background: #f5eddf;
+    text-align: center;
 }
 
-/* =====================================
+.earth-classification-heading > span {
+    color: var(--earth-olive);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.earth-classification-heading h3 {
+    margin: 10px 0;
+    color: var(--earth-green);
+    font-size: 34px;
+    font-weight: 500;
+}
+
+.earth-classification-heading p {
+    max-width: 600px;
+    margin: 10px auto 25px;
+    color: var(--earth-muted);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.earth-classification-tabs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.earth-classification-tabs button {
+    min-height: 43px;
+    padding: 10px 25px;
+    border: 1px solid var(--earth-green);
+    border-radius: 30px;
+    background: transparent;
+    color: var(--earth-green);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    transition: .2s ease;
+}
+
+.earth-classification-tabs button:hover,
+.earth-classification-tabs button.active {
+    background: var(--earth-green);
+    color: #fff;
+}
+
+.earth-executive-categories {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid var(--earth-border);
+}
+
+.earth-executive-categories button {
+    min-height: 38px;
+    padding: 8px 17px;
+    border: 1px solid var(--earth-border);
+    border-radius: 30px;
+    background: var(--earth-cream);
+    color: var(--earth-text);
+    font-size: 12px;
+    transition: .2s ease;
+}
+
+.earth-executive-categories button:hover,
+.earth-executive-categories button.active {
+    border-color: var(--earth-green);
+    background: var(--earth-green);
+    color: #fff;
+}
+
+/* =====================================================
+   COMMUNITY SECTION
+===================================================== */
+
+.earth-community {
+    position: relative;
+    min-height: 330px;
+    padding: 60px 8%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background:
+        linear-gradient(rgba(30,48,21,.88), rgba(30,48,21,.88)),
+        var(--earth-green);
+    color: var(--earth-cream);
+    text-align: center;
+}
+
+.earth-community::before,
+.earth-community::after {
+    content: "❧";
+    position: absolute;
+    color: rgba(255,255,255,.07);
+    font-size: 250px;
+    pointer-events: none;
+}
+
+.earth-community::before {
+    top: -100px;
+    left: -30px;
+    transform: rotate(-35deg);
+}
+
+.earth-community::after {
+    right: -30px;
+    bottom: -120px;
+    transform: rotate(145deg);
+}
+
+.earth-community > * {
+    position: relative;
+    z-index: 1;
+}
+
+.earth-community > span {
+    margin-bottom: 12px;
+    color: var(--earth-light-olive);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+.earth-community h2 {
+    max-width: 700px;
+    margin: 0;
+    color: var(--earth-cream);
+    font-size: clamp(35px, 5vw, 55px);
+    font-weight: 500;
+    line-height: 1.05;
+}
+
+.earth-community p {
+    max-width: 560px;
+    margin: 18px 0 25px;
+    color: rgba(251,243,231,.8);
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.earth-community > button {
+    min-height: 45px;
+    padding: 0 25px;
+    border: 1px solid var(--earth-cream);
+    border-radius: 30px;
+    background: var(--earth-cream);
+    color: var(--earth-green);
+    font-size: 12px;
+    font-weight: 700;
+    transition: .2s ease;
+}
+
+.earth-community > button:hover {
+    background: transparent;
+    color: var(--earth-cream);
+}
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.earth-footer {
+    padding: 55px 5% 25px;
+    background: #1e3015;
+    color: var(--earth-cream);
+}
+
+.earth-footer-inner {
+    width: min(1400px, 100%);
+    margin: auto;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 40px;
+}
+
+.earth-footer-logo h2 {
+    margin: 0 0 12px;
+    color: var(--earth-cream);
+    font-size: 27px;
+    letter-spacing: 1px;
+}
+
+.earth-footer-logo p {
+    max-width: 300px;
+    margin: 0;
+    color: rgba(251,243,231,.7);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.earth-footer-column h3 {
+    margin: 0 0 18px;
+    color: var(--earth-light-olive);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.earth-footer-links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.earth-footer-links a,
+.earth-footer-links button {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: rgba(251,243,231,.75);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    text-decoration: none;
+    transition: color .2s ease;
+}
+
+.earth-footer-links a:hover,
+.earth-footer-links button:hover {
+    color: #fff;
+}
+
+.earth-footer-social {
+    margin-top: 22px;
+}
+
+.earth-footer-social a {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 50%;
+    color: var(--earth-cream);
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.earth-footer-social a:hover {
+    border-color: var(--earth-light-olive);
+    background: var(--earth-light-olive);
+    color: var(--earth-green);
+}
+
+.earth-footer-bottom {
+    width: min(1400px, 100%);
+    margin: 40px auto 0;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,.16);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    color: rgba(251,243,231,.6);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+}
+
+/* =====================================================
    ANIMATIONS
-===================================== */
+===================================================== */
 
-@keyframes heroReveal {
+@keyframes earthReveal {
     from {
         opacity: 0;
-        transform: translateY(25px);
+        transform: translateY(18px);
     }
 
     to {
@@ -538,478 +956,803 @@
     }
 }
 
-@keyframes marqueeMove {
-    from {
-        transform: translateX(0);
-    }
-
-    to {
-        transform: translateX(-25%);
-    }
-}
-
-@keyframes spinLoader {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* =====================================
+/* =====================================================
    RESPONSIVE DESIGN
-===================================== */
+===================================================== */
 
-@media (max-width: 1050px) {
-    .product-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 20px;
+@media (max-width: 1100px) {
+    .earth-hero-content > * {
+        max-width: 50%;
     }
 
-    .street-hero {
-        min-height: 560px;
+    .earth-hero h1 {
+        font-size: clamp(55px, 7vw, 80px);
     }
 
-    .street-hero-side-text {
-        right: 5px;
+    .earth-best-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .earth-footer-inner {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
-@media (max-width: 768px) {
-    .street-hero {
-        min-height: 520px;
+@media (max-width: 850px) {
+    .earth-hero {
+        min-height: 390px;
     }
 
-    .street-hero-content {
-        width: 90%;
-        padding: 75px 0 95px;
+    .earth-hero-content {
+        min-height: 390px;
     }
 
-    .street-hero h1 {
-        font-size: clamp(85px, 17vw, 125px);
+    .earth-hero-image {
+        width: 62%;
+    }
+
+    .earth-hero-content > * {
+        max-width: 53%;
+    }
+
+    .earth-hero h1 {
+        font-size: clamp(48px, 7vw, 68px);
         letter-spacing: -2px;
     }
 
-    .street-hero-content > p {
-        font-size: 13px;
+    .earth-collection-grid {
+        gap: 10px;
     }
 
-    .street-hero-side-text {
-        display: none;
+    .earth-collection-card {
+        min-height: 230px;
     }
 
-    .street-hero::before {
-        right: -10%;
+    .earth-collection-content {
+        min-height: 230px;
+        padding: 22px;
     }
 
-    .street-hero::after {
-        right: -15%;
-        width: 280px;
-        height: 280px;
+    .earth-collection-content h2 {
+        font-size: 30px;
     }
 
-    .street-marquee {
-        padding: 15px 0;
+    .earth-benefits {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .street-marquee-track span {
-        font-size: 15px;
-    }
-
-    .store-products {
-        width: 92%;
-        padding: 75px 0;
-    }
-
-    .products-heading {
-        align-items: flex-start;
-        flex-direction: column;
-        margin-bottom: 45px;
-    }
-
-    .category-section-heading h2 {
-        font-size: 38px;
-    }
-
-    .product-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .category-sections {
-        gap: 60px;
-    }
-
-    .street-cta {
-        align-items: flex-start;
-        flex-direction: column;
-        padding: 65px 5%;
+    .earth-product-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
-@media (max-width: 480px) {
-    .street-hero {
-        min-height: 480px;
+@media (max-width: 600px) {
+    .earth-announcement-inner {
+        justify-content: center;
     }
 
-    .street-hero-content {
-        padding: 65px 0 90px;
+    .earth-announcement-inner > div:first-child {
+        justify-content: center;
+        gap: 10px;
     }
 
-    .street-hero-tag {
+    .earth-announcement span {
+        font-size: 10px;
+    }
+
+    .earth-social-top {
+        display: none;
+    }
+
+    .earth-hero {
+        min-height: 520px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        background: var(--earth-cream);
+    }
+
+    .earth-hero-image {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: auto;
+        width: 100%;
+        height: 270px;
+    }
+
+    .earth-hero-image img {
+        object-position: center;
+    }
+
+    .earth-hero::after {
+        top: 170px;
+        left: 0;
+        right: 0;
+        bottom: auto;
+        height: 120px;
+        background: linear-gradient(
+            180deg,
+            transparent,
+            var(--earth-cream)
+        );
+    }
+
+    .earth-hero-content {
+        width: 90%;
+        min-height: auto;
+        padding: 275px 0 35px;
+    }
+
+    .earth-hero-content > * {
+        max-width: 100%;
+    }
+
+    .earth-eyebrow {
+        margin-bottom: 10px;
+        font-size: 10px;
+        letter-spacing: 3px;
+    }
+
+    .earth-hero h1 {
+        font-size: clamp(43px, 13vw, 62px);
+        letter-spacing: -2px;
+        line-height: .95;
+    }
+
+    .earth-hero-content > p {
+        margin: 14px 0 20px;
+        font-size: 14px;
+    }
+
+    .earth-button {
+        min-height: 40px;
+        padding: 0 18px;
+        font-size: 11px;
+    }
+
+    .earth-hero-fallback {
+        min-height: 320px;
+    }
+
+    .earth-hero-fallback .earth-hero-content {
+        min-height: 320px;
+    }
+
+    .earth-collections {
+        padding: 8px 3%;
+    }
+
+    .earth-collection-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .earth-collection-card,
+    .earth-collection-fallback {
+        min-height: 205px;
+    }
+
+    .earth-collection-content {
+        width: 65%;
+        min-height: 205px;
+        padding: 20px;
+    }
+
+    .earth-collection-content h2 {
+        font-size: 29px;
+    }
+
+    .earth-collection-content > p {
+        font-size: 12px;
+    }
+
+    .earth-collection-fallback {
+        padding: 22px;
+    }
+
+    .earth-best-sellers {
+        width: 94%;
+        padding: 18px 0 30px;
+    }
+
+    .earth-section-title {
+        gap: 9px;
+    }
+
+    .earth-section-title h2 {
+        font-size: 23px;
+    }
+
+    .earth-best-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .earth-benefits {
+        padding: 18px 2%;
+        gap: 12px 0;
+    }
+
+    .earth-benefit {
+        justify-content: flex-start;
+        padding: 7px 9px;
+        gap: 9px;
+    }
+
+    .earth-benefit > svg {
+        font-size: 23px;
+    }
+
+    .earth-benefit strong {
+        font-size: 11px;
+    }
+
+    .earth-benefit span {
+        font-size: 10px;
+    }
+
+    .earth-products {
+        width: 94%;
+        padding: 45px 0;
+    }
+
+    .earth-product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .earth-category-sections {
+        gap: 35px;
+    }
+
+    .earth-category-heading h3 {
+        font-size: 22px;
+    }
+
+    .earth-category-heading > span {
+        font-size: 10px;
+    }
+
+    .earth-category-links {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+    .earth-category-links button {
+        flex-shrink: 0;
+        font-size: 11px;
+    }
+
+    .earth-active-filter {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .earth-classification-wrapper {
+        margin-bottom: 25px;
+        padding: 23px 13px;
+        border-radius: 10px;
+    }
+
+    .earth-classification-heading > span {
         font-size: 9px;
         letter-spacing: 2px;
     }
 
-    .street-hero h1 {
-        font-size: clamp(75px, 19vw, 100px);
-        line-height: 0.84;
+    .earth-classification-heading h3 {
+        font-size: 25px;
     }
 
-    .street-hero-content > p {
-        margin: 25px 0;
+    .earth-classification-heading p {
+        margin: 8px auto 18px;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .earth-classification-tabs {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 9px;
+    }
+
+    .earth-classification-tabs button {
+        width: 100%;
+        min-height: 42px;
+        padding: 10px 15px;
         font-size: 12px;
     }
 
-    .street-hero-button {
-        min-height: 48px;
-        gap: 15px;
-        padding: 0 16px;
-        font-size: 9px;
+    .earth-executive-categories {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+        margin-top: 17px;
+        padding-top: 17px;
     }
 
-    .street-hero-bottom {
-        bottom: 20px;
-        font-size: 7px;
-        letter-spacing: 1px;
+    .earth-executive-categories button {
+        width: 100%;
+        min-height: 39px;
+        padding: 8px 10px;
+        font-size: 11px;
     }
 
-    .street-marquee-track {
-        gap: 22px;
+    .earth-community {
+        min-height: 260px;
+        padding: 35px 6%;
     }
 
-    .street-marquee-track span {
-        font-size: 13px;
+    .earth-community h2 {
+        font-size: 36px;
     }
 
-    .store-products {
-        padding: 60px 0;
+    .earth-community p {
+        font-size: 12px;
+        line-height: 1.6;
     }
 
-    .products-heading h2 {
-        font-size: 43px;
-    }
-
-    .category-section-heading {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .category-section-heading h2 {
-        font-size: 35px;
-    }
-
-   .product-grid {
-        grid-template-columns: 1fr;
-        gap: 18px;
-    }
-
-    .category-sections {
-        gap: 50px;
-    }
-
-    .street-cta {
-        padding: 55px 5%;
-    }
-
-    .street-cta h2 {
-        font-size: 55px;
-    }
-
-    .street-cta-button {
+    .earth-community > button {
         width: 100%;
     }
 
-    .store-footer {
-        padding: 50px 15px 30px;
+    .earth-footer {
+        padding: 35px 5% 20px;
+    }
+
+    .earth-footer-logo h2 {
+        font-size: 21px;
+    }
+
+    .earth-footer-links {
+        gap: 13px;
+    }
+
+    .earth-footer-links a,
+    .earth-footer-links button {
+        font-size: 11px;
+    }
+
+    .earth-footer-bottom {
+        font-size: 10px;
     }
 }
+
+/* =====================================================
+   ACCESSIBILITY
+===================================================== */
 
 @media (prefers-reduced-motion: reduce) {
-    .store *,
-    .store *::before,
-    .store *::after {
-        animation-duration: 0.01ms !important;
+    .living-earth *,
+    .living-earth *::before,
+    .living-earth *::after {
+        animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
         scroll-behavior: auto !important;
-        transition-duration: 0.01ms !important;
+        transition-duration: .01ms !important;
     }
 }
-/* =================================
-   DYNAMIC HERO BANNER
-================================= */
 
-.dynamic-hero {
-    position: relative;
-    width: 100%;
-    min-height: 570px;
-    overflow: hidden;
-    background: #171717;
-    isolation: isolate;
+/* =====================================================
+   LIVING EARTH HOMEPAGE FINAL REFINEMENTS
+   Best sellers, collection banners and responsive layout
+===================================================== */
+
+.living-earth .earth-collections {
+  width: 100%;
+  padding: 12px 2%;
+  background: var(--earth-cream);
 }
 
-.dynamic-hero-picture,
-.dynamic-hero-picture img {
+.living-earth .earth-collection-grid {
+  width: min(1500px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.living-earth .earth-collection-card {
+  position: relative;
+  height: 260px;
+  min-height: 260px;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 12px;
+  background: var(--earth-light-olive);
+}
+
+.living-earth .earth-collection-card picture {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  display: block;
+}
+
+.living-earth .earth-collection-card picture img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.5s ease;
+}
+
+.living-earth .earth-collection-card:hover picture img {
+  transform: scale(1.035);
+}
+
+.living-earth .earth-collection-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(234, 225, 204, 0.98) 0%,
+    rgba(234, 225, 204, 0.94) 32%,
+    rgba(234, 225, 204, 0.65) 48%,
+    rgba(234, 225, 204, 0.05) 78%
+  );
+}
+
+.living-earth .earth-collection-content {
+  width: 53%;
+  height: 100%;
+  min-height: 260px;
+  padding: 25px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.living-earth .earth-collection-content h2 {
+  max-width: 330px;
+  margin: 0 0 12px;
+  color: var(--earth-green);
+  font-size: clamp(28px, 2.5vw, 38px);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.living-earth .earth-collection-content > p {
+  max-width: 290px;
+  margin: 0 0 17px;
+  color: #514b3e;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.living-earth .earth-collection-content .earth-button {
+  min-height: 38px;
+  padding: 0 19px;
+  border-radius: 4px;
+  background: var(--earth-green);
+  color: #fff;
+  font-size: 11px;
+}
+
+/* Best sellers */
+.living-earth .earth-best-sellers {
+  width: min(1400px, 94%);
+  margin: 0 auto;
+  padding: 42px 0 48px;
+}
+
+.living-earth .earth-best-sellers .earth-section-title {
+  max-width: 900px;
+  margin: 0 auto 28px;
+  gap: 22px;
+}
+
+.living-earth .earth-best-sellers .earth-section-title > span {
+  background: var(--earth-border);
+}
+
+.living-earth .earth-best-sellers .earth-section-title h2 {
+  color: var(--earth-green);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(25px, 3vw, 36px);
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+
+.living-earth .earth-best-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+}
+
+.living-earth .earth-best-grid > * {
+  min-width: 0;
+}
+
+.living-earth .earth-best-sellers .earth-text-button {
+  min-height: 42px;
+  margin: 30px auto 0;
+  padding: 0 22px;
+  border: 1px solid var(--earth-green);
+  border-radius: 3px;
+  color: var(--earth-green);
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.living-earth .earth-best-sellers .earth-text-button:hover {
+  transform: translateY(-2px);
+  background: var(--earth-green);
+  color: #fff;
+}
+
+.living-earth .earth-best-grid img {
+  max-width: 100%;
+}
+
+.living-earth .earth-best-grid > * {
+  border-radius: 5px;
+}
+
+/* Tablet */
+@media (max-width: 1050px) {
+  .living-earth .earth-best-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .living-earth .earth-collection-content {
+    width: 60%;
+    padding: 22px;
+  }
+}
+
+/* Mobile and small tablets */
+@media (max-width: 700px) {
+  .living-earth .earth-collections {
+    padding: 8px 3%;
+  }
+
+  .living-earth .earth-collection-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .living-earth .earth-collection-card {
+    height: 225px;
+    min-height: 225px;
+  }
+
+  .living-earth .earth-collection-content {
+    width: 65%;
+    min-height: 225px;
+    padding: 18px 20px;
+  }
+
+  .living-earth .earth-collection-content h2 {
+    font-size: 29px;
+  }
+
+  .living-earth .earth-collection-content > p {
+    font-size: 12px;
+  }
+
+  .living-earth .earth-best-sellers {
+    width: 94%;
+    padding: 32px 0 38px;
+  }
+
+  .living-earth .earth-best-sellers .earth-section-title {
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+
+  .living-earth .earth-best-sellers .earth-section-title h2 {
+    white-space: normal;
+    font-size: 26px;
+  }
+
+  .living-earth .earth-best-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .living-earth .earth-collection-card {
+    height: 205px;
+    min-height: 205px;
+  }
+
+  .living-earth .earth-collection-content {
+    width: 72%;
+    min-height: 205px;
+    padding: 15px;
+  }
+
+  .living-earth .earth-collection-content h2 {
+    font-size: 25px;
+  }
+
+  .living-earth .earth-best-grid {
+    gap: 9px;
+  }
+}
+
+/* =====================================
+   COLLECTION BANNER PRICE
+===================================== */
+
+.earth-collection-price {
+  display: inline-block;
+  margin: 12px 0 18px;
+  padding: 9px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 3px;
+  color: #263d19;;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* =====================================
+   COLLECTION BANNER EYEBROW
+===================================== */
+
+.earth-collection-eyebrow {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* =====================================
+   COLLECTION PLACEHOLDER
+===================================== */
+
+.earth-collection-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #263d19, #667746);
+  color: #fbf3e7;
+  font-size: 55px;
+}
+
+/* =====================================
+   COLLECTION CARD BUTTON
+===================================== */
+
+.earth-collection-content .earth-button {
+  cursor: pointer;
+}
+
+/* =====================================
+   COLLECTION BANNER RESPONSIVENESS
+===================================== */
+
+@media (max-width: 600px) {
+  .earth-collection-price {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  .earth-collection-eyebrow {
+    font-size: 10px;
+  }
+}
+
+/* =====================================================
+   COLLECTION BANNERS - SHOW FULL IMAGE
+===================================================== */
+
+.living-earth .earth-collection-card {
+    position: relative;
+    height: 300px;
+    min-height: 300px;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 12px;
+    background: #e2e3c9;
+}
+
+/* Image container */
+.living-earth .earth-collection-card picture {
     position: absolute;
     inset: 0;
+    z-index: -2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #e2e3c9;
+}
+
+/* Show the complete uploaded image */
+.living-earth .earth-collection-card picture img {
     width: 100%;
     height: 100%;
-}
-
-.dynamic-hero-picture img {
-    object-fit: cover;
+    display: block;
+    object-fit: contain;
     object-position: center;
+    transition: none;
 }
 
-.dynamic-hero-overlay {
+/* Remove zoom cropping */
+.living-earth .earth-collection-card:hover picture img {
+    transform: none;
+}
+
+/* Softer text background */
+.living-earth .earth-collection-card::after {
+    content: "";
     position: absolute;
     inset: 0;
-    z-index: 1;
+    z-index: -1;
+    pointer-events: none;
     background: linear-gradient(
         90deg,
-        rgba(0, 0, 0, 0.85) 0%,
-        rgba(0, 0, 0, 0.55) 45%,
-        rgba(0, 0, 0, 0.08) 100%
+        rgba(234, 225, 204, 0.88) 0%,
+        rgba(234, 225, 204, 0.72) 30%,
+        rgba(234, 225, 204, 0.20) 55%,
+        transparent 75%
     );
 }
 
-.dynamic-hero-content {
+/* Banner text */
+.living-earth .earth-collection-content {
     position: relative;
-    z-index: 2;
-    width: min(1400px, 90%);
-    min-height: 570px;
-    margin: auto;
-    padding: 100px 0;
+    z-index: 1;
+    width: 53%;
+    height: 100%;
+    min-height: 300px;
+    padding: 25px 30px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
-    color: #ffffff;
 }
 
-.dynamic-hero-content h1 {
-    max-width: 750px;
-    margin: 25px 0 15px;
-    font-family: "Bebas Neue", sans-serif;
-    font-size: clamp(55px, 8vw, 110px);
-    line-height: 0.95;
-    text-transform: uppercase;
-    overflow-wrap: anywhere;
-}
-
-.dynamic-hero-content > p {
-    max-width: 520px;
-    margin: 0 0 30px;
-    color: #eeeeee;
-    font-size: 16px;
-    line-height: 1.7;
-}
-
-.dynamic-hero-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 15px;
-    padding: 16px 25px;
-    background: #C6FF00;
-    color: #080808;
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 1px;
-    text-decoration: none;
-    transition: 0.25s ease;
-}
-
-.dynamic-hero-button:hover {
-    background: #ffffff;
-    transform: translateY(-3px);
-}
-
-/* =================================
-   PROMOTIONAL BANNERS
-================================= */
-
-.home-promotional-banners {
-    padding: 75px 5%;
-    background: var(--background);
-    color: var(--text-primary);
-}
-
-.promotional-banner-heading {
-    margin-bottom: 30px;
-}
-
-.promotional-banner-heading h2 {
-    margin: 8px 0 0;
-    font-family: "Bebas Neue", sans-serif;
-    font-size: clamp(32px, 4vw, 48px);
-}
-
-.promotional-banner-heading h2 span {
-    color: var(--accent);
-}
-
-.promotional-banner-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-}
-
-.promotional-banner {
-    position: relative;
-    min-height: 320px;
-    overflow: hidden;
-    background: var(--card-background);
-    isolation: isolate;
-}
-
-.promotional-banner picture,
-.promotional-banner picture img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-}
-
-.promotional-banner picture img {
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.promotional-banner:hover picture img {
-    transform: scale(1.05);
-}
-
-.promotional-banner-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(
-        0deg,
-        rgba(0, 0, 0, 0.85),
-        rgba(0, 0, 0, 0.05) 85%
-    );
-}
-
-.promotional-banner-content {
-    position: absolute;
-    z-index: 2;
-    bottom: 30px;
-    left: 30px;
-    right: 30px;
-    color: #ffffff;
-}
-
-.promotional-banner-content > p {
-    margin: 0 0 8px;
-    color: #C6FF00;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-
-.promotional-banner-content h3 {
-    margin: 0 0 18px;
-    font-family: "Bebas Neue", sans-serif;
-    font-size: clamp(32px, 4vw, 48px);
-    line-height: 1;
-    text-transform: uppercase;
-}
-
-.promotional-banner-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 18px;
-    background: #C6FF00;
-    color: #080808;
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 1px;
-    text-decoration: none;
-    transition: 0.2s ease;
-}
-
-.promotional-banner-button:hover {
-    background: #ffffff;
-}
-
-/* =================================
-   RESPONSIVE BANNERS
-================================= */
-
-@media (max-width: 768px) {
-    .dynamic-hero,
-    .dynamic-hero-content {
-        min-height: 480px;
+/* Mobile */
+@media (max-width: 700px) {
+    .living-earth .earth-collection-card {
+        height: 225px;
+        min-height: 225px;
     }
 
-    .dynamic-hero-content {
-        width: 90%;
-        padding: 70px 0;
+    .living-earth .earth-collection-content {
+        width: 70%;
+        min-height: 225px;
+        padding: 16px 18px;
     }
 
-    .dynamic-hero-overlay {
+    .living-earth .earth-collection-content h2 {
+        font-size: 26px;
+    }
+
+    .living-earth .earth-collection-content > p {
+        font-size: 11px;
+    }
+
+    .living-earth .earth-collection-card::after {
         background: linear-gradient(
             90deg,
-            rgba(0, 0, 0, 0.8),
-            rgba(0, 0, 0, 0.25)
+            rgba(234, 225, 204, 0.92) 0%,
+            rgba(234, 225, 204, 0.78) 45%,
+            rgba(234, 225, 204, 0.12) 100%
         );
-    }
-
-    .dynamic-hero-content > p {
-        font-size: 14px;
-    }
-
-    .home-promotional-banners {
-        padding: 50px 4%;
-    }
-
-    .promotional-banner-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-
-    .promotional-banner {
-        min-height: 280px;
-    }
-}
-
-@media (max-width: 480px) {
-    .dynamic-hero,
-    .dynamic-hero-content {
-        min-height: 420px;
-    }
-
-    .dynamic-hero-content h1 {
-        font-size: 58px;
-    }
-
-    .dynamic-hero-content > p {
-        font-size: 13px;
-    }
-
-    .dynamic-hero-button {
-        padding: 14px 18px;
-        font-size: 10px;
-    }
-
-    .promotional-banner {
-        min-height: 240px;
-    }
-
-    .promotional-banner-content {
-        bottom: 20px;
-        left: 20px;
-        right: 20px;
     }
 }

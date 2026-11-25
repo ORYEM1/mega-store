@@ -1,0 +1,198 @@
+.seller-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 16px;
+  background:
+    radial-gradient(circle at top right, rgba(198, 255, 0, 0.09), transparent 35%),
+    #080808;
+  color: #fff;
+}
+
+.seller-login-card {
+  width: 100%;
+  max-width: 460px;
+  padding: 42px;
+  background: #111;
+  border: 1px solid #292929;
+  border-radius: 16px;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+}
+
+.seller-login-logo {
+  display: block;
+  text-align: center;
+  margin-bottom: 38px;
+  color: #c6ff00;
+  font-size: 23px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-decoration: none;
+}
+
+.seller-login-logo span {
+  color: #fff;
+}
+
+.seller-login-heading {
+  margin-bottom: 28px;
+}
+
+.seller-login-tag {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #c6ff00;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.seller-login-heading h1 {
+  margin: 0 0 10px;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.seller-login-heading p {
+  margin: 0;
+  color: #999;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.seller-login-field {
+  margin-bottom: 22px;
+}
+
+.seller-login-field label {
+  display: block;
+  margin-bottom: 9px;
+  color: #ddd;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.seller-login-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 52px;
+  padding: 0 15px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: #080808;
+  color: #888;
+}
+
+.seller-login-input-wrapper:focus-within {
+  border-color: #c6ff00;
+}
+
+.seller-login-input-wrapper > svg {
+  flex-shrink: 0;
+}
+
+.seller-login-input-wrapper input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+}
+
+.seller-login-input-wrapper input::placeholder {
+  color: #666;
+}
+
+.seller-password-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border: none;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  font-size: 17px;
+}
+
+.seller-password-toggle:hover {
+  color: #c6ff00;
+}
+
+.seller-login-button {
+  width: 100%;
+  height: 52px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 8px;
+  background: #c6ff00;
+  color: #080808;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.seller-login-button:hover {
+  background: #b3e600;
+  transform: translateY(-1px);
+}
+
+.seller-login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.seller-login-error {
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid #7f2525;
+  border-radius: 8px;
+  background: rgba(180, 35, 35, 0.12);
+  color: #ff7777;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.seller-login-footer {
+  margin-top: 28px;
+  text-align: center;
+}
+
+.seller-login-footer p {
+  color: #999;
+  font-size: 13px;
+}
+
+.seller-login-footer a {
+  color: #c6ff00;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.seller-login-footer a:hover {
+  text-decoration: underline;
+}
+
+.seller-back-home {
+  display: inline-block;
+  margin-top: 12px;
+  color: #888 !important;
+  font-size: 12px;
+}
+
+@media (max-width: 480px) {
+  .seller-login-card {
+    padding: 30px 22px;
+  }
+
+  .seller-login-heading h1 {
+    font-size: 26px;
+  }
+}

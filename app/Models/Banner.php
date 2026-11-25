@@ -14,6 +14,10 @@ class Banner extends Model
         'button_text',
         'button_link',
         'position',
+        'collection',
+        'product_level',
+        'min_price',
+        'max_price',
         'sort_order',
         'is_active',
         'starts_at',
@@ -25,6 +29,8 @@ class Banner extends Model
         return [
             'is_active' => 'boolean',
             'sort_order' => 'integer',
+            'min_price' => 'integer',
+            'max_price' => 'integer',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
         ];

@@ -35,17 +35,16 @@ class Customer extends Authenticatable
         ];
     }
 
-    /**
-     * Get the customer's orders.
-     */
     public function orders(): HasMany
     {
         return $this->hasMany(Orders::class);
     }
 
-    /**
-     * Get the customer's full name.
-     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim($this->first_name . ' ' . $this->last_name);

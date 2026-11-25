@@ -1,0 +1,18 @@
+[90m= [39m[
+    {#9273
+      +"[1mTable[22m": [32m"[39m[32mmodel_has_roles[39m[32m"[39m,
+      +"[1mCreate Table[22m": <<<[32mEOS[39m
+        [32mCREATE TABLE `model_has_roles` ([39m
+        [32m  `role_id` bigint unsigned NOT NULL,[39m
+        [32m  `model_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,[39m
+        [32m  `model_id` bigint unsigned NOT NULL,[39m
+        [32m  `seller_id` bigint unsigned NOT NULL,[39m
+        [32m  PRIMARY KEY (`seller_id`,`role_id`,`model_id`,`model_type`),[39m
+        [32m  KEY `model_has_roles_model_id_model_type_index` (`model_id`,`model_type`),[39m
+        [32m  KEY `model_has_roles_role_id_foreign` (`role_id`),[39m
+        [32m  KEY `model_has_roles_team_foreign_key_index` (`seller_id`),[39m
+        [32m  CONSTRAINT `model_has_roles_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE[39m
+        [32m) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci[39m
+        [32mEOS[39m,
+    },
+  ]

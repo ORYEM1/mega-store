@@ -1,5 +1,11 @@
+
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
 
 import {
   FaSearch,
@@ -7,9 +13,14 @@ import {
   FaTimes,
   FaChevronDown,
   FaShoppingBag,
+  FaShoppingCart,
   FaUser,
   FaMoon,
   FaSun,
+  FaHome,
+  FaCompass,
+  FaUserCircle,
+  FaThLarge,
 } from "react-icons/fa";
 
 import { logoutCustomer } from "../../services/api";
@@ -25,8 +36,17 @@ function Navbar({
   setSearch = () => {},
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const selectedCollection =
+    searchParams.get("collection") === "ladies"
+      ? "ladies"
+      : "men";
 
   const customer = useAuthStore((state) => state.customer);
+
   const isAuthenticated = useAuthStore(
     (state) => state.isAuthenticated
   );
@@ -35,6 +55,8 @@ function Navbar({
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [bottomCategoriesOpen, setBottomCategoriesOpen] =
+    useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState("");
 
@@ -44,6 +66,7 @@ function Navbar({
     ...(category.children || []),
   ]);
 
+  // Calculate total cart quantity.
   const cartCount = useCartStore((state) =>
     state.items.reduce(
       (total, item) => total + (Number(item.quantity) || 0),
@@ -51,10 +74,12 @@ function Navbar({
     )
   );
 
+  // Close menus when screen becomes desktop-sized.
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768) {
         setMobileMenuOpen(false);
+        setBottomCategoriesOpen(false);
       }
     };
 
@@ -65,25 +90,69 @@ function Navbar({
     };
   }, []);
 
+  // Close all navigation menus.
   const closeMenus = () => {
     setMobileMenuOpen(false);
     setDropdownOpen(false);
+    setBottomCategoriesOpen(false);
   };
 
-  // Navigate to the products section on the homepage.
+  // Build homepage URL while preserving collection.
+  const getCollectionUrl = (extraParams = {}) => {
+    const params = new URLSearchParams();
+
+    params.set("collection", selectedCollection);
+
+    Object.entries(extraParams).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        params.set(key, String(value));
+      }
+    });
+
+    return `/?${params.toString()}`;
+  };
+
+  // Switch between Men and Ladies.
+  const changeCollection = (collection) => {
+    if (!["men", "ladies"].includes(collection)) return;
+
+    const params = new URLSearchParams(searchParams);
+
+    params.set("collection", collection);
+
+    // A category from the previous collection must not remain selected.
+    params.delete("category");
+
+    closeMenus();
+    setSearch("");
+
+    if (location.pathname !== "/") {
+      navigate(`/?${params.toString()}`);
+    } else {
+      setSearchParams(params);
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  // Navigate to the products section.
   const goToProducts = (event) => {
     event?.preventDefault();
+
     closeMenus();
 
-    if (window.location.pathname !== "/") {
-      navigate("/");
+    if (location.pathname !== "/") {
+      navigate(getCollectionUrl());
 
       window.setTimeout(() => {
         document.getElementById("products")?.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
-      }, 200);
+      }, 250);
 
       return;
     }
@@ -94,24 +163,66 @@ function Navbar({
     });
   };
 
+  // Navigate to a selected category.
+  const goToCategory = (categoryId) => {
+    closeMenus();
+
+    navigate(
+      getCollectionUrl({
+        category: categoryId,
+      })
+    );
+
+    window.setTimeout(() => {
+      document.getElementById("products")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 300);
+  };
+
+  // Navigate to all products in the selected collection.
+  const goToAllProducts = () => {
+    closeMenus();
+
+    navigate(getCollectionUrl());
+
+    window.setTimeout(() => {
+      document.getElementById("products")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 300);
+  };
+
+  // Toggle the bottom categories popup.
+  const toggleBottomCategories = () => {
+    setBottomCategoriesOpen((previous) => !previous);
+    setMobileMenuOpen(false);
+    setDropdownOpen(false);
+  };
+
+  // Handle search submission.
   const handleSearchSubmit = (event) => {
     event.preventDefault();
     goToProducts();
   };
 
-  // Switch between light and dark themes.
-  const handleThemeToggle = () => {
-    toggleTheme();
-  };
 
+
+  // Handle customer logout.
   const handleLogout = async () => {
     setLoggingOut(true);
     setLogoutError("");
 
     try {
       await logoutCustomer();
+
       closeMenus();
-      navigate("/", { replace: true });
+
+      navigate(getCollectionUrl(), {
+        replace: true,
+      });
     } catch (error) {
       console.error("Logout request failed:", error);
 
@@ -120,38 +231,120 @@ function Navbar({
       );
 
       closeMenus();
-      navigate("/", { replace: true });
+
+      navigate(getCollectionUrl(), {
+        replace: true,
+      });
     } finally {
       setLoggingOut(false);
     }
   };
 
+  // Handle account navigation.
+  const handleAccountClick = () => {
+    closeMenus();
+
+    if (isAuthenticated && customer) {
+      navigate("/account");
+    } else {
+      navigate("/login", {
+        state: {
+          from: {
+            pathname: "/account",
+          },
+        },
+      });
+    }
+  };
+
+  // Reusable collection switcher.
+  const renderCollectionSwitcher = (className = "") => (
+    <div className={`navbar-collection-switch ${className}`}>
+      <button
+        type="button"
+        className={
+          selectedCollection === "men"
+            ? "active"
+            : ""
+        }
+        onClick={() => changeCollection("men")}
+        aria-pressed={selectedCollection === "men"}
+      >
+        MEN
+      </button>
+
+      <button
+        type="button"
+        className={
+          selectedCollection === "ladies"
+            ? "active"
+            : ""
+        }
+        onClick={() => changeCollection("ladies")}
+        aria-pressed={selectedCollection === "ladies"}
+      >
+        LADIES
+      </button>
+    </div>
+  );
+
   return (
     <header className="navbar">
+
       {/* Promotional announcement */}
+
       <div className="navbar-announcement">
         <p>
-          NEW SEASON. NEW ENERGY.
-          <span> DISCOVER YOUR STYLE.</span>
+          GROUNDED IN NATURE.
+          <span> TIMELESS STYLE. MADE FOR YOU.</span>
         </p>
       </div>
 
       {/* Main navigation */}
+
       <div className="navbar-main">
+
         <div className="navbar-container">
+
+          {/* Mobile menu toggle */}
+
+          <button
+            type="button"
+            className="navbar-mobile-toggle"
+            onClick={() =>
+              setMobileMenuOpen((previous) => !previous)
+            }
+            aria-label={
+              mobileMenuOpen
+                ? "Close navigation menu"
+                : "Open navigation menu"
+            }
+            aria-expanded={mobileMenuOpen}
+            aria-controls="navbar-mobile-menu"
+          >
+            {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+          </button>
+
           {/* Brand */}
+
           <Link
-            to="/"
+            to={getCollectionUrl()}
             className="navbar-logo"
             onClick={closeMenus}
-            aria-label="Adrian Collections home"
+            aria-label="Living Earth home"
           >
-            MEGA<span>.</span>
-            <small>STORE</small>
+            <span className="navbar-logo-main">
+              LIVING
+              <span> EARTH</span>
+            </span>
+
+            <small>GROUNDED IN NATURE</small>
           </Link>
 
           {/* Desktop navigation */}
+
           <nav className="navbar-desktop-links">
+
             <a href="#products" onClick={goToProducts}>
               SHOP
             </a>
@@ -161,13 +354,14 @@ function Navbar({
             </a>
 
             <div className="navbar-category-wrapper">
+
               <button
                 type="button"
                 className="navbar-category-button"
                 aria-expanded={dropdownOpen}
-                onClick={() =>
-                  setDropdownOpen((previous) => !previous)
-                }
+                onClick={() => {
+                  setDropdownOpen((previous) => !previous);
+                }}
               >
                 CATEGORIES
 
@@ -178,25 +372,37 @@ function Navbar({
 
               {dropdownOpen && (
                 <div className="navbar-category-dropdown">
-                  <a href="#products" onClick={goToProducts}>
-                    ALL PRODUCTS
-                  </a>
+
+                  <button
+                    type="button"
+                    onClick={goToAllProducts}
+                  >
+                    ALL {selectedCollection.toUpperCase()} PRODUCTS
+                  </button>
 
                   {allCategories.map((category) => (
-                    <a
+                    <button
+                      type="button"
                       key={category.id}
-                      href={`#category-${category.id}`}
-                      onClick={closeMenus}
+                      onClick={() => goToCategory(category.id)}
                     >
                       {category.name}
-                    </a>
+                    </button>
                   ))}
+
                 </div>
               )}
+
             </div>
+
           </nav>
 
+          {/* Desktop collection switcher */}
+
+          {renderCollectionSwitcher("navbar-collection-desktop")}
+
           {/* Desktop search */}
+
           <form
             className="navbar-search navbar-search-desktop"
             onSubmit={handleSearchSubmit}
@@ -213,33 +419,24 @@ function Navbar({
             />
           </form>
 
-          {/* Right-side actions */}
+          {/* Desktop actions */}
+
           <div className="navbar-actions">
 
-            {/* Theme toggle */}
-            <button
-              type="button"
-              className="navbar-theme-toggle"
-              onClick={handleThemeToggle}
-              aria-label={`Switch to ${
-                theme === "dark" ? "light" : "dark"
-              } mode`}
-              title={`Switch to ${
-                theme === "dark" ? "light" : "dark"
-              } mode`}
-            >
-              {theme === "dark" ? <FaSun /> : <FaMoon />}
-            </button>
+           
 
             {/* Shopping cart */}
+
             <Link
               to="/cart"
               className="navbar-cart-link"
               aria-label={`Shopping cart, ${cartCount} items`}
             >
-              <FaShoppingBag />
+              <FaShoppingCart />
 
-              <span className="navbar-cart-text">BAG</span>
+              <span className="navbar-cart-text">
+                CART
+              </span>
 
               {cartCount > 0 && (
                 <span className="cart-count-badge">
@@ -249,12 +446,18 @@ function Navbar({
             </Link>
 
             {/* Authentication */}
+
             {isAuthenticated && customer ? (
+
               <div className="navbar-user">
-                <span className="navbar-user-name">
+
+                <Link
+                  to="/account"
+                  className="navbar-user-name"
+                >
                   <FaUser />
-                  {customer.first_name}
-                </span>
+                  MY ACCOUNT
+                </Link>
 
                 <button
                   type="button"
@@ -264,10 +467,17 @@ function Navbar({
                 >
                   {loggingOut ? "WAIT..." : "LOGOUT"}
                 </button>
+
               </div>
+
             ) : (
+
               <div className="navbar-auth-actions">
-                <Link to="/login" className="navbar-login-link">
+
+                <Link
+                  to="/login"
+                  className="navbar-login-link"
+                >
                   LOGIN
                 </Link>
 
@@ -277,26 +487,19 @@ function Navbar({
                 >
                   JOIN US
                 </Link>
+
               </div>
+
             )}
+
           </div>
 
-          {/* Mobile menu button */}
-          <button
-            type="button"
-            className="navbar-mobile-toggle"
-            onClick={() =>
-              setMobileMenuOpen((previous) => !previous)
-            }
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileMenuOpen}
-            aria-controls="navbar-mobile-menu"
-          >
-            {mobileMenuOpen ? <FaTimes /> : <FaBars />}
-          </button>
+          
+
         </div>
 
         {/* Mobile search */}
+
         <form
           className="navbar-search navbar-search-mobile"
           onSubmit={handleSearchSubmit}
@@ -313,7 +516,8 @@ function Navbar({
           />
         </form>
 
-        {/* Mobile navigation */}
+        {/* Mobile expandable navigation */}
+
         <nav
           id="navbar-mobile-menu"
           className={`navbar-mobile-menu ${
@@ -323,6 +527,13 @@ function Navbar({
           aria-hidden={!mobileMenuOpen}
           inert={!mobileMenuOpen}
         >
+
+          <div className="mobile-collection-section">
+            <span>SHOP COLLECTION</span>
+
+            {renderCollectionSwitcher("navbar-collection-mobile")}
+          </div>
+
           <a href="#products" onClick={goToProducts}>
             SHOP
           </a>
@@ -331,13 +542,15 @@ function Navbar({
             NEW DROPS
           </a>
 
+          {/* Categories */}
+
           <button
             type="button"
             className="mobile-category-toggle"
             aria-expanded={dropdownOpen}
-            onClick={() =>
-              setDropdownOpen((previous) => !previous)
-            }
+            onClick={() => {
+              setDropdownOpen((previous) => !previous);
+            }}
           >
             CATEGORIES
 
@@ -348,21 +561,28 @@ function Navbar({
 
           {dropdownOpen && (
             <div className="mobile-category-list">
-              <a href="#products" onClick={goToProducts}>
+
+              <button
+                type="button"
+                onClick={goToAllProducts}
+              >
                 ALL PRODUCTS
-              </a>
+              </button>
 
               {allCategories.map((category) => (
-                <a
+                <button
+                  type="button"
                   key={category.id}
-                  href={`#category-${category.id}`}
-                  onClick={closeMenus}
+                  onClick={() => goToCategory(category.id)}
                 >
                   {category.name}
-                </a>
+                </button>
               ))}
+
             </div>
           )}
+
+          {/* Shopping bag */}
 
           <Link
             to="/cart"
@@ -373,23 +593,24 @@ function Navbar({
             SHOPPING BAG ({cartCount})
           </Link>
 
-          {/* Mobile theme toggle */}
-          <button
-            type="button"
-            className="mobile-theme-toggle"
-            onClick={handleThemeToggle}
-          >
-            {theme === "dark" ? <FaSun /> : <FaMoon />}
-
-            {theme === "dark"
-              ? "SWITCH TO LIGHT MODE"
-              : "SWITCH TO DARK MODE"}
-          </button>
+          {/* Mobile account section */}
 
           <div className="mobile-account-section">
+
             {isAuthenticated && customer ? (
+
               <>
-                <p>WELCOME, {customer.first_name}</p>
+                <p>
+                  WELCOME, {customer.first_name}
+                </p>
+
+                <Link
+                  to="/account"
+                  onClick={closeMenus}
+                >
+                  <FaUserCircle />
+                  MY ACCOUNT
+                </Link>
 
                 <button
                   type="button"
@@ -399,9 +620,14 @@ function Navbar({
                   {loggingOut ? "LOGGING OUT..." : "LOGOUT"}
                 </button>
               </>
+
             ) : (
+
               <>
-                <Link to="/login" onClick={closeMenus}>
+                <Link
+                  to="/login"
+                  onClick={closeMenus}
+                >
                   LOGIN
                 </Link>
 
@@ -413,16 +639,172 @@ function Navbar({
                   CREATE ACCOUNT
                 </Link>
               </>
+
             )}
+
           </div>
+
         </nav>
+
       </div>
 
+      {/* Mobile bottom navigation and category popup */}
+
+      <div className="mobile-bottom-wrapper">
+
+        {/* Categories popup */}
+
+        {bottomCategoriesOpen && (
+          <div
+            className="bottom-categories-popup"
+            aria-label="Product categories"
+          >
+
+            <div className="bottom-categories-header">
+              <h3>
+                SHOP {selectedCollection.toUpperCase()} BY CATEGORY
+              </h3>
+
+              <button
+                type="button"
+                onClick={() => setBottomCategoriesOpen(false)}
+                aria-label="Close categories"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="bottom-categories-list">
+
+              <button
+                type="button"
+                className="bottom-category-item"
+                onClick={goToAllProducts}
+              >
+                ALL PRODUCTS
+              </button>
+
+              {allCategories.length > 0 ? (
+
+                allCategories.map((category) => (
+                  <button
+                    type="button"
+                    key={category.id}
+                    className="bottom-category-item"
+                    onClick={() => goToCategory(category.id)}
+                  >
+                    {category.name}
+                  </button>
+                ))
+
+              ) : (
+
+                <p className="no-bottom-categories">
+                  No categories available.
+                </p>
+
+              )}
+
+            </div>
+
+          </div>
+        )}
+
+        {/* Bottom navigation */}
+
+        <nav
+          className="mobile-bottom-nav"
+          aria-label="Mobile bottom navigation"
+        >
+
+          <Link
+            to={getCollectionUrl()}
+            onClick={closeMenus}
+            className={`bottom-nav-item ${
+              location.pathname === "/" &&
+              !location.search.includes("category=")
+                ? "active"
+                : ""
+            }`}
+          >
+            <FaHome />
+            <span>Home</span>
+          </Link>
+
+          <button
+            type="button"
+            className={`bottom-nav-item ${
+              bottomCategoriesOpen ||
+              location.search.includes("category=")
+                ? "active"
+                : ""
+            }`}
+            onClick={toggleBottomCategories}
+            aria-expanded={bottomCategoriesOpen}
+          >
+            <FaThLarge />
+            <span>Categories</span>
+          </button>
+
+          <button
+            type="button"
+            className="bottom-nav-item"
+            onClick={goToProducts}
+          >
+            <FaCompass />
+            <span>Explore</span>
+          </button>
+
+          <Link
+            to="/cart"
+            onClick={closeMenus}
+            className={`bottom-nav-item ${
+              location.pathname === "/cart" ? "active" : ""
+            }`}
+          >
+            <span className="bottom-nav-cart-icon">
+              <FaShoppingBag />
+
+              {cartCount > 0 && (
+                <span className="bottom-nav-cart-count">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </span>
+
+            <span>Cart</span>
+          </Link>
+
+          <button
+            type="button"
+            className={`bottom-nav-item ${
+              location.pathname === "/account" ||
+              location.pathname === "/login" ||
+              location.pathname === "/register"
+                ? "active"
+                : ""
+            }`}
+            onClick={handleAccountClick}
+          >
+            <FaUserCircle />
+            <span>Account</span>
+          </button>
+
+        </nav>
+
+      </div>
+
+      {/* Logout error */}
+
       {logoutError && (
-        <p className="navbar-error-message" role="alert">
+        <p
+          className="navbar-error-message"
+          role="alert"
+        >
           {logoutError}
         </p>
       )}
+
     </header>
   );
 }

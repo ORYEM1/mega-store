@@ -110,7 +110,7 @@ function Login() {
       <div className="auth-form-section">
         <div className="auth-form-wrapper">
           <Link to="/" className="auth-logo">
-            ADRIAN<span>.</span>
+            MEGA STORE COLLECTION<span>.</span>
           </Link>
 
           <div className="auth-heading">

@@ -19,7 +19,7 @@ class ProductResource extends Resource
 {
 
 
-    protected static ? string $cluster = CatalogCluster::class;
+    //protected static ? string $cluster = CatalogCluster::class;
     
     protected static ?string $model = Product::class;
 

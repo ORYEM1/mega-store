@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+
 import {
     FaComments,
     FaTimes,
@@ -10,11 +11,14 @@ import {
     createChatConversation,
     getChatConversation,
     sendChatMessage,
+    getChatSupportStatus,
 } from "../../services/api";
 
 import echo from "../../services/echo";
 
 import "./ChatWidget.css";
+
+const CHAT_TOKEN_KEY = "chat_token";
 
 const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -34,9 +38,44 @@ const ChatWidget = () => {
 
     const [sending, setSending] = useState(false);
 
+    const [restoring, setRestoring] = useState(true);
+
+    // Support availability.
+    const [supportOnline, setSupportOnline] = useState(null);
+
     const messagesEndRef = useRef(null);
 
-    // Automatically scroll to the latest message.
+    // Check whether an administrator is available.
+    useEffect(() => {
+        let active = true;
+
+        const checkSupportStatus = async () => {
+            try {
+                const response = await getChatSupportStatus();
+
+                if (active) {
+                    setSupportOnline(Boolean(response.online));
+                }
+            } catch (error) {
+                console.error("Could not check support status:", error);
+
+                if (active) {
+                    setSupportOnline(null);
+                }
+            }
+        };
+
+        checkSupportStatus();
+
+        const interval = setInterval(checkSupportStatus, 10000);
+
+        return () => {
+            active = false;
+            clearInterval(interval);
+        };
+    }, []);
+
+    // Scroll to the latest message.
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({
             behavior: "smooth",
@@ -47,38 +86,64 @@ const ChatWidget = () => {
         scrollToBottom();
     }, [messages]);
 
-    // Restore an existing conversation.
+    // Restore the customer's previous conversation.
     useEffect(() => {
-        const savedToken = localStorage.getItem("chat_token");
-
-        if (!savedToken) return;
+        let active = true;
 
         const restoreConversation = async () => {
+            const savedToken = localStorage.getItem(CHAT_TOKEN_KEY);
+
+            if (!savedToken) {
+                setRestoring(false);
+                return;
+            }
+
             try {
                 const response = await getChatConversation(savedToken);
 
-                setConversation(response.data.conversation);
+                if (!active) return;
+
+                const savedConversation = response.data.conversation;
+
+                setConversation({
+                    ...savedConversation,
+                    token: savedToken,
+                });
+
+                setCustomer({
+                    guest_name: savedConversation.guest_name || "",
+                    guest_email: savedConversation.guest_email || "",
+                });
 
                 setMessages(response.data.messages || []);
 
-                setConversation((previous) => ({
-                    ...previous,
-                    token: savedToken,
-                }));
             } catch (error) {
                 console.error("Could not restore chat:", error);
-                localStorage.removeItem("chat_token");
+
+                if (error.response?.status === 404) {
+                    localStorage.removeItem(CHAT_TOKEN_KEY);
+                }
+
+            } finally {
+                if (active) {
+                    setRestoring(false);
+                }
             }
         };
 
         restoreConversation();
+
+        return () => {
+            active = false;
+        };
     }, []);
 
-    // Listen for incoming messages.
+    // Listen for new messages belonging to this conversation only.
     useEffect(() => {
         if (!conversation?.token) return;
 
-        const channelName = `chat.conversation.${conversation.token}`;
+        const channelName =
+            `chat.conversation.${conversation.token}`;
 
         echo.channel(channelName)
             .listen(".message.sent", (event) => {
@@ -98,48 +163,73 @@ const ChatWidget = () => {
         };
     }, [conversation?.token]);
 
-    // Start a new conversation.
+    // Create or resume the customer's conversation.
     const startConversation = async (event) => {
         event.preventDefault();
+
+        if (loading) return;
 
         setLoading(true);
 
         try {
-            const response = await createChatConversation(customer);
+            const savedToken = localStorage.getItem(CHAT_TOKEN_KEY);
+
+            const response = await createChatConversation({
+                ...customer,
+                token: savedToken || undefined,
+            });
+
+            const conversationData = response.data;
 
             const newConversation = {
-                ...response.data,
+                ...conversationData,
+                token: conversationData.token,
             };
 
             setConversation(newConversation);
 
+            setCustomer({
+                guest_name:
+                    conversationData.guest_name || customer.guest_name,
+                guest_email:
+                    conversationData.guest_email || customer.guest_email,
+            });
+
             localStorage.setItem(
-                "chat_token",
-                newConversation.token
+                CHAT_TOKEN_KEY,
+                conversationData.token
             );
+
+            const history = await getChatConversation(
+                conversationData.token
+            );
+
+            setMessages(history.data.messages || []);
 
         } catch (error) {
             console.error("Conversation error:", error);
 
             alert(
                 error.response?.data?.message ||
-                "Unable to start conversation."
+                "Unable to start conversation. Please try again."
             );
+
         } finally {
             setLoading(false);
         }
     };
 
-    // Send a message.
+    // Send a message to the selected conversation.
     const handleSendMessage = async (event) => {
         event.preventDefault();
 
-        if (!message.trim() || sending) return;
+        if (!message.trim() || sending || !conversation?.token) {
+            return;
+        }
 
         const messageBody = message.trim();
 
         setSending(true);
-
         setMessage("");
 
         try {
@@ -148,7 +238,6 @@ const ChatWidget = () => {
                 messageBody
             );
 
-            // Add the message immediately.
             setMessages((previous) => {
                 const exists = previous.some(
                     (item) => item.id === response.data.id
@@ -168,10 +257,35 @@ const ChatWidget = () => {
                 error.response?.data?.message ||
                 "Message could not be sent."
             );
+
         } finally {
             setSending(false);
         }
     };
+
+    // Support status display.
+    const getSupportStatus = () => {
+        if (supportOnline === true) {
+            return {
+                text: "Support is online",
+                className: "online",
+            };
+        }
+
+        if (supportOnline === false) {
+            return {
+                text: "Support is offline",
+                className: "offline",
+            };
+        }
+
+        return {
+            text: "Checking availability...",
+            className: "unknown",
+        };
+    };
+
+    const supportStatus = getSupportStatus();
 
     return (
         <div className="chat-widget">
@@ -193,14 +307,23 @@ const ChatWidget = () => {
                     <div className="chat-header">
 
                         <div className="chat-header-info">
+
                             <div className="chat-avatar">
                                 <FaHeadset />
                             </div>
 
                             <div>
-                                <h3>Adrian Support</h3>
-                                <p>We're here to help you</p>
+                                <h3>ADRIAN COLLECTIONS Support</h3>
+
+                                <div
+                                    className={`chat-support-status ${supportStatus.className}`}
+                                >
+                                    <span className="chat-status-dot"></span>
+
+                                    <p>{supportStatus.text}</p>
+                                </div>
                             </div>
+
                         </div>
 
                         <button
@@ -212,7 +335,13 @@ const ChatWidget = () => {
 
                     </div>
 
-                    {!conversation ? (
+                    {restoring ? (
+
+                        <div className="chat-start-form">
+                            <p>Restoring your conversation...</p>
+                        </div>
+
+                    ) : !conversation ? (
 
                         <form
                             className="chat-start-form"
@@ -231,10 +360,10 @@ const ChatWidget = () => {
                                 placeholder="Your name"
                                 value={customer.guest_name}
                                 onChange={(event) =>
-                                    setCustomer({
-                                        ...customer,
+                                    setCustomer((previous) => ({
+                                        ...previous,
                                         guest_name: event.target.value,
-                                    })
+                                    }))
                                 }
                                 required
                             />
@@ -244,10 +373,10 @@ const ChatWidget = () => {
                                 placeholder="Email address (optional)"
                                 value={customer.guest_email}
                                 onChange={(event) =>
-                                    setCustomer({
-                                        ...customer,
+                                    setCustomer((previous) => ({
+                                        ...previous,
                                         guest_email: event.target.value,
-                                    })
+                                    }))
                                 }
                             />
 
@@ -290,6 +419,7 @@ const ChatWidget = () => {
                             </div>
 
                             {conversation.status === "open" ? (
+
                                 <form
                                     className="chat-input-area"
                                     onSubmit={handleSendMessage}
@@ -306,16 +436,21 @@ const ChatWidget = () => {
 
                                     <button
                                         type="submit"
-                                        disabled={sending || !message.trim()}
+                                        disabled={
+                                            sending || !message.trim()
+                                        }
                                     >
                                         <FaPaperPlane />
                                     </button>
 
                                 </form>
+
                             ) : (
+
                                 <div className="chat-closed">
                                     This conversation is closed.
                                 </div>
+
                             )}
                         </>
 
