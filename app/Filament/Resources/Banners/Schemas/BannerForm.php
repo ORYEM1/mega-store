@@ -17,9 +17,13 @@ class BannerForm
     {
         return $schema->components([
 
+            // =========================================
+            // BANNER CONTENT
+            // =========================================
             Section::make('Banner Content')
                 ->description('Enter the text that visitors will see on your homepage.')
                 ->schema([
+
                     TextInput::make('title')
                         ->required()
                         ->maxLength(255)
@@ -40,12 +44,17 @@ class BannerForm
                         ->url()
                         ->placeholder('https://example.com/collections')
                         ->helperText('Enter the destination URL for the banner button.'),
+
                 ])
                 ->columns(2),
 
+            // =========================================
+            // BANNER IMAGES
+            // =========================================
             Section::make('Banner Images')
                 ->description('Upload the desktop and optional mobile versions of your banner.')
                 ->schema([
+
                     FileUpload::make('image')
                         ->label('Desktop Banner Image')
                         ->image()
@@ -64,10 +73,15 @@ class BannerForm
                         ->visibility('public')
                         ->imageEditor()
                         ->helperText('Optional. Recommended: portrait image for mobile screens.'),
+
                 ])
                 ->columns(2),
 
+            // =========================================
+            // DISPLAY SETTINGS
+            // =========================================
             Section::make('Display Settings')
+                ->description('Choose where and how this banner appears.')
                 ->schema([
 
                     Select::make('position')
@@ -77,7 +91,8 @@ class BannerForm
                             'promo' => 'Promotional Banner',
                         ])
                         ->default('promo')
-                        ->required(),
+                        ->required()
+                        ->live(),
 
                     Select::make('collection')
                         ->label('Show Banner For')
@@ -89,6 +104,50 @@ class BannerForm
                         ->default('all')
                         ->required()
                         ->helperText('Choose which collection should display this banner.'),
+
+                    Select::make('product_level')
+                        ->label('Product Level')
+                        ->options([
+                            'affordable' => 'Affordable Collection',
+                            'executive' => 'Executive Collection',
+                        ])
+                        ->placeholder('Select product level')
+                        ->visible(fn ($get) => $get('position') === 'promo')
+                        ->live()
+                        ->helperText('Choose whether this promotional banner represents Affordable or Executive products.'),
+
+                    TextInput::make('min_price')
+                        ->label('Minimum Price (UGX)')
+                        ->numeric()
+                        ->integer()
+                        ->minValue(0)
+                        ->prefix('UGX')
+                        ->visible(fn ($get) => $get('position') === 'promo')
+                        ->required(fn ($get) => filled($get('product_level')))
+                        ->helperText('Starting price displayed on the collection banner.'),
+
+                    TextInput::make('max_price')
+                        ->label('Maximum Price (UGX)')
+                        ->numeric()
+                        ->integer()
+                        ->minValue(0)
+                        ->prefix('UGX')
+                        ->visible(fn ($get) => $get('position') === 'promo')
+                        ->required(fn ($get) => filled($get('product_level')))
+                        ->rules([
+                            fn ($get) => function (string $attribute, $value, $fail) use ($get) {
+                                $minimum = $get('min_price');
+
+                                if (
+                                    filled($value) &&
+                                    filled($minimum) &&
+                                    (float) $value < (float) $minimum
+                                ) {
+                                    $fail('The maximum price must be greater than or equal to the minimum price.');
+                                }
+                            },
+                        ])
+                        ->helperText('Highest price displayed on the collection banner.'),
 
                     TextInput::make('sort_order')
                         ->label('Display Order')
@@ -103,17 +162,23 @@ class BannerForm
                         ->label('Active')
                         ->default(true)
                         ->helperText('Only active banners should appear on the homepage.'),
+
                 ])
                 ->columns(2),
 
+            // =========================================
+            // PUBLICATION SCHEDULE
+            // =========================================
             Section::make('Publication Schedule')
                 ->description('Optionally control when this banner should be displayed.')
                 ->schema([
+
                     DateTimePicker::make('starts_at')
                         ->label('Start Displaying'),
 
                     DateTimePicker::make('ends_at')
                         ->label('Stop Displaying'),
+
                 ])
                 ->columns(2),
 

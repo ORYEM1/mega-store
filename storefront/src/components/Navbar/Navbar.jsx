@@ -208,10 +208,7 @@ function Navbar({
     goToProducts();
   };
 
-  // Handle theme switching.
-  const handleThemeToggle = () => {
-    toggleTheme();
-  };
+
 
   // Handle customer logout.
   const handleLogout = async () => {
@@ -426,21 +423,7 @@ function Navbar({
 
           <div className="navbar-actions">
 
-            {/* Theme toggle */}
-
-            <button
-              type="button"
-              className="navbar-theme-toggle"
-              onClick={handleThemeToggle}
-              aria-label={`Switch to ${
-                theme === "dark" ? "light" : "dark"
-              } mode`}
-              title={`Switch to ${
-                theme === "dark" ? "light" : "dark"
-              } mode`}
-            >
-              {theme === "dark" ? <FaSun /> : <FaMoon />}
-            </button>
+           
 
             {/* Shopping cart */}
 
@@ -511,17 +494,7 @@ function Navbar({
 
           </div>
 
-          {/* Mobile theme toggle */}
-
-          <button
-            type="button"
-            className="mobile-theme-toggle"
-            onClick={handleThemeToggle}
-            aria-label="Toggle theme"
-            title="Toggle theme"
-          >
-            {theme === "dark" ? <FaSun /> : <FaMoon />}
-          </button>
+          
 
         </div>
 

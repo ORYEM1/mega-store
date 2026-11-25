@@ -1,6 +1,10 @@
+
 /* =====================================================
+
    LIVING EARTH
+
    BOTANICAL ECOMMERCE DESIGN SYSTEM
+
 ===================================================== */
 
 .living-earth {
@@ -105,8 +109,6 @@
     background: var(--earth-cream);
 }
 
-/* Right-side banner image */
-
 .earth-hero-image {
     position: absolute;
     top: 0;
@@ -124,8 +126,6 @@
     object-fit: cover;
     object-position: center;
 }
-
-/* Soft transition between text and image */
 
 .earth-hero::after {
     content: "";
@@ -145,27 +145,19 @@
     );
 }
 
-/* Hero content */
-
 .earth-hero-content {
     position: relative;
     z-index: 2;
-
     width: min(1400px, 90%);
     min-height: 460px;
     margin: auto;
-
     padding: 65px 0;
-
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
-
     animation: earthReveal .8s ease both;
 }
-
-/* Keep text within the left side */
 
 .earth-hero-content > * {
     max-width: 43%;
@@ -183,7 +175,6 @@
 .earth-hero h1 {
     max-width: 600px;
     margin: 0;
-
     color: #252319;
     font-size: clamp(58px, 7vw, 100px);
     font-weight: 700;
@@ -200,23 +191,17 @@
 
 .earth-button {
     min-height: 43px;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
-
     padding: 0 23px;
-
     border: 1px solid var(--earth-green);
     border-radius: 30px;
-
     background: var(--earth-green);
     color: var(--earth-cream);
-
     font-size: 13px;
     text-decoration: none;
-
     transition: .25s ease;
 }
 
@@ -240,7 +225,6 @@
     align-items: center;
     position: relative;
     overflow: hidden;
-
     background:
         radial-gradient(
             circle at 85% 40%,
@@ -259,10 +243,8 @@
     position: absolute;
     right: 5%;
     top: -50px;
-
     color: rgba(38,61,25,.09);
     font-size: 400px;
-
     transform: rotate(-30deg);
     pointer-events: none;
 }
@@ -294,7 +276,6 @@
     min-height: 260px;
     overflow: hidden;
     isolation: isolate;
-
     border-radius: 15px;
     background: var(--earth-light-olive);
 }
@@ -322,7 +303,6 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-
     background: linear-gradient(
         90deg,
         rgba(234,225,204,.95) 0%,
@@ -335,7 +315,6 @@
     width: 55%;
     min-height: 260px;
     padding: 35px;
-
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -345,7 +324,6 @@
 .earth-collection-content h2 {
     max-width: 300px;
     margin: 0 0 8px;
-
     color: #252319;
     font-size: clamp(28px, 3vw, 42px);
     font-weight: 500;
@@ -372,10 +350,8 @@
 .earth-collection-fallback {
     min-height: 260px;
     padding: 35px;
-
     display: flex;
     align-items: center;
-
     border-radius: 15px;
 }
 
@@ -477,14 +453,11 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-
     margin: 25px auto 0;
     padding: 10px 20px;
-
     border: none;
     background: transparent;
     color: var(--earth-green);
-
     font-size: 13px;
     font-weight: 600;
 }
@@ -499,288 +472,99 @@
 
 .earth-benefits {
     width: 100%;
-    padding: 20px max(3%, calc((100% - 1400px) / 2));
-
+    padding: 28px 4%;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    align-items: center;
-
-    background: #f0e4d2;
-
-    border-top: 1px solid var(--earth-border);
-    border-bottom: 1px solid var(--earth-border);
+    gap: 20px;
+    background: var(--earth-light-olive);
 }
 
 .earth-benefit {
-    min-height: 48px;
-    padding: 5px 20px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 14px;
-
-    border-right: 1px solid #b9ad99;
-}
-
-.earth-benefit:last-child {
-    border-right: none;
+    gap: 13px;
+    color: var(--earth-green);
 }
 
 .earth-benefit > svg {
     flex-shrink: 0;
-    color: var(--earth-green);
-    font-size: 30px;
+    font-size: 28px;
 }
 
-.earth-benefit > div {
+.earth-benefit div {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 5px;
 }
 
 .earth-benefit strong {
-    color: #343127;
+    color: var(--earth-green);
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .earth-benefit span {
-    color: #625c50;
-    font-size: 12px;
+    color: var(--earth-muted);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
 }
 
 /* =====================================================
-   ALL PRODUCTS
+   PRODUCTS SECTION
 ===================================================== */
 
 .earth-products {
     width: min(1400px, 94%);
     margin: auto;
     padding: 65px 0;
-    scroll-margin-top: 110px;
 }
 
-.earth-products > .earth-section-title {
-    margin-bottom: 30px;
-}
-
-/* =====================================================
-   ACTIVE CATEGORY FILTER
-===================================================== */
-
-.earth-active-filter {
+.earth-products-header {
     margin-bottom: 25px;
-    padding: 15px 20px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-
-    background: #ece3d4;
-    border-radius: 5px;
-}
-
-.earth-active-filter span {
-    color: var(--earth-green);
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.earth-active-filter button {
-    padding: 10px 16px;
-    border: none;
-    border-radius: 20px;
-    background: var(--earth-green);
-    color: white;
-    font-size: 11px;
-}
-
-/* =====================================================
-   PRODUCT CLASSIFICATION NAVIGATION
-===================================================== */
-
-.earth-classification-wrapper {
-    margin: 0 0 35px;
-    padding: 30px 25px;
     text-align: center;
-
-    background:
-        radial-gradient(
-            circle at 5% 0%,
-            rgba(102,119,70,.09),
-            transparent 35%
-        ),
-        linear-gradient(
-            135deg,
-            #f0e8d9,
-            #f8f1e6
-        );
-
-    border: 1px solid var(--earth-border);
-    border-radius: 12px;
 }
 
-.earth-classification-heading > span {
-    display: inline-block;
-    margin-bottom: 8px;
-
+.earth-products-header > span {
+    display: block;
+    margin-bottom: 10px;
     color: var(--earth-olive);
     font-family: Arial, sans-serif;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 3px;
+    text-transform: uppercase;
 }
 
-.earth-classification-heading h3 {
+.earth-products-header h2 {
     margin: 0;
     color: var(--earth-green);
-    font-size: clamp(25px, 3vw, 34px);
-    font-weight: 600;
+    font-size: clamp(30px, 4vw, 43px);
+    font-weight: 500;
 }
 
-.earth-classification-heading p {
-    max-width: 520px;
-    margin: 10px auto 22px;
-
+.earth-products-header p {
+    max-width: 550px;
+    margin: 12px auto 0;
     color: var(--earth-muted);
     font-family: Arial, sans-serif;
     font-size: 13px;
     line-height: 1.7;
 }
 
-.earth-classification-tabs {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 12px;
+.earth-product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
 }
 
-.earth-classification-tabs button {
-    min-width: 145px;
-    min-height: 44px;
-    padding: 11px 24px;
-
-    border: 1px solid var(--earth-green);
-    border-radius: 30px;
-
-    background: transparent;
-    color: var(--earth-green);
-
+.earth-loading,
+.earth-empty {
+    padding: 45px 15px;
+    color: var(--earth-muted);
+    text-align: center;
     font-family: Arial, sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-
-    transition:
-        background .25s ease,
-        color .25s ease,
-        border-color .25s ease,
-        transform .25s ease,
-        box-shadow .25s ease;
-}
-
-.earth-classification-tabs button:hover {
-    background: var(--earth-light-olive);
-    transform: translateY(-2px);
-}
-
-.earth-classification-tabs button.active {
-    border-color: var(--earth-green);
-    background: var(--earth-green);
-    color: var(--earth-white);
-    box-shadow: 0 5px 14px rgba(38,61,25,.17);
-}
-
-.earth-classification-tabs button.active:hover {
-    background: var(--earth-olive);
-    border-color: var(--earth-olive);
-}
-
-/* Executive subcategories */
-
-.earth-executive-categories {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 9px;
-
-    margin-top: 20px;
-    padding-top: 20px;
-
-    border-top: 1px solid var(--earth-border);
-    animation: earthReveal .35s ease both;
-}
-
-.earth-executive-categories button {
-    min-height: 36px;
-    padding: 8px 20px;
-
-    border: 1px solid #c6b99f;
-    border-radius: 25px;
-
-    background: rgba(255,255,255,.45);
-    color: var(--earth-green);
-
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-
-    transition: .25s ease;
-}
-
-.earth-executive-categories button:hover {
-    border-color: var(--earth-olive);
-    background: var(--earth-light-olive);
-    transform: translateY(-2px);
-}
-
-.earth-executive-categories button.active {
-    border-color: var(--earth-olive);
-    background: var(--earth-olive);
-    color: white;
-    box-shadow: 0 4px 12px rgba(102,119,70,.2);
-}
-
-/* Keyboard accessibility */
-
-.earth-classification-tabs button:focus-visible,
-.earth-executive-categories button:focus-visible {
-    outline: 3px solid rgba(102,119,70,.45);
-    outline-offset: 3px;
-}
-
-/* =====================================================
-   CATEGORY LINKS
-===================================================== */
-
-.earth-category-links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 35px;
-}
-
-.earth-category-links button {
-    padding: 10px 18px;
-
-    border: 1px solid var(--earth-border);
-    border-radius: 25px;
-
-    background: transparent;
-    color: var(--earth-green);
-
-    font-size: 12px;
-    transition: .2s ease;
-}
-
-.earth-category-links button:hover {
-    background: var(--earth-green);
-    border-color: var(--earth-green);
-    color: white;
+    font-size: 14px;
 }
 
 /* =====================================================
@@ -794,7 +578,7 @@
 }
 
 .earth-category-section {
-    scroll-margin-top: 110px;
+    min-width: 0;
 }
 
 .earth-category-heading {
@@ -802,10 +586,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 15px;
-
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     padding-bottom: 12px;
-
     border-bottom: 1px solid var(--earth-border);
 }
 
@@ -813,61 +595,154 @@
     margin: 0;
     color: var(--earth-green);
     font-size: 27px;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .earth-category-heading > span {
     color: var(--earth-muted);
+    font-family: Arial, sans-serif;
     font-size: 12px;
 }
 
-.earth-product-grid {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+.earth-category-links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.earth-category-links button {
+    padding: 8px 15px;
+    border: 1px solid var(--earth-border);
+    border-radius: 30px;
+    background: transparent;
+    color: var(--earth-text);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    transition: .2s ease;
+}
+
+.earth-category-links button:hover,
+.earth-category-links button.active {
+    border-color: var(--earth-green);
+    background: var(--earth-green);
+    color: #fff;
+}
+
+.earth-active-filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 15px;
+    margin-bottom: 20px;
+    padding: 12px 15px;
+    border: 1px solid var(--earth-border);
+    background: rgba(226,227,201,.35);
+    color: var(--earth-text);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+.earth-active-filter button {
+    border: none;
+    background: transparent;
+    color: var(--earth-green);
+    font-size: 12px;
+    font-weight: 700;
 }
 
 /* =====================================================
-   LOADING AND EMPTY STATES
+   CLASSIFICATION FILTERS
 ===================================================== */
 
-.earth-loading,
-.earth-message {
-    min-height: 180px;
-    padding: 35px 20px;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
+.earth-classification-wrapper {
+    margin-bottom: 35px;
+    padding: 35px;
+    border: 1px solid var(--earth-border);
+    border-radius: 14px;
+    background: #f5eddf;
     text-align: center;
+}
 
+.earth-classification-heading > span {
+    color: var(--earth-olive);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.earth-classification-heading h3 {
+    margin: 10px 0;
     color: var(--earth-green);
-    background: #f0e7da;
-    border-radius: 8px;
+    font-size: 34px;
+    font-weight: 500;
 }
 
-.earth-message h3 {
-    margin: 0;
-    font-size: 24px;
-}
-
-.earth-message p {
+.earth-classification-heading p {
+    max-width: 600px;
+    margin: 10px auto 25px;
     color: var(--earth-muted);
+    font-family: Arial, sans-serif;
     font-size: 13px;
     line-height: 1.7;
 }
 
-.earth-message button {
-    margin-top: 10px;
-    padding: 12px 22px;
+.earth-classification-tabs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
 
-    border: none;
-    border-radius: 25px;
+.earth-classification-tabs button {
+    min-height: 43px;
+    padding: 10px 25px;
+    border: 1px solid var(--earth-green);
+    border-radius: 30px;
+    background: transparent;
+    color: var(--earth-green);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    transition: .2s ease;
+}
 
+.earth-classification-tabs button:hover,
+.earth-classification-tabs button.active {
     background: var(--earth-green);
-    color: white;
+    color: #fff;
+}
+
+.earth-executive-categories {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid var(--earth-border);
+}
+
+.earth-executive-categories button {
+    min-height: 38px;
+    padding: 8px 17px;
+    border: 1px solid var(--earth-border);
+    border-radius: 30px;
+    background: var(--earth-cream);
+    color: var(--earth-text);
+    font-size: 12px;
+    transition: .2s ease;
+}
+
+.earth-executive-categories button:hover,
+.earth-executive-categories button.active {
+    border-color: var(--earth-green);
+    background: var(--earth-green);
+    color: #fff;
 }
 
 /* =====================================================
@@ -876,63 +751,89 @@
 
 .earth-community {
     position: relative;
-    width: 100%;
-    min-height: 260px;
-    padding: 55px max(5%, calc((100% - 1400px) / 2));
-
+    min-height: 330px;
+    padding: 60px 8%;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    gap: 30px;
-
+    justify-content: center;
     overflow: hidden;
-
     background:
-        radial-gradient(
-            circle at 95% 30%,
-            rgba(255,255,255,.12),
-            transparent 30%
-        ),
-        var(--earth-light-olive);
+        linear-gradient(rgba(30,48,21,.88), rgba(30,48,21,.88)),
+        var(--earth-green);
+    color: var(--earth-cream);
+    text-align: center;
 }
 
+.earth-community::before,
 .earth-community::after {
     content: "❧";
     position: absolute;
-    right: 5%;
-    bottom: -110px;
-
-    color: rgba(38,61,25,.08);
-    font-size: 270px;
-
-    transform: rotate(-35deg);
+    color: rgba(255,255,255,.07);
+    font-size: 250px;
     pointer-events: none;
 }
 
-.earth-community > div,
-.earth-community > button {
+.earth-community::before {
+    top: -100px;
+    left: -30px;
+    transform: rotate(-35deg);
+}
+
+.earth-community::after {
+    right: -30px;
+    bottom: -120px;
+    transform: rotate(145deg);
+}
+
+.earth-community > * {
     position: relative;
     z-index: 1;
 }
 
-.earth-community > div > span {
-    color: var(--earth-green);
+.earth-community > span {
+    margin-bottom: 12px;
+    color: var(--earth-light-olive);
     font-family: Arial, sans-serif;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
 }
 
 .earth-community h2 {
-    margin: 12px 0;
-    color: var(--earth-green);
-    font-size: clamp(32px, 5vw, 55px);
-    line-height: 1;
+    max-width: 700px;
+    margin: 0;
+    color: var(--earth-cream);
+    font-size: clamp(35px, 5vw, 55px);
+    font-weight: 500;
+    line-height: 1.05;
 }
 
 .earth-community p {
-    color: #5d594d;
+    max-width: 560px;
+    margin: 18px 0 25px;
+    color: rgba(251,243,231,.8);
+    font-family: Arial, sans-serif;
     font-size: 14px;
+    line-height: 1.7;
+}
+
+.earth-community > button {
+    min-height: 45px;
+    padding: 0 25px;
+    border: 1px solid var(--earth-cream);
+    border-radius: 30px;
+    background: var(--earth-cream);
+    color: var(--earth-green);
+    font-size: 12px;
+    font-weight: 700;
+    transition: .2s ease;
+}
+
+.earth-community > button:hover {
+    background: transparent;
+    color: var(--earth-cream);
 }
 
 /* =====================================================
@@ -940,118 +841,103 @@
 ===================================================== */
 
 .earth-footer {
-    width: 100%;
-    padding: 35px 4% 20px;
-
-    background: var(--earth-green);
+    padding: 55px 5% 25px;
+    background: #1e3015;
     color: var(--earth-cream);
 }
 
-.earth-footer-main {
+.earth-footer-inner {
     width: min(1400px, 100%);
     margin: auto;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 30px;
-
-    padding-bottom: 25px;
-    border-bottom: 1px solid rgba(255,255,255,.25);
-}
-
-.earth-footer-logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.earth-footer-logo > svg {
-    font-size: 40px;
-    color: #e1e7c7;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 40px;
 }
 
 .earth-footer-logo h2 {
+    margin: 0 0 12px;
+    color: var(--earth-cream);
+    font-size: 27px;
+    letter-spacing: 1px;
+}
+
+.earth-footer-logo p {
+    max-width: 300px;
     margin: 0;
-    font-size: 24px;
-    font-weight: 500;
-    letter-spacing: 2px;
+    color: rgba(251,243,231,.7);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.8;
 }
 
-.earth-footer-logo span {
-    display: block;
-    margin-top: 2px;
-    text-align: center;
-    font-size: 11px;
-    letter-spacing: 6px;
-}
-
-.earth-footer-brand > p {
-    margin: 10px 0 0;
-    color: #e1d7c4;
-    font-size: 15px;
-    font-style: italic;
+.earth-footer-column h3 {
+    margin: 0 0 18px;
+    color: var(--earth-light-olive);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .earth-footer-links {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
 }
 
 .earth-footer-links a,
 .earth-footer-links button {
     padding: 0;
     border: none;
-
     background: transparent;
-    color: var(--earth-cream);
-
+    color: rgba(251,243,231,.75);
+    font-family: Arial, sans-serif;
     font-size: 12px;
     text-decoration: none;
-    transition: .2s ease;
+    transition: color .2s ease;
 }
 
 .earth-footer-links a:hover,
 .earth-footer-links button:hover {
-    color: #dce8bd;
+    color: #fff;
 }
 
-.earth-footer-social span {
-    width: 30px;
-    height: 30px;
+.earth-footer-social {
+    margin-top: 22px;
+}
 
-    display: flex;
+.earth-footer-social a {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-
+    border: 1px solid rgba(255,255,255,.25);
     border-radius: 50%;
-    background: var(--earth-cream);
-    color: var(--earth-green);
+    color: var(--earth-cream);
+    text-decoration: none;
+    transition: .2s ease;
+}
 
-    font-family: Arial, sans-serif;
-    font-size: 15px;
-    font-weight: bold;
+.earth-footer-social a:hover {
+    border-color: var(--earth-light-olive);
+    background: var(--earth-light-olive);
+    color: var(--earth-green);
 }
 
 .earth-footer-bottom {
     width: min(1400px, 100%);
-    margin: 15px auto 0;
-
+    margin: 40px auto 0;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,.16);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 15px;
-
-    color: #e1d7c4;
+    color: rgba(251,243,231,.6);
+    font-family: Arial, sans-serif;
     font-size: 11px;
-}
-
-.earth-footer-bottom > span:first-child {
-    font-size: 15px;
-    font-style: italic;
 }
 
 /* =====================================================
@@ -1061,7 +947,7 @@
 @keyframes earthReveal {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(18px);
     }
 
     to {
@@ -1071,61 +957,83 @@
 }
 
 /* =====================================================
-   TABLET
+   RESPONSIVE DESIGN
 ===================================================== */
 
-@media (max-width: 1050px) {
-
-    .earth-hero,
-    .earth-hero-content,
-    .earth-hero-fallback {
-        min-height: 410px;
-    }
-
-    .earth-hero-image {
-        width: 55%;
-    }
-
+@media (max-width: 1100px) {
     .earth-hero-content > * {
-        max-width: 45%;
+        max-width: 50%;
     }
 
     .earth-hero h1 {
-        font-size: clamp(52px, 7vw, 78px);
-        letter-spacing: -3px;
+        font-size: clamp(55px, 7vw, 80px);
     }
 
-    .earth-best-grid,
-    .earth-product-grid {
+    .earth-best-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
-    .earth-benefit {
-        padding: 5px 10px;
-        gap: 9px;
-    }
-
-    .earth-benefit > svg {
-        font-size: 25px;
-    }
-
-    .earth-footer-main {
-        flex-wrap: wrap;
+    .earth-footer-inner {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
-/* =====================================================
-   MOBILE / TABLET
-===================================================== */
+@media (max-width: 850px) {
+    .earth-hero {
+        min-height: 390px;
+    }
 
-@media (max-width: 768px) {
+    .earth-hero-content {
+        min-height: 390px;
+    }
 
+    .earth-hero-image {
+        width: 62%;
+    }
+
+    .earth-hero-content > * {
+        max-width: 53%;
+    }
+
+    .earth-hero h1 {
+        font-size: clamp(48px, 7vw, 68px);
+        letter-spacing: -2px;
+    }
+
+    .earth-collection-grid {
+        gap: 10px;
+    }
+
+    .earth-collection-card {
+        min-height: 230px;
+    }
+
+    .earth-collection-content {
+        min-height: 230px;
+        padding: 22px;
+    }
+
+    .earth-collection-content h2 {
+        font-size: 30px;
+    }
+
+    .earth-benefits {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .earth-product-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
     .earth-announcement-inner {
-        width: 94%;
+        justify-content: center;
     }
 
     .earth-announcement-inner > div:first-child {
-        gap: 9px;
+        justify-content: center;
+        gap: 10px;
     }
 
     .earth-announcement span {
@@ -1133,230 +1041,68 @@
     }
 
     .earth-social-top {
-        gap: 9px;
-    }
-
-    /* Stack hero text and image */
-
-    .earth-hero {
-        min-height: auto;
-        display: flex;
-        flex-direction: column;
-        background: var(--earth-cream);
-    }
-
-    .earth-hero::after {
         display: none;
     }
 
+    .earth-hero {
+        min-height: 520px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        background: var(--earth-cream);
+    }
+
     .earth-hero-image {
-        position: relative;
-        inset: auto;
-        order: 2;
-
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: auto;
         width: 100%;
-        height: 280px;
-
-        display: block;
-        z-index: 0;
+        height: 270px;
     }
 
     .earth-hero-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
         object-position: center;
     }
 
+    .earth-hero::after {
+        top: 170px;
+        left: 0;
+        right: 0;
+        bottom: auto;
+        height: 120px;
+        background: linear-gradient(
+            180deg,
+            transparent,
+            var(--earth-cream)
+        );
+    }
+
     .earth-hero-content {
-        order: 1;
-
         width: 90%;
-        min-height: 300px;
-        margin: auto;
-
-        padding: 40px 0;
-
-        align-items: flex-start;
+        min-height: auto;
+        padding: 275px 0 35px;
     }
 
     .earth-hero-content > * {
         max-width: 100%;
     }
 
-    .earth-hero h1 {
-        max-width: 520px;
-        font-size: clamp(52px, 10vw, 76px);
-        letter-spacing: -2px;
-    }
-
-    .earth-hero-content > p {
-        max-width: 500px;
-        margin: 18px 0 23px;
-    }
-
-    /* Fallback hero */
-
-    .earth-hero-fallback {
-        min-height: 350px;
-    }
-
-    .earth-hero-fallback .earth-hero-content {
-        min-height: 350px;
-    }
-
-    .earth-hero-fallback::after {
-        font-size: 300px;
-        right: -5%;
-    }
-
-    /* Collection banners */
-
-    .earth-collection-grid {
-        gap: 10px;
-    }
-
-    .earth-collection-card,
-    .earth-collection-fallback {
-        min-height: 220px;
-    }
-
-    .earth-collection-content {
-        min-height: 220px;
-        width: 65%;
-        padding: 18px;
-    }
-
-    .earth-collection-content h2 {
-        font-size: 27px;
-    }
-
-    /* Product grids */
-
-    .earth-best-grid,
-    .earth-product-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
-    }
-
-    /* Benefits */
-
-    .earth-benefits {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        row-gap: 15px;
-        padding: 20px 3%;
-    }
-
-    .earth-benefit:nth-child(2) {
-        border-right: none;
-    }
-
-    /* Community */
-
-    .earth-community {
-        align-items: flex-start;
-        flex-direction: column;
-        padding: 45px 5%;
-    }
-
-    /* Footer */
-
-    .earth-footer-main {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .earth-footer-links {
-        gap: 15px;
-    }
-
-    .earth-footer-bottom {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    /* Classification */
-
-    .earth-classification-wrapper {
-        padding: 25px 18px;
-    }
-
-    .earth-classification-tabs {
-        gap: 9px;
-    }
-
-    .earth-classification-tabs button {
-        min-width: 125px;
-        padding: 10px 17px;
-    }
-
-    .earth-executive-categories {
-        gap: 8px;
-    }
-}
-
-/* =====================================================
-   SMALL MOBILE
-===================================================== */
-
-@media (max-width: 480px) {
-
-    .earth-announcement {
-        min-height: 31px;
-    }
-
-    .earth-announcement-inner {
-        min-height: 31px;
-    }
-
-    .earth-announcement-inner > div:first-child {
-        gap: 7px;
-    }
-
-    .earth-announcement span {
-        font-size: 9px;
-    }
-
-    .earth-social-top {
-        display: none;
-    }
-
-    /* Mobile hero */
-
-    .earth-hero {
-        min-height: auto;
-    }
-
-    .earth-hero-content {
-        width: 90%;
-        min-height: 280px;
-        padding: 35px 0;
-    }
-
-    .earth-hero-image {
-        height: 230px;
-    }
-
-    .earth-hero-image img {
-        object-position: center;
-    }
-
     .earth-eyebrow {
+        margin-bottom: 10px;
         font-size: 10px;
         letter-spacing: 3px;
     }
 
     .earth-hero h1 {
-        max-width: 340px;
-        font-size: 53px;
-        line-height: .95;
+        font-size: clamp(43px, 13vw, 62px);
         letter-spacing: -2px;
+        line-height: .95;
     }
 
     .earth-hero-content > p {
-        margin: 15px 0 20px;
-        font-size: 15px;
+        margin: 14px 0 20px;
+        font-size: 14px;
     }
 
     .earth-button {
@@ -1365,8 +1111,6 @@
         font-size: 11px;
     }
 
-    /* Fallback */
-
     .earth-hero-fallback {
         min-height: 320px;
     }
@@ -1374,8 +1118,6 @@
     .earth-hero-fallback .earth-hero-content {
         min-height: 320px;
     }
-
-    /* Collections */
 
     .earth-collections {
         padding: 8px 3%;
@@ -1409,8 +1151,6 @@
         padding: 22px;
     }
 
-    /* Best sellers */
-
     .earth-best-sellers {
         width: 94%;
         padding: 18px 0 30px;
@@ -1428,8 +1168,6 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
     }
-
-    /* Benefits */
 
     .earth-benefits {
         padding: 18px 2%;
@@ -1453,8 +1191,6 @@
     .earth-benefit span {
         font-size: 10px;
     }
-
-    /* Products */
 
     .earth-products {
         width: 94%;
@@ -1495,8 +1231,6 @@
         flex-direction: column;
     }
 
-    /* Classification */
-
     .earth-classification-wrapper {
         margin-bottom: 25px;
         padding: 23px 13px;
@@ -1535,7 +1269,6 @@
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 9px;
-
         margin-top: 17px;
         padding-top: 17px;
     }
@@ -1546,8 +1279,6 @@
         padding: 8px 10px;
         font-size: 11px;
     }
-
-    /* Community */
 
     .earth-community {
         min-height: 260px;
@@ -1566,8 +1297,6 @@
     .earth-community > button {
         width: 100%;
     }
-
-    /* Footer */
 
     .earth-footer {
         padding: 35px 5% 20px;
@@ -1596,7 +1325,6 @@
 ===================================================== */
 
 @media (prefers-reduced-motion: reduce) {
-
     .living-earth *,
     .living-earth *::before,
     .living-earth *::after {
@@ -1604,5 +1332,427 @@
         animation-iteration-count: 1 !important;
         scroll-behavior: auto !important;
         transition-duration: .01ms !important;
+    }
+}
+
+/* =====================================================
+   LIVING EARTH HOMEPAGE FINAL REFINEMENTS
+   Best sellers, collection banners and responsive layout
+===================================================== */
+
+.living-earth .earth-collections {
+  width: 100%;
+  padding: 12px 2%;
+  background: var(--earth-cream);
+}
+
+.living-earth .earth-collection-grid {
+  width: min(1500px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.living-earth .earth-collection-card {
+  position: relative;
+  height: 260px;
+  min-height: 260px;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 12px;
+  background: var(--earth-light-olive);
+}
+
+.living-earth .earth-collection-card picture {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  display: block;
+}
+
+.living-earth .earth-collection-card picture img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.5s ease;
+}
+
+.living-earth .earth-collection-card:hover picture img {
+  transform: scale(1.035);
+}
+
+.living-earth .earth-collection-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(234, 225, 204, 0.98) 0%,
+    rgba(234, 225, 204, 0.94) 32%,
+    rgba(234, 225, 204, 0.65) 48%,
+    rgba(234, 225, 204, 0.05) 78%
+  );
+}
+
+.living-earth .earth-collection-content {
+  width: 53%;
+  height: 100%;
+  min-height: 260px;
+  padding: 25px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.living-earth .earth-collection-content h2 {
+  max-width: 330px;
+  margin: 0 0 12px;
+  color: var(--earth-green);
+  font-size: clamp(28px, 2.5vw, 38px);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.living-earth .earth-collection-content > p {
+  max-width: 290px;
+  margin: 0 0 17px;
+  color: #514b3e;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.living-earth .earth-collection-content .earth-button {
+  min-height: 38px;
+  padding: 0 19px;
+  border-radius: 4px;
+  background: var(--earth-green);
+  color: #fff;
+  font-size: 11px;
+}
+
+/* Best sellers */
+.living-earth .earth-best-sellers {
+  width: min(1400px, 94%);
+  margin: 0 auto;
+  padding: 42px 0 48px;
+}
+
+.living-earth .earth-best-sellers .earth-section-title {
+  max-width: 900px;
+  margin: 0 auto 28px;
+  gap: 22px;
+}
+
+.living-earth .earth-best-sellers .earth-section-title > span {
+  background: var(--earth-border);
+}
+
+.living-earth .earth-best-sellers .earth-section-title h2 {
+  color: var(--earth-green);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(25px, 3vw, 36px);
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+
+.living-earth .earth-best-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+}
+
+.living-earth .earth-best-grid > * {
+  min-width: 0;
+}
+
+.living-earth .earth-best-sellers .earth-text-button {
+  min-height: 42px;
+  margin: 30px auto 0;
+  padding: 0 22px;
+  border: 1px solid var(--earth-green);
+  border-radius: 3px;
+  color: var(--earth-green);
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.living-earth .earth-best-sellers .earth-text-button:hover {
+  transform: translateY(-2px);
+  background: var(--earth-green);
+  color: #fff;
+}
+
+.living-earth .earth-best-grid img {
+  max-width: 100%;
+}
+
+.living-earth .earth-best-grid > * {
+  border-radius: 5px;
+}
+
+/* Tablet */
+@media (max-width: 1050px) {
+  .living-earth .earth-best-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .living-earth .earth-collection-content {
+    width: 60%;
+    padding: 22px;
+  }
+}
+
+/* Mobile and small tablets */
+@media (max-width: 700px) {
+  .living-earth .earth-collections {
+    padding: 8px 3%;
+  }
+
+  .living-earth .earth-collection-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .living-earth .earth-collection-card {
+    height: 225px;
+    min-height: 225px;
+  }
+
+  .living-earth .earth-collection-content {
+    width: 65%;
+    min-height: 225px;
+    padding: 18px 20px;
+  }
+
+  .living-earth .earth-collection-content h2 {
+    font-size: 29px;
+  }
+
+  .living-earth .earth-collection-content > p {
+    font-size: 12px;
+  }
+
+  .living-earth .earth-best-sellers {
+    width: 94%;
+    padding: 32px 0 38px;
+  }
+
+  .living-earth .earth-best-sellers .earth-section-title {
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+
+  .living-earth .earth-best-sellers .earth-section-title h2 {
+    white-space: normal;
+    font-size: 26px;
+  }
+
+  .living-earth .earth-best-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .living-earth .earth-collection-card {
+    height: 205px;
+    min-height: 205px;
+  }
+
+  .living-earth .earth-collection-content {
+    width: 72%;
+    min-height: 205px;
+    padding: 15px;
+  }
+
+  .living-earth .earth-collection-content h2 {
+    font-size: 25px;
+  }
+
+  .living-earth .earth-best-grid {
+    gap: 9px;
+  }
+}
+
+/* =====================================
+   COLLECTION BANNER PRICE
+===================================== */
+
+.earth-collection-price {
+  display: inline-block;
+  margin: 12px 0 18px;
+  padding: 9px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 3px;
+  color: #263d19;;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* =====================================
+   COLLECTION BANNER EYEBROW
+===================================== */
+
+.earth-collection-eyebrow {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* =====================================
+   COLLECTION PLACEHOLDER
+===================================== */
+
+.earth-collection-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #263d19, #667746);
+  color: #fbf3e7;
+  font-size: 55px;
+}
+
+/* =====================================
+   COLLECTION CARD BUTTON
+===================================== */
+
+.earth-collection-content .earth-button {
+  cursor: pointer;
+}
+
+/* =====================================
+   COLLECTION BANNER RESPONSIVENESS
+===================================== */
+
+@media (max-width: 600px) {
+  .earth-collection-price {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  .earth-collection-eyebrow {
+    font-size: 10px;
+  }
+}
+
+/* =====================================================
+   COLLECTION BANNERS - SHOW FULL IMAGE
+===================================================== */
+
+.living-earth .earth-collection-card {
+    position: relative;
+    height: 300px;
+    min-height: 300px;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 12px;
+    background: #e2e3c9;
+}
+
+/* Image container */
+.living-earth .earth-collection-card picture {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #e2e3c9;
+}
+
+/* Show the complete uploaded image */
+.living-earth .earth-collection-card picture img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    object-position: center;
+    transition: none;
+}
+
+/* Remove zoom cropping */
+.living-earth .earth-collection-card:hover picture img {
+    transform: none;
+}
+
+/* Softer text background */
+.living-earth .earth-collection-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        rgba(234, 225, 204, 0.88) 0%,
+        rgba(234, 225, 204, 0.72) 30%,
+        rgba(234, 225, 204, 0.20) 55%,
+        transparent 75%
+    );
+}
+
+/* Banner text */
+.living-earth .earth-collection-content {
+    position: relative;
+    z-index: 1;
+    width: 53%;
+    height: 100%;
+    min-height: 300px;
+    padding: 25px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+    .living-earth .earth-collection-card {
+        height: 225px;
+        min-height: 225px;
+    }
+
+    .living-earth .earth-collection-content {
+        width: 70%;
+        min-height: 225px;
+        padding: 16px 18px;
+    }
+
+    .living-earth .earth-collection-content h2 {
+        font-size: 26px;
+    }
+
+    .living-earth .earth-collection-content > p {
+        font-size: 11px;
+    }
+
+    .living-earth .earth-collection-card::after {
+        background: linear-gradient(
+            90deg,
+            rgba(234, 225, 204, 0.92) 0%,
+            rgba(234, 225, 204, 0.78) 45%,
+            rgba(234, 225, 204, 0.12) 100%
+        );
     }
 }
