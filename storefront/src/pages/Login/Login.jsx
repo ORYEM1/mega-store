@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FaArrowRight,
+  FaLeaf,
   FaLock,
   FaEnvelope,
   FaExclamationCircle,
@@ -26,9 +27,7 @@ function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const sessionMessage =
-    location.state?.message ||
-    sessionStorage.getItem("auth_message");
+  const sessionMessage = location.state?.message || sessionStorage.getItem("auth_message");
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -93,7 +92,7 @@ function Login() {
   return (
     <div className="auth-page">
       <div className="auth-decoration">
-        <span className="auth-decoration-text">MEGA STORE</span>
+        <span className="auth-decoration-text">LIVING EARTH APPARELS</span>
         <div className="auth-decoration-content">
           <p className="auth-eyebrow">YOUR STYLE. YOUR RULES.</p>
           <h2>
@@ -110,7 +109,7 @@ function Login() {
       <div className="auth-form-section">
         <div className="auth-form-wrapper">
           <Link to="/" className="auth-logo">
-            MEGA STORE COLLECTION<span>.</span>
+             <FaLeaf/> LIVING EARTH APPAREL<span>.</span>
           </Link>
 
           <div className="auth-heading">

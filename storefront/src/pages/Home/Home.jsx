@@ -66,7 +66,7 @@ const COLLECTIONS = {
     slugs: [
       "ladies-dress",
       "ladies-suite",
-      "kitenge",
+      
     ],
   },
 };
@@ -363,15 +363,7 @@ function Home() {
       setLoading(true);
       setError("");
 
-      const [
-        productsResult,
-        categoriesResult,
-        bannersResult,
-      ] = await Promise.allSettled([
-        getProducts(),
-        getCategories(),
-        getBanners(),
-      ]);
+      const [ productsResult, categoriesResult, bannersResult] = await Promise.allSettled([getProducts(),getCategories(),getBanners()]);
 
       if (!isMounted) return;
 

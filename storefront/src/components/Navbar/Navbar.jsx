@@ -352,6 +352,17 @@ function Navbar({
             <a href="#products" onClick={goToProducts}>
               NEW DROPS
             </a>
+             <Link
+                to="/about"
+                onClick={closeMenus}>
+                  ABOUT US
+              </Link>
+
+              <Link
+                to="/contact"
+                onClick={closeMenus}>
+                  CONTACT
+                </Link>
 
             <div className="navbar-category-wrapper">
 
@@ -542,6 +553,17 @@ function Navbar({
             NEW DROPS
           </a>
 
+           <Link
+                to="/about"
+                onClick={closeMenus}>
+                  ABOUT US
+            </Link>
+            <Link
+              to="/contact"
+              onClick ={closeMenus}>
+                CONTACT
+            </Link>
+
           {/* Categories */}
 
           <button
@@ -630,6 +652,7 @@ function Navbar({
                 >
                   LOGIN
                 </Link>
+
 
                 <Link
                   to="/register"
