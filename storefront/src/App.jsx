@@ -9,9 +9,9 @@ import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
 const Home = lazy(() => import("./pages/Home/Home"));
 const Register = lazy(() => import("./pages/Register/Register"));
 const Login = lazy(() => import("./pages/Login/Login"));
-const ProductDetails = lazy(() =>
-  import("./pages/ProductDetails/ProductDetails")
-);
+const About = lazy(()=>import("./pages/About/About"));
+const Contact = lazy(()=>import("./pages/Contact/Contact"));
+const ProductDetails = lazy(() =>import("./pages/ProductDetails/ProductDetails"));
 const Cart = lazy(() => import("./pages/Cart/Cart"));
 const Checkout = lazy(() => import("./pages/Checkout/Checkout"));
 const OrderSuccess = lazy(() =>
@@ -49,6 +49,8 @@ function App() {
 
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/about" element={<About/>}/>
+          <Route path="/contact" element={<Contact/>}/>
 
           <Route
             path="/products/:id"

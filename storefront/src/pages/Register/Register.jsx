@@ -130,7 +130,7 @@ function Register() {
     <div className="auth-page register-page">
       {/* Decorative section */}
       <div className="auth-decoration">
-        <span className="auth-decoration-text">MEGA STORE.</span>
+        <span className="auth-decoration-text">LIVING EARTH APPARELS.</span>
 
         <div className="auth-decoration-content">
           <p className="auth-eyebrow">JOIN THE MOVEMENT.</p>
@@ -151,7 +151,7 @@ function Register() {
       <div className="auth-form-section">
         <div className="register-container">
           <Link to="/" className="auth-logo">
-            MEGA STORE<span>.</span>
+            LIVING EARTH APPARELS<span>.</span>
           </Link>
 
           <div className="auth-heading">
@@ -159,7 +159,7 @@ function Register() {
             <h1>CREATE ACCOUNT.</h1>
 
             <p>
-              Join MEGA STORE and start shopping your style.
+              Join LIVING EARTH APPARELS and start shopping your style.
             </p>
           </div>
 

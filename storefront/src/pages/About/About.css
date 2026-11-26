@@ -1,0 +1,401 @@
+/* =========================================
+   LIVING EARTH - ABOUT US PAGE
+========================================= */
+
+.about-page {
+  --earth-green: #263d19;
+  --earth-dark: #1e3015;
+  --earth-olive: #667746;
+  --earth-light-olive: #e2e3c9;
+  --earth-cream: #fbf3e7;
+  --earth-beige: #ead7bf;
+  --earth-text: #29271f;
+  --earth-muted: #777366;
+
+  background: var(--earth-cream);
+  color: var(--earth-text);
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+.about-page h1,
+.about-page h2,
+.about-page h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+
+.about-eyebrow {
+  display: inline-block;
+  color: var(--earth-olive);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  margin-bottom: 22px;
+}
+
+/* =========================================
+   HERO
+========================================= */
+
+.about-hero {
+  min-height: 570px;
+  display: flex;
+  align-items: center;
+  position: relative;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(20, 35, 15, 0.88),
+      rgba(20, 35, 15, 0.45),
+      rgba(20, 35, 15, 0.08)
+    ),
+    url("https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=2000&q=90");
+
+  background-position: center;
+  background-size: cover;
+}
+
+.about-hero-overlay {
+  max-width: 720px;
+  padding: 80px 9%;
+  color: white;
+}
+
+.about-hero .about-eyebrow {
+  color: var(--earth-light-olive);
+}
+
+.about-hero h1 {
+  font-size: clamp(45px, 6vw, 76px);
+  line-height: 1.08;
+  margin: 0 0 25px;
+}
+
+.about-hero h1 span {
+  color: var(--earth-light-olive);
+  font-style: italic;
+}
+
+.about-hero p {
+  max-width: 470px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+  line-height: 1.9;
+  margin-bottom: 35px;
+}
+
+.about-hero-button,
+.about-cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px 25px;
+  background: var(--earth-light-olive);
+  color: var(--earth-dark);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  transition: 0.3s ease;
+}
+
+.about-hero-button:hover,
+.about-cta-button:hover {
+  background: white;
+  transform: translateY(-3px);
+}
+
+/* =========================================
+   OUR STORY
+========================================= */
+
+.about-story {
+  max-width: 1300px;
+  margin: auto;
+  padding: 110px 7%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 90px;
+}
+
+.about-story-image {
+  height: 540px;
+  overflow: hidden;
+}
+
+.about-story-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s ease;
+}
+
+.about-story-image:hover img {
+  transform: scale(1.04);
+}
+
+.about-story-content h2 {
+  font-size: clamp(36px, 4vw, 52px);
+  line-height: 1.2;
+  color: var(--earth-dark);
+  margin: 0 0 28px;
+}
+
+.about-story-content h2 span {
+  color: var(--earth-olive);
+  font-style: italic;
+}
+
+.about-story-content p {
+  color: var(--earth-muted);
+  font-size: 14px;
+  line-height: 2;
+  margin-bottom: 20px;
+}
+
+/* =========================================
+   PHILOSOPHY
+========================================= */
+
+.about-philosophy {
+  background: #f1eadc;
+  padding: 100px 7%;
+}
+
+.about-philosophy-heading {
+  max-width: 720px;
+  margin: 0 auto 65px;
+  text-align: center;
+}
+
+.about-philosophy-heading h2 {
+  font-size: clamp(38px, 4vw, 55px);
+  line-height: 1.2;
+  color: var(--earth-dark);
+  margin: 0 0 22px;
+}
+
+.about-philosophy-heading h2 span {
+  color: var(--earth-olive);
+  font-style: italic;
+}
+
+.about-philosophy-heading p {
+  max-width: 570px;
+  margin: auto;
+  color: var(--earth-muted);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.about-values {
+  max-width: 1250px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 25px;
+}
+
+.about-value-card {
+  padding: 38px 25px;
+  text-align: center;
+  background: var(--earth-cream);
+  transition: 0.3s ease;
+}
+
+.about-value-card:hover {
+  transform: translateY(-7px);
+  box-shadow: 0 15px 35px rgba(38, 61, 25, 0.08);
+}
+
+.about-value-icon {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 25px;
+  border-radius: 50%;
+  background: var(--earth-light-olive);
+  color: var(--earth-green);
+  font-size: 25px;
+}
+
+.about-value-card h3 {
+  font-size: 22px;
+  color: var(--earth-dark);
+  margin: 0 0 15px;
+}
+
+.about-value-card p {
+  color: var(--earth-muted);
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 0;
+}
+
+/* =========================================
+   IMAGE BANNER
+========================================= */
+
+.about-image-banner {
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+
+  background:
+    linear-gradient(
+      rgba(25, 42, 18, 0.58),
+      rgba(25, 42, 18, 0.58)
+    ),
+    url("https://images.unsplash.com/photo-1449247709967-d4461a6a6103?auto=format&fit=crop&w=2000&q=85");
+
+  background-position: center;
+  background-size: cover;
+}
+
+.about-image-banner-content {
+  max-width: 700px;
+  padding: 60px 25px;
+  color: white;
+}
+
+.about-image-banner .about-eyebrow {
+  color: var(--earth-light-olive);
+}
+
+.about-image-banner h2 {
+  font-size: clamp(42px, 5vw, 65px);
+  line-height: 1.15;
+  margin: 0 0 20px;
+}
+
+.about-image-banner p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* =========================================
+   CALL TO ACTION
+========================================= */
+
+.about-cta {
+  padding: 110px 7%;
+  text-align: center;
+  background: var(--earth-green);
+  color: white;
+}
+
+.about-cta .about-eyebrow {
+  color: var(--earth-light-olive);
+}
+
+.about-cta h2 {
+  font-size: clamp(38px, 5vw, 58px);
+  line-height: 1.2;
+  margin: 0 0 22px;
+}
+
+.about-cta h2 span {
+  color: var(--earth-light-olive);
+  font-style: italic;
+}
+
+.about-cta p {
+  max-width: 540px;
+  margin: 0 auto 32px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.about-cta-button {
+  background: var(--earth-light-olive);
+}
+
+/* =========================================
+   RESPONSIVE DESIGN
+========================================= */
+
+@media (max-width: 1000px) {
+  .about-story {
+    gap: 45px;
+    padding: 80px 5%;
+  }
+
+  .about-values {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .about-hero {
+    min-height: 500px;
+    background-position: 60% center;
+  }
+
+  .about-hero-overlay {
+    padding: 65px 7%;
+  }
+
+  .about-hero h1 {
+    font-size: 45px;
+  }
+
+  .about-story {
+    grid-template-columns: 1fr;
+    padding: 65px 6%;
+    gap: 40px;
+  }
+
+  .about-story-image {
+    height: 380px;
+  }
+
+  .about-story-content h2 {
+    font-size: 38px;
+  }
+
+  .about-philosophy {
+    padding: 75px 6%;
+  }
+
+  .about-values {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .about-value-card {
+    padding: 32px 25px;
+  }
+
+  .about-image-banner {
+    min-height: 380px;
+  }
+
+  .about-cta {
+    padding: 75px 6%;
+  }
+}
+
+@media (max-width: 420px) {
+  .about-hero h1 {
+    font-size: 38px;
+  }
+
+  .about-story-image {
+    height: 300px;
+  }
+
+  .about-story-content h2 {
+    font-size: 33px;
+  }
+}

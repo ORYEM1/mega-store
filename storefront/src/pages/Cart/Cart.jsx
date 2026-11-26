@@ -54,8 +54,7 @@ function Cart() {
 
   // Calculate total units.
   const totalItems = cart.reduce(
-    (total, item) =>
-      total + (Number(item.quantity) || 0),
+    (total, item) => total + (Number(item.quantity) || 0),
     0
   );
 
@@ -85,7 +84,8 @@ function Cart() {
       return;
     }
 
-    if (stock < 1) {
+    if (stock < 1)
+    {
       return;
     }
 
@@ -373,7 +373,7 @@ function Cart() {
 
               <div className="cart-secure-note">
                 <FaShoppingBag />
-                <span>THANK YOU FOR SHOPPING WITH ADRIAN.</span>
+                <span>THANK YOU FOR SHOPPING WITH LIVING EARTH APPARELS.</span>
               </div>
             </aside>
           </div>

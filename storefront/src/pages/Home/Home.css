@@ -1756,3 +1756,199 @@
         );
     }
 }
+/* =====================================================
+   LIVING EARTH FOOTER - COMPACT HORIZONTAL LAYOUT
+===================================================== */
+
+.living-earth .earth-footer {
+    padding: 30px 5% 15px;
+    background: #1e3015;
+    color: #fbf3e7;
+}
+
+.living-earth .earth-footer-inner {
+    width: min(1400px, 100%);
+    margin: auto;
+    display: grid;
+    grid-template-columns: 1.2fr 2fr;
+    align-items: center;
+    gap: 35px;
+}
+
+/* Brand section */
+
+.living-earth .earth-footer-logo h2 {
+    margin: 0 0 8px;
+    color: #fbf3e7;
+    font-size: 25px;
+    letter-spacing: 1px;
+}
+
+.living-earth .earth-footer-logo p {
+    max-width: 300px;
+    margin: 0;
+    color: rgba(251,243,231,.7);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* Footer navigation columns */
+
+.living-earth .earth-footer-column {
+    min-width: 0;
+}
+
+.living-earth .earth-footer-column h3 {
+    margin: 0 0 13px;
+    color: #e2e3c9;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Horizontal navigation links */
+
+.living-earth .earth-footer-links {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+}
+
+.living-earth .earth-footer-links a,
+.living-earth .earth-footer-links button {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: rgba(251,243,231,.75);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color .2s ease;
+}
+
+.living-earth .earth-footer-links a:hover,
+.living-earth .earth-footer-links button:hover {
+    color: #fff;
+}
+
+/* Social media */
+
+.living-earth .earth-footer-social {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 15px;
+}
+
+.living-earth .earth-footer-social a {
+    width: 29px;
+    height: 29px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 50%;
+    color: #fbf3e7;
+    font-size: 12px;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.living-earth .earth-footer-social a:hover {
+    border-color: #e2e3c9;
+    background: #e2e3c9;
+    color: #263d19;
+}
+
+/* Bottom copyright section */
+
+.living-earth .earth-footer-bottom {
+    width: min(1400px, 100%);
+    margin: 25px auto 0;
+    padding-top: 13px;
+    border-top: 1px solid rgba(255,255,255,.16);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    color: rgba(251,243,231,.6);
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+}
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (max-width: 850px) {
+    .living-earth .earth-footer-inner {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .living-earth .earth-footer-logo {
+        text-align: center;
+    }
+
+    .living-earth .earth-footer-logo p {
+        margin: auto;
+    }
+
+    .living-earth .earth-footer-column {
+        text-align: center;
+    }
+
+    .living-earth .earth-footer-links {
+        justify-content: center;
+    }
+
+    .living-earth .earth-footer-social {
+        justify-content: center;
+    }
+}
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 600px) {
+    .living-earth .earth-footer {
+        padding: 25px 5% 15px;
+    }
+
+    .living-earth .earth-footer-inner {
+        gap: 22px;
+    }
+
+    .living-earth .earth-footer-logo h2 {
+        font-size: 22px;
+    }
+
+    .living-earth .earth-footer-column h3 {
+        margin-bottom: 12px;
+        font-size: 10px;
+    }
+
+    .living-earth .earth-footer-links {
+        justify-content: center;
+        gap: 12px 18px;
+    }
+
+    .living-earth .earth-footer-links a,
+    .living-earth .earth-footer-links button {
+        font-size: 11px;
+    }
+
+    .living-earth .earth-footer-bottom {
+        margin-top: 20px;
+        padding-top: 12px;
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+}

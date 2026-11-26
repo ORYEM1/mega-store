@@ -313,7 +313,7 @@ const ChatWidget = () => {
                             </div>
 
                             <div>
-                                <h3>ADRIAN COLLECTIONS Support</h3>
+                                <h3>LIVING EARTH APPARELS Support</h3>
 
                                 <div
                                     className={`chat-support-status ${supportStatus.className}`}
@@ -348,7 +348,7 @@ const ChatWidget = () => {
                             onSubmit={startConversation}
                         >
 
-                            <h3>Welcome to Adrian Collections!</h3>
+                            <h3>Welcome to Living Earth Apparels!</h3>
 
                             <p>
                                 Have a question about our products?
