@@ -31,7 +31,7 @@ const About = () => {
             A beautiful way to live every day.
           </p>
 
-          <Link to="/products" className="about-hero-button">
+          <Link to="/" className="about-hero-button">
             EXPLORE OUR COLLECTION 
           </Link>
         </div>
@@ -175,7 +175,7 @@ const About = () => {
           and inspiration into your everyday life.
         </p>
 
-        <Link to="/products" className="about-cta-button">
+        <Link to="/" className="about-cta-button">
           SHOP THE COLLECTION 
         </Link>
       </section>
