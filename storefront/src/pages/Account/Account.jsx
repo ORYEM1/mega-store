@@ -668,7 +668,7 @@ function Account() {
 
                     <div>
                       <h3>{fullName}</h3>
-                      <p>ADRIAN COLLECTIONS CUSTOMER</p>
+                      <p>LIVING EARTH APPARELS CUSTOMER</p>
                     </div>
                   </div>
 

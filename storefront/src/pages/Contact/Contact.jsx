@@ -10,16 +10,15 @@ import "./Contact.css";
 */
 
 const CONTACT = {
-  email: "livingearthapparels@gmail.com",
+  email: "info@livingearthapparels.com",
   phone: "+256753502796",
   whatsapp: "256753502796",
   location: "Your business location",
 
   social: {
-    instagram: "https://www.instagram.com/yourusername/",
-    facebook: "https://www.facebook.com/yourusername/",
-    tiktok: "https://www.tiktok.com/@yourusername",
-    pinterest: "https://www.pinterest.com/yourusername/",
+    facebook: "https://www.facebook.com/livingearthapparel/",
+    tiktok: "https://www.tiktok.com/@livingearthapparels",
+    
   },
 };
 
@@ -301,7 +300,7 @@ const Contact = () => {
           <span>part of our journey.</span>
         </h2>
 
-        <Link to="/products" className="contact-shop-button">
+        <Link to="/" className="contact-shop-button">
           EXPLORE OUR COLLECTION ↗
         </Link>
       </section>

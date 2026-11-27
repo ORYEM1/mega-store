@@ -16,6 +16,7 @@ import {
   FaShoppingCart,
   FaUser,
   FaMoon,
+  FaLeaf,
   FaSun,
   FaHome,
   FaCompass,
@@ -293,12 +294,7 @@ function Navbar({
 
       {/* Promotional announcement */}
 
-      <div className="navbar-announcement">
-        <p>
-          GROUNDED IN NATURE.
-          <span> TIMELESS STYLE. MADE FOR YOU.</span>
-        </p>
-      </div>
+     
 
       {/* Main navigation */}
 
@@ -333,6 +329,8 @@ function Navbar({
             onClick={closeMenus}
             aria-label="Living Earth home"
           >
+
+            <FaLeaf/>
             <span className="navbar-logo-main">
               LIVING
               <span> EARTH</span>

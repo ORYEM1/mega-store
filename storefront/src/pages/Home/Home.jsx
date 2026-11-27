@@ -1031,7 +1031,7 @@ function Home() {
 
         <div className="earth-announcement-inner">
 
-          <div>
+         <div>
             <span>Grounded in Nature</span>
             <i></i>
             <span>Timeless Style</span>
